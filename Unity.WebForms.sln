@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms", "Unity.WebForms.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms", "Unity.WebForms\Unity.WebForms.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
