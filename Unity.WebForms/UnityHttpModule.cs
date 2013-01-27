@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Web;
 using System.Web.UI;
+
 using Microsoft.Practices.Unity;
 
 namespace Unity.WebForms
@@ -14,12 +12,10 @@ namespace Unity.WebForms
     /// </summary>
     public class UnityHttpModule : IHttpModule
     {
-        private const string NamespacePrefix = "System";
-
         #region Implementation of IHttpModule
 
         /// <summary>
-            /// Initializes a module and prepares it to handle requests.
+        ///     Initializes a module and prepares it to handle requests.
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpApplication"/> that provides access to the methods, 
         ///     properties, and events common to all application objects within an ASP.NET application </param>
@@ -77,8 +73,7 @@ namespace Unity.WebForms
                 var baseTypeFullName = c.GetType().BaseType != null ? c.GetType().BaseType.FullName : string.Empty;
 
                 // filter on namespace prefix to avoid attempts to build up internal controls
-                // TODO: inverting the previous logic here to only build up controls that aren't in the 'System' namespace
-                if (!typeFullName.StartsWith(NamespacePrefix) || !baseTypeFullName.StartsWith(NamespacePrefix))
+                if (!typeFullName.StartsWith("System") || !baseTypeFullName.StartsWith("System"))
                 {
                     Container.BuildUp(c.GetType(), c);
                 }
@@ -120,7 +115,7 @@ namespace Unity.WebForms
         /// </summary>
         private IUnityContainer Container
         {
-            get { return _container ?? (_container = (IUnityContainer)HttpContext.Current.Application["Container"]); }
+            get { return _container ?? (_container = (IUnityContainer)HttpContext.Current.Application["UnityContainer"]); }
         }
 
         #endregion

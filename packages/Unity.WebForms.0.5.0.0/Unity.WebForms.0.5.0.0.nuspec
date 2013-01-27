@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Unity.WebForms</id>
+    <version>0.5.0.0</version>
+    <authors>S. Kyle Korndoerfer</authors>
+    <owners>S. Kyle Korndoerfer</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://bitbucket.org/KyleK/unity.webforms/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Dependency Injection in ASP.NET WebForms using Unity.</description>
+    <releaseNotes>Dependency Injection in ASP.NET WebForms using Unity.</releaseNotes>
+    <copyright>Copyright 2013 S. Kyle Korndoerfer</copyright>
+    <tags>Unity ASP.NET WebForms Dependency Injection</tags>
+    <dependencies>
+      <dependency id="CommonServiceLocator" version="1.0" />
+      <dependency id="Unity" version="2.1.505.2" />
+      <dependency id="WebActivator" version="1.5.3" />
+      <dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0" />
+    </dependencies>
+    <references>
+      <reference file="Unity.WebForms.dll" />
+    </references>
+  </metadata>
+</package>
