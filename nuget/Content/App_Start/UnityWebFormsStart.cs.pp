@@ -5,18 +5,33 @@ using Microsoft.Practices.Unity;
 [assembly: WebActivator.PostApplicationStartMethod(typeof($rootnamespace$.App_Start.UnityWebFormsStart), "PostStart")]
 namespace $rootnamespace$.App_Start
 {
-    internal static class UnityWebFormsStart
-    {
-        /// <summary>
-        ///     Initializes the unity container when the application starts up.
-        /// </summary>
-        internal static void PostStart()
-        {
-            IUnityContainer container = new UnityContainer();
+	/// <summary>
+	///		Startup class for the Unity.WebForms NuGet package.
+	/// </summary>
+	internal static class UnityWebFormsStart
+	{
+		/// <summary>
+		///     Initializes the unity container when the application starts up.
+		/// </summary>
+		/// <remarks>
+		///		Do not edit this method. Perform any modifications in the
+		///		<see cref="RegisterDependencies" /> method.
+		/// </remarks>
+		internal static void PostStart()
+		{
+			IUnityContainer container = new UnityContainer();
+			HttpContext.Current.Application.Add("UnityContainer", container);
 
-            // Add any dependencies needed here
+			RegisterDependencies( container );
+		}
 
-            HttpContext.Current.Application.Add("UnityContainer", container);
-        }
-    }
+		/// <summary>
+		///		Registers dependencies in the supplied container.
+		/// </summary>
+		/// <param name="container">Instance of the container to populate.</param>
+		private static void RegisterDependencies( IUnityContainer container )
+		{
+			// TODO: Add any dependencies needed here
+		}
+	}
 }

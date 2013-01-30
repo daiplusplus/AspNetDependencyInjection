@@ -9,13 +9,14 @@ using System.Resources;
 [assembly: AssemblyTitle("Unity.WebForms")]
 [assembly: AssemblyDescription("Dependency Injection in ASP.NET WebForms using Unity")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("KyKo Software")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Unity.WebForms")]
-[assembly: AssemblyCopyright("Copyright © 2013 Kyle Korndoerfer")]
+[assembly: AssemblyCopyright("Copyright © 2013 S. Kyle Korndoerfer")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: NeutralResourcesLanguageAttribute("en-US")]
 
-// Initialize the 
+// Initialize the assembly
 [assembly: PreApplicationStartMethod(typeof(Unity.WebForms.PreApplicationStart), "PreStart")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -36,6 +37,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.5.*")]
-[assembly: AssemblyFileVersion("0.5.0.0")]
-[assembly: NeutralResourcesLanguageAttribute("en-US")]
+[assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+
