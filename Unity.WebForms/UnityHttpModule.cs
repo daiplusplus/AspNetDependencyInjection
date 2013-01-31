@@ -108,6 +108,7 @@ namespace Unity.WebForms
 
         #region Accessors
 
+		/// <summary>Backing field for the <see cref="Container"/> property.</summary>
         private IUnityContainer _container;
 
         /// <summary>

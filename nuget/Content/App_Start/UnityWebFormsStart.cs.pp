@@ -2,7 +2,7 @@ using System.Web;
 
 using Microsoft.Practices.Unity;
 
-[assembly: WebActivator.PostApplicationStartMethod(typeof($rootnamespace$.App_Start.UnityWebFormsStart), "PostStart")]
+[assembly: WebActivator.PostApplicationStartMethod( typeof($rootnamespace$.App_Start.UnityWebFormsStart), "PostStart" )]
 namespace $rootnamespace$.App_Start
 {
 	/// <summary>
@@ -20,7 +20,7 @@ namespace $rootnamespace$.App_Start
 		internal static void PostStart()
 		{
 			IUnityContainer container = new UnityContainer();
-			HttpContext.Current.Application.Add("UnityContainer", container);
+			HttpContext.Current.Application.Add( "UnityContainer", container );
 
 			RegisterDependencies( container );
 		}

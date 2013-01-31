@@ -1,27 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Microsoft.Practices.Unity;
 
 namespace SampleWebApplication
 {
-    public partial class _Default : System.Web.UI.Page
-    {
-        protected void Page_Load(object sender, EventArgs e)
-        {
-        }
+	/// <summary>
+	///		Sample page demonstrating injection at the page level.
+	/// </summary>
+	public partial class _Default : Page
+	{
+		protected void Page_Load(object sender, EventArgs e)
+		{
+		}
 
-        #region Dependencies
+		#region Dependencies
 
-        [Dependency]
-        public Service1 InjectedService1 { get; set; }
+		/// <summary>Gets/sets the <see cref="Service1" /> dependency (injected).</summary>
+		[Dependency]
+		public Service1 InjectedService1 { get; set; }
 
-        [Dependency]
-        public Service2 InjectedService2 { get; set; }
+		/// <summary>Gets/sets the <see cref="Service2" /> dependency (injected).</summary>
+		[Dependency]
+		public Service2 InjectedService2 { get; set; }
 
-        #endregion
-    }
+		#endregion
+	}
 }
