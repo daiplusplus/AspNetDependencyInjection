@@ -7,118 +7,171 @@ using Microsoft.Practices.Unity;
 
 namespace Unity.WebForms
 {
-    /// <summary>
-    ///     Performs dependency injection on Pages and Controls through properties.
-    /// </summary>
-    public class UnityHttpModule : IHttpModule
-    {
-        #region Implementation of IHttpModule
+	/// <summary>
+	///		HttpModule that maintains a Unity container per request for dependency resolution.
+	/// </summary>
+	public class UnityHttpModule : IHttpModule
+	{
+		#region Implementation of IHttpModule
 
-        /// <summary>
-        ///     Initializes a module and prepares it to handle requests.
-        /// </summary>
-        /// <param name="context">An <see cref="T:System.Web.HttpApplication"/> that provides access to the methods, 
-        ///     properties, and events common to all application objects within an ASP.NET application </param>
-        public void Init( HttpApplication context )
-        {
-            context.PreRequestHandlerExecute += OnPreRequestHandlerExecute;
-        }
+		/// <summary>
+		///		Initializes a module and prepares it to handle requests.
+		/// </summary>
+		/// <param name="context">An <see cref="T:System.Web.HttpApplication"/>
+		///		that provides access to the methods, properties, and events 
+		///		common to all application objects within an ASP.NET application.</param>
+		public void Init( HttpApplication context )
+		{
+			context.BeginRequest += ContextOnBeginRequest;
+			context.PreRequestHandlerExecute += OnPreRequestHandlerExecute;
+			context.EndRequest += ContextOnEndRequest;
+		}
 
-        /// <summary>
-        ///     Disposes of the resources (other than memory) used by the module 
-        ///     that implements <see cref="T:System.Web.IHttpModule" />.
-        /// </summary>
-        public void Dispose()
-        {
-        }
+		/// <summary>
+		///		Disposes of the resources (other than memory) used by the module
+		///		that implements <see cref="T:System.Web.IHttpModule"/>.
+		/// </summary>
+		public void Dispose()
+		{
+		}
 
-        #endregion
+		#endregion
 
-        /// <summary>
-        ///     Registers the injection event to fire when the page has been
-        ///     initialized.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnPreRequestHandlerExecute(object sender, EventArgs e)
-        {
-            /* static content */
-            if (HttpContext.Current.Handler == null)
-            {
-                return;
-            }
+		#region Life-cycle event handlers
 
-            var handler = HttpContext.Current.Handler;
-            Container.BuildUp( handler.GetType(), handler );
+		/// <summary>
+		///		Initializes a new child container at the beginning of each request.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ContextOnBeginRequest( object sender, EventArgs e )
+		{
+			ChildContainer = ParentContainer.CreateChildContainer();
+		}
 
-            var page = HttpContext.Current.Handler as Page;
-            if ( page != null )
-            {
-                page.InitComplete += OnPageInitComplete;
-            }
-        }
+		/// <summary>
+		///		Registers the injection event to fire when the page has been
+		///		initialized.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void OnPreRequestHandlerExecute( object sender, EventArgs e )
+		{
+			/* static content */
+			if ( HttpContext.Current.Handler == null )
+			{
+				return;
+			}
 
-        /// <summary>
-        ///     Buildup each control in the page's control tree.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnPageInitComplete( object sender, EventArgs e )
-        {
-            var page = (Page)sender;
+			var handler = HttpContext.Current.Handler;
+			ChildContainer.BuildUp( handler.GetType(), handler );
 
-            foreach (Control c in GetControlTree(page))
-            {
-                var typeFullName = c.GetType().FullName ?? string.Empty;
-                var baseTypeFullName = c.GetType().BaseType != null ? c.GetType().BaseType.FullName : string.Empty;
+			// User controls are ready to be built up after the page initialization in complete
+			var page = handler as Page;
+			if ( page != null )
+			{
+				page.InitComplete += OnPageInitComplete;
+			}
+		}
 
-                // filter on namespace prefix to avoid attempts to build up internal controls
-                if (!typeFullName.StartsWith("System") || !baseTypeFullName.StartsWith("System"))
-                {
-                    Container.BuildUp(c.GetType(), c);
-                }
-            }
-        }
+		/// <summary>
+		///		Build-up each control in the page's control tree.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void OnPageInitComplete( object sender, EventArgs e )
+		{
+			var page = (Page)sender;
 
-        /// <summary>
-        ///     Traverses through the control tree to build up the dependencies.
-        /// </summary>
-        /// <param name="root">The root control to traverse.</param>
-        /// <returns>
-        ///     Any child controls to be processed.
-        /// </returns>
-        private static IEnumerable GetControlTree( Control root )
-        {
-            if ( root.HasControls() )
-            {
-                foreach ( Control child in root.Controls )
-                {
-                    yield return child;
+			foreach ( Control c in GetControlTree( page ) )
+			{
+				var typeFullName = c.GetType().FullName ?? string.Empty;
+				var baseTypeFullName = c.GetType().BaseType != null ? c.GetType().BaseType.FullName : string.Empty;
 
-                    if ( child.HasControls() )
-                    {
-                        foreach ( Control c in GetControlTree( child ) )
-                        {
-                            yield return c;
-                        }
-                    }
-                }
-            }
-        }
+				// filter on namespace prefix to avoid attempts to build up system controls
+				if ( !typeFullName.StartsWith( "System" ) || !baseTypeFullName.StartsWith( "System" ) )
+				{
+					ChildContainer.BuildUp( c.GetType(), c );
+				}
+			}
+		}
 
-        #region Accessors
+		/// <summary>
+		///		Ensures that the child container gets disposed of properly at the end
+		///		of each request cycle.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ContextOnEndRequest( object sender, EventArgs e )
+		{
+			if ( ChildContainer != null )
+			{
+				ChildContainer.Dispose();
+			}
+		}
 
-		/// <summary>Backing field for the <see cref="Container"/> property.</summary>
-        private IUnityContainer _container;
+		#endregion
 
-        /// <summary>
-        ///     Gets the unity container out of the Application state.
-        /// </summary>
-        private IUnityContainer Container
-        {
-            get { return _container ?? (_container = (IUnityContainer)HttpContext.Current.Application["UnityContainer"]); }
-        }
+		#region Helpers
 
-        #endregion
-    }
+		/// <summary>
+		///		Traverses through the control tree to build up the dependencies.
+		/// </summary>
+		/// <param name="root">The root control to traverse.</param>
+		/// <returns>
+		///		Any child controls to be processed.
+		/// </returns>
+		private static IEnumerable GetControlTree( Control root )
+		{
+			if ( root.HasControls() )
+			{
+				foreach ( Control child in root.Controls )
+				{
+					yield return child;
+
+					if ( child.HasControls() )
+					{
+						foreach ( Control c in GetControlTree( child ) )
+						{
+							yield return c;
+						}
+					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>Backing field for the <see cref="ParentContainer"/> property.</summary>
+		private IUnityContainer _parentContainer;
+
+		/// <summary>
+		///		Gets the parent container out of the application state.
+		/// </summary>
+		private IUnityContainer ParentContainer
+		{
+			get { return _parentContainer ?? ( _parentContainer = HttpContext.Current.Application.GetContainer() ); }
+		}
+
+		/// <summary>Backing field for the <see cref="ChildContainer"/> property.</summary>
+		private IUnityContainer _childContainer;
+
+		/// <summary>
+		///  Gets/sets the child container for the current request.
+		/// </summary>
+		private IUnityContainer ChildContainer
+		{
+			get { return _childContainer; }
+
+			set
+			{
+				_childContainer = value;
+				HttpContext.Current.SetChildContainer( value );
+			}
+		}
+
+		#endregion
+	}
 }

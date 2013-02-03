@@ -1,8 +1,9 @@
 using System.Web;
 
 using Microsoft.Practices.Unity;
+using Unity.WebForms;
 
-[assembly: WebActivator.PostApplicationStartMethod(typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart")]
+[assembly: WebActivator.PostApplicationStartMethod( typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart" )]
 namespace SampleWebApplication.App_Start
 {
 	/// <summary>
@@ -20,7 +21,7 @@ namespace SampleWebApplication.App_Start
 		internal static void PostStart()
 		{
 			IUnityContainer container = new UnityContainer();
-			HttpContext.Current.Application.Add("UnityContainer", container);
+			HttpContext.Current.Application.SetContainer( container );
 
 			RegisterDependencies( container );
 		}
@@ -33,7 +34,9 @@ namespace SampleWebApplication.App_Start
 		{
 			// TODO: Add any dependencies needed here
 			container
-				.RegisterType<Service1, Service1>()
+				// registers Service1 as '1 instance per child container' (new object for each request)
+				.RegisterType<Service1, Service1>( new HierarchicalLifetimeManager() )
+				// registers Service2 as 'new instance per resolution' (each call to resolve = new object)
 				.RegisterType<Service2, Service2>();
 		}
 	}

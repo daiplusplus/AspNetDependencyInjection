@@ -29,7 +29,7 @@ namespace SampleWebApplication
 		/// </returns>
 		public string SayHello()
 		{
-			return _service1.SayHello() + " (Called from Service2)";
+			return string.Format( "{0} (Called from Service2 [Object ID = {1}])", _service1.SayHello(), GetHashCode() );
 		}
 	}
 }

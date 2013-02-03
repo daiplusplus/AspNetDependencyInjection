@@ -14,7 +14,7 @@ namespace SampleWebApplication
 		/// </returns>
 		public string SayHello()
 		{
-			return "Hello from Service 1";
+			return string.Format( "Hello from Service 1 [Object ID = {0}]", GetHashCode() );
 		}
 	}
 }

@@ -7,21 +7,24 @@ This package was inspired by similar packages from DevTrends, specifically:
 * [Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/ "DevTrends Unity.MVC3")
 * [Unity.WCF](http://nuget.org/packages/Unity.Wcf/ "DevTrends Unity.WCF")
 
-The only difference is that this packages is a DLL integration with minimal source code added. The only source file added is to allow the configuration of the Unity container.
+The only difference is that this packages is a DLL integration with minimal source code added. The only source file added is to allow the configuration of the Unity container with your types.
+
 
 ## Current Version
-1.0
+1.2
+
 
 ## NuGet Gallery
 [http://nuget.org/packages/Unity.WebForms](http://nuget.org/packages/Unity.WebForms)
 
-## Usage
 
-### Installation
+## Installation
 	Install-Package Unity.WebForms
 
-### Usage
+## Quick Start
 Once installed, the Unity.WebForms package will have added the necessary dependencies and references to your project along with a (potentially) new folder named `App_Start`. Inside this folder, there will be a new class file named `UnityWebFormsStart.cs`. The registration of any dependencies you have should be done in the `RegisterDependencies( IUnityContainer container )` method.
+
+Detailed information about how this project works can be found in the [wiki][]
 
 ## References / Links
 Here are some of the sources used for building out this pacakge:
@@ -30,8 +33,14 @@ Here are some of the sources used for building out this pacakge:
 * [Unity: How to registerType with a PARAMETER constructor](http://stackoverflow.com/a/4007337)
 * [Unity.MVC3](http://unitymvc3.codeplex.com/) - The linked articles on the bottom helped a lot with infrastructure
 
+
 ## Copyright
-Copyright &copy; 2012 S. Kyle Korndoerfer
+Copyright &copy; 2013 S. Kyle Korndoerfer
+
 
 ## License
 Unity.WebForms is under the MIT license - [http://www.opensource.org/licenses/mit-license](http://www.opensource.org/licenses/mit-license)
+
+
+
+[wiki]:https://bitbucket.org/KyleK/unity.webforms/wiki/
