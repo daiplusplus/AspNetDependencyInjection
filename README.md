@@ -35,7 +35,7 @@ Here are some of the sources used for building out this pacakge:
 
 
 ## Copyright
-Copyright &copy; 2013 S. Kyle Korndoerfer
+Copyright © 2013 S. Kyle Korndoerfer
 
 
 ## License

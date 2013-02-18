@@ -57,7 +57,7 @@ namespace Unity.WebForms
 		/// <param name="e"></param>
 		private void OnPreRequestHandlerExecute( object sender, EventArgs e )
 		{
-			/* static content */
+			/* static content; no need for a container */
 			if ( HttpContext.Current.Handler == null )
 			{
 				return;
