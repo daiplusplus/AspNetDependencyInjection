@@ -2,6 +2,7 @@
 	CodeBehind="Default.aspx.cs" Inherits="SampleWebApplication._Default" %>
 
 <%@ Register src="InjectedControl.ascx" tagName="InjectedControl" tagPrefix="UC" %>
+<%@ Register src="SampleExternalControl.ascx" tagName="SampleExternalControl" tagPrefix="UC" %>
 
 <asp:Content ID="HeaderContent" runat="server" ContentPlaceHolderID="HeadContent">
 </asp:Content>
@@ -20,6 +21,8 @@
 	</fieldset>
 	
 	<UC:InjectedControl runat="server" ID="InjectedUC" />
+
+	<UC:SampleExternalControl runat="server" ID="SampleExternalControl" />
 	
 	<fieldset>
 		<legend>Dynamically generated control; resolved manually</legend>

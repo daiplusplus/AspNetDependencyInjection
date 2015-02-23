@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 
 using Microsoft.Practices.Unity;
+
+using Unity.WebForms.Configuration;
 
 namespace Unity.WebForms
 {
@@ -12,6 +17,9 @@ namespace Unity.WebForms
 	/// </summary>
 	public class UnityHttpModule : IHttpModule
 	{
+		/// <summary>Indicates whether the configuration data has been loaded already or not.</summary>
+		private static bool configurationLoaded = false;
+
 		#region Implementation of IHttpModule
 
 		/// <summary>
@@ -25,6 +33,13 @@ namespace Unity.WebForms
 			context.BeginRequest += ContextOnBeginRequest;
 			context.PreRequestHandlerExecute += OnPreRequestHandlerExecute;
 			context.EndRequest += ContextOnEndRequest;
+
+			// load optional configuration, if present
+			if ( !configurationLoaded && _configuration == null )
+			{
+				_configuration = (UnityWebFormsConfiguration)ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
+				configurationLoaded = true;
+			}
 		}
 
 		/// <summary>
@@ -88,8 +103,8 @@ namespace Unity.WebForms
 				var typeFullName = c.GetType().FullName ?? string.Empty;
 				var baseTypeFullName = c.GetType().BaseType != null ? c.GetType().BaseType.FullName : string.Empty;
 
-				// filter on namespace prefix to avoid attempts to build up system controls
-				if ( !typeFullName.StartsWith( "System" ) || !baseTypeFullName.StartsWith( "System" ) )
+				// filter on namespace prefixes to avoid attempts to build up controls needlessly
+				if ( Prefixes.All( p => !typeFullName.StartsWith( p ) ) && Prefixes.All( p => !baseTypeFullName.StartsWith( p ) ) )
 				{
 					ChildContainer.BuildUp( c.GetType(), c );
 				}
@@ -169,6 +184,45 @@ namespace Unity.WebForms
 			{
 				_childContainer = value;
 				HttpContext.Current.SetChildContainer( value );
+			}
+		}
+
+		/// <summary>
+		///		Backing field for the <see cref="Configuration" /> property.
+		/// </summary>
+		private static UnityWebFormsConfiguration _configuration;
+
+		/// <summary>
+		///		Configuration settings for namespaces to ignore.
+		/// </summary>
+		private UnityWebFormsConfiguration Configuration
+		{
+			get { return _configuration; }
+		}
+
+		/// <summary>Backing field for the list of prefixes to ignore.</summary>
+		private static IList<string> _prefixes;
+
+		/// <summary>Gets the list of namespace prefixes to ignore.</summary>
+		private IList<string> Prefixes
+		{
+			get
+			{
+				if ( _prefixes == null )
+				{
+					//_prefixes = new List<string> { "System" };
+					_prefixes = new List<string>();
+
+					if ( Configuration != null )
+					{
+						foreach ( NamespaceConfigurationElement item in Configuration.Prefixes )
+						{
+							_prefixes.Add( item.Prefix );
+						}
+					}
+				}
+
+				return _prefixes;
 			}
 		}
 

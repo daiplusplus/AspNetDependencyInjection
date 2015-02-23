@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
 		<id>Unity.WebForms</id>
-		<version>1.2.0.0</version>
+		<version>1.3.0.0</version>
 		<authors>S. Kyle Korndoerfer</authors>
 		<owners>S. Kyle Korndoerfer</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -10,8 +10,8 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Dependency Injection in ASP.NET WebForms using Unity.</description>
 		<summary>Dependency Injection in ASP.NET WebForms using Unity.</summary>
-		<releaseNotes>Updated to use a child container per request, stored in the request items collection for dependency resolution on-the-fly. Also listed the pacakge dependencies properly.</releaseNotes>
-		<copyright>Copyright 2013 S. Kyle Korndoerfer</copyright>
+		<releaseNotes>Added ability to specify namespaces to ignore when performing dependency resolution build-up.</releaseNotes>
+		<copyright>Copyright 2013 - 2015 S. Kyle Korndoerfer</copyright>
 		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI</tags>
 		<dependencies>
 			<group>

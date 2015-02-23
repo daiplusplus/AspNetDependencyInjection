@@ -5,3 +5,5 @@ bin/*
 obj/*
 *.user
 *.nupkg
+Backup/*
+packages/*

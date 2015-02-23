@@ -1,13 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms", "Unity.WebForms\Unity.WebForms.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{8D3132E8-858A-49E2-96A7-1F74FCEE2EF2}"
 	ProjectSection(SolutionItems) = preProject
 		nuget\Unity.WebForms.nuspec = nuget\Unity.WebForms.nuspec
 		nuget\Content\App_Start\UnityWebFormsStart.cs.pp = nuget\Content\App_Start\UnityWebFormsStart.cs.pp
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms", "Unity.WebForms\Unity.WebForms.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleWebApplication", "SampleWebApplication\SampleWebApplication.csproj", "{DE9B082C-C377-421F-8B06-16EDCE7B7D03}"
 EndProject
