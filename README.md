@@ -11,7 +11,7 @@ The only difference is that this packages is a DLL integration with minimal sour
 
 
 ## Current Version
-1.2
+1.3
 
 
 ## NuGet Gallery
@@ -35,7 +35,7 @@ Here are some of the sources used for building out this pacakge:
 
 
 ## Copyright
-Copyright © 2013 S. Kyle Korndoerfer
+Copyright © 2013 - 2015 S. Kyle Korndoerfer
 
 
 ## License
