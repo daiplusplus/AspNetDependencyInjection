@@ -3,7 +3,7 @@ using System.Web;
 using Microsoft.Practices.Unity;
 using Unity.WebForms;
 
-[assembly: WebActivator.PostApplicationStartMethod( typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart" )]
+[assembly: WebActivatorEx.PostApplicationStartMethod( typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart" )]
 namespace SampleWebApplication.App_Start
 {
 	/// <summary>
