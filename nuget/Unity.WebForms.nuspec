@@ -2,21 +2,22 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
 		<id>Unity.WebForms</id>
-		<version>1.4.0.0</version>
-		<authors>S. Kyle Korndoerfer</authors>
-		<owners>S. Kyle Korndoerfer</owners>
+		<version>2.0.0.0</version>
+		<authors>S. Kyle Korndoerfer and Dai Rees</authors>
+		<owners>S. Kyle Korndoerfer and Dai Rees</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
-		<projectUrl>https://bitbucket.org/KyleK/unity.webforms/</projectUrl>
+		<projectUrl>https://github.com/Jehoel/Unity.WebForms</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>Dependency Injection in ASP.NET WebForms using Unity.</description>
-		<summary>Dependency Injection in ASP.NET WebForms using Unity.</summary>
-		<releaseNotes>Updated from WebActivator to WebActivatorEx, Unity to v4.0.1, and target .NET Framework to v4.5.</releaseNotes>
-		<copyright>Copyright 2013 - 2015 S. Kyle Korndoerfer</copyright>
-		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI</tags>
+		<description>Dependency Injection in ASP.NET WebForms using Unity and WebObjectActivator.</description>
+		<summary>Dependency Injection in ASP.NET WebForms using Unity and WebObjectActivator.</summary>
+		<releaseNotes>Targets .NET 4.7.2 and Unity 5.11.1.</releaseNotes>
+		<copyright>Copyright 2013 - 2015 S. Kyle Korndoerfer, 2019 Dai Rees</copyright>
+		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor</tags>
 		<dependencies>
 			<group>
-				<dependency id="Unity" version="4.0.1" />
-				<dependency id="WebActivatorEx" version="2.0.6" />
+				<dependency id="Unity" version="5.11.1" />
+				<dependency id="WebActivatorEx" version="2.2.0" />
+				<dependency id="Microsoft.Web.Infrastructure" version="1.0.0" />
 			</group>
 		</dependencies>
 	</metadata>
