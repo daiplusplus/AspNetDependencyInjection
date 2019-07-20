@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Configuration;
 
 namespace Unity.WebForms.Configuration
@@ -15,24 +15,20 @@ namespace Unity.WebForms.Configuration
 
 		/// <summary>Initializes a new instance with the supplied values.</summary>
 		/// <param name="prefix">The namespace prefix to exclude from dependency injection.</param>
-		/// </summary>
+		/// <exception cref="ArgumentException">When <paramref name="prefix"/> is not a valid namespace prefix.</exception>
 		public NamespaceConfigurationElement( String prefix )
 		{
-			Prefix = prefix;
+			this.Prefix = NamespacePrefix.ValidatePrefix( prefix );
 		}
 
-		#region Properties
-
 		/// <summary>The namespace prefix to exclude from injection scanning.</summary>
-		///		The namespace prefix to exclude from injection scanning.
+		/// <exception cref="ArgumentException">When the provided value is not a valid namespace prefix.</exception>
 		[ConfigurationProperty( PrefixKey, DefaultValue = "System", IsKey = true, IsRequired = true )]
-		[StringValidator(MinLength = 3, InvalidCharacters = "!@#$%^&*()+=[{]}\\|;:'\",<>/?~`")]
+		[StringValidator( MinLength = 3, InvalidCharacters = NamespacePrefix.InvalidChars )]
 		public String Prefix
 		{
 			get { return (String)this[PrefixKey]; }
-			set { this[PrefixKey] = value; }
+			set { this[PrefixKey] = NamespacePrefix.ValidatePrefix( value ); }
 		}
-
-		#endregion
 	}
 }

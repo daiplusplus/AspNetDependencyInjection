@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -14,7 +13,19 @@ namespace Unity.WebForms
 	public sealed class UnityHttpModule : IHttpModule
 	{
 		/// <summary>Indicates whether the configuration data has been loaded already or not.</summary>
-		private static bool configurationLoaded = false;
+		private static Boolean _configurationLoaded = false;
+
+		/// <summary>Backing field for the <see cref="ParentContainer"/> property.</summary>
+		private IUnityContainer parentContainer;
+
+		/// <summary>Backing field for the <see cref="ChildContainer"/> property.</summary>
+		private IUnityContainer childContainer;
+
+		/// <summary>Backing field for the <see cref="Configuration" /> property.</summary>
+		private static UnityWebFormsConfiguration _configuration;
+
+		/// <summary>Backing field for the list of prefixes to ignore.</summary>
+		private static IReadOnlyList<NamespacePrefix> _prefixes;
 
 		#region Implementation of IHttpModule
 
@@ -29,10 +40,16 @@ namespace Unity.WebForms
 			context.EndRequest               += this.ContextOnEndRequest;
 
 			// load optional configuration, if present
-			if ( !configurationLoaded && _configuration == null )
+			if( !_configurationLoaded && _configuration == null )
 			{
 				_configuration = (UnityWebFormsConfiguration)ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
-				configurationLoaded = true;
+
+				_prefixes = _configuration.Prefixes
+					.OfType<NamespaceConfigurationElement>()
+					.Select( el => new NamespacePrefix( el.Prefix ) )
+					.ToList();
+
+				_configurationLoaded = true;
 			}
 		}
 
@@ -46,7 +63,7 @@ namespace Unity.WebForms
 		#region Life-cycle event handlers
 
 		/// <summary>Initializes a new child container at the beginning of each request.</summary>
-		private void ContextOnBeginRequest( object sender, EventArgs e )
+		private void ContextOnBeginRequest( Object sender, EventArgs e )
 		{
 			this.ChildContainer = this.ParentContainer.CreateChildContainer();
 		}
@@ -73,15 +90,18 @@ namespace Unity.WebForms
 		/// <summary>Build-up each control in the page's control tree.</summary>
 		private void OnPageInitComplete( Object sender, EventArgs e )
 		{
+			if( _prefixes == null ) throw new InvalidOperationException( "This " + nameof(UnityHttpModule) + " instance has not been initialized." );
+
 			Page page = (Page)sender;
 
-			foreach ( Control c in GetControlTree( page ) )
+			foreach( Control c in GetControlTree( page ) )
 			{
 				String typeFullName     = c.GetType().FullName           ?? String.Empty;
 				String baseTypeFullName = c.GetType().BaseType?.FullName ?? String.Empty;
 
 				// filter on namespace prefixes to avoid attempts to build up controls needlessly
-				if ( this.Prefixes.All( p => !typeFullName.StartsWith( p ) ) && this.Prefixes.All( p => !baseTypeFullName.StartsWith( p ) ) )
+				Boolean controlIsMatchedByAPrefix = _prefixes.Any( p => p.Matches( typeFullName ) || p.Matches( baseTypeFullName ) );
+				if( !controlIsMatchedByAPrefix )
 				{
 					this.ChildContainer.BuildUp( c.GetType(), c );
 				}
@@ -89,9 +109,9 @@ namespace Unity.WebForms
 		}
 
 		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
-		private void ContextOnEndRequest( object sender, EventArgs e )
+		private void ContextOnEndRequest( Object sender, EventArgs e )
 		{
-			if ( this.ChildContainer != null )
+			if( this.ChildContainer != null )
 			{
 				this.ChildContainer.Dispose();
 			}
@@ -125,23 +145,13 @@ namespace Unity.WebForms
 
 		#endregion
 
-		#region Properties
-
-		/// <summary>Backing field for the <see cref="ParentContainer"/> property.</summary>
-		private IUnityContainer parentContainer;
-
 		/// <summary>Gets the parent container out of the application state.</summary>
 		private IUnityContainer ParentContainer
 		{
 			get { return this.parentContainer ?? ( this.parentContainer = HttpContext.Current.Application.GetContainer() ); }
 		}
 
-		/// <summary>Backing field for the <see cref="ChildContainer"/> property.</summary>
-		private IUnityContainer childContainer;
-
-		/// <summary>
-		///  Gets/sets the child container for the current request.
-		/// </summary>
+		/// <summary>Gets/sets the child container for the current request.</summary>
 		private IUnityContainer ChildContainer
 		{
 			get
@@ -154,42 +164,5 @@ namespace Unity.WebForms
 				HttpContext.Current.SetChildContainer( value );
 			}
 		}
-
-		/// <summary>Backing field for the <see cref="Configuration" /> property.</summary>
-		private static UnityWebFormsConfiguration _configuration;
-
-		/// <summary>Configuration settings for namespaces to ignore.</summary>
-		private UnityWebFormsConfiguration Configuration
-		{
-			get { return _configuration; }
-		}
-
-		/// <summary>Backing field for the list of prefixes to ignore.</summary>
-		private static IList<String> _prefixes;
-
-		/// <summary>Gets the list of namespace prefixes to ignore.</summary>
-		private IList<String> Prefixes
-		{
-			get
-			{
-				if ( _prefixes == null )
-				{
-					//_prefixes = new List<string> { "System" };
-					_prefixes = new List<string>();
-
-					if ( this.Configuration != null )
-					{
-						foreach ( NamespaceConfigurationElement item in this.Configuration.Prefixes )
-						{
-							_prefixes.Add( item.Prefix );
-						}
-					}
-				}
-
-				return _prefixes;
-			}
-		}
-
-		#endregion
 	}
 }

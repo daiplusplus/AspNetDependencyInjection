@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Configuration\IgnoreNamespaceConfigurationCollection.cs" />
     <Compile Include="Configuration\NamespaceConfigurationElement.cs" />
+    <Compile Include="Configuration\NamespacePrefix.cs" />
     <Compile Include="Configuration\UnityWebFormsConfiguration.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="PreApplicationStart.cs" />
