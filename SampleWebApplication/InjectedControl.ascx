@@ -4,6 +4,6 @@
 <fieldset>
     <legend>Injected User Control</legend>
     
-    <p>Service 1 = <%= InjectedService1.SayHello() %></p>
-    <p>Service 2 = <%= InjectedService2.SayHello() %></p>
+    <p>Service 1 = <%: InjectedService1.SayHello() %></p>
+    <p>Service 2 = <%: InjectedService2.SayHello() %></p>
 </fieldset>

@@ -19,8 +19,8 @@
 	<fieldset>
 		<legend>Injected Page</legend>
 		
-		<p>Service 1: <%= InjectedService1.SayHello() %></p>
-		<p>Service 2: <%= InjectedService2.SayHello() %></p>
+		<p>Service 1: <%: InjectedService1.SayHello() %></p>
+		<p>Service 2: <%: InjectedService2.SayHello() %></p>
 	</fieldset>
 	
 	<hr />
