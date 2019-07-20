@@ -1,13 +1,13 @@
-using System.Web;
+
+using SampleWebApplication;
 
 using Unity;
 using Unity.Lifetime;
 using Unity.WebForms;
 
 using WebActivatorEx;
-using SampleWebApplication;
 
-[assembly: PostApplicationStartMethod( typeof(SampleApplicationUnityWebFormsStart), methodName: nameof(SampleApplicationUnityWebFormsStart.PostStart) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationUnityWebFormsStart ), methodName: nameof( SampleApplicationUnityWebFormsStart.PostStart ) )]
 
 namespace SampleWebApplication
 {
@@ -40,7 +40,6 @@ namespace SampleWebApplication
 				.RegisterType<Service2, Service2>()
 				.RegisterRequest<IExampleRequestLifelongService,ExampleRequestLifelongService>()
 				.RegisterRequest<Service4>();
-			
 		}
 	}
 }
