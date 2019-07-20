@@ -84,7 +84,8 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="InjectedControl.ascx" />
-    <Content Include="SampleExternalControl.ascx" />
+    <Content Include="SampleExcludedExternalControl.ascx" />
+    <Content Include="SampleIncludedExternalControl.ascx" />
     <Content Include="Styles\Site.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
@@ -125,15 +126,24 @@
       <DependentUpon>InjectedControl.ascx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleExternalControl.ascx.cs">
-      <DependentUpon>SampleExternalControl.ascx</DependentUpon>
+    <Compile Include="SampleExcludedExternalControl.ascx.cs">
+      <DependentUpon>SampleExcludedExternalControl.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="SampleExternalControl.ascx.designer.cs">
-      <DependentUpon>SampleExternalControl.ascx</DependentUpon>
+    <Compile Include="SampleExcludedExternalControl.ascx.designer.cs">
+      <DependentUpon>SampleExcludedExternalControl.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleIncludedExternalControl.ascx.cs">
+      <DependentUpon>SampleIncludedExternalControl.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleIncludedExternalControl.ascx.designer.cs">
+      <DependentUpon>SampleIncludedExternalControl.ascx</DependentUpon>
     </Compile>
     <Compile Include="Service1.cs" />
     <Compile Include="Service2.cs" />
+    <Compile Include="Service3.cs" />
+    <Compile Include="Service4.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
