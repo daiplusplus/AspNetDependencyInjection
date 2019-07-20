@@ -1,8 +1,8 @@
 ﻿using System;
 
-using Microsoft.Practices.Unity;
-
 using SampleWebApplication;
+
+using Unity;
 
 namespace Foo.SampleWebApplication
 {

@@ -6,8 +6,6 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 
-using Microsoft.Practices.Unity;
-
 using Unity.WebForms.Configuration;
 
 namespace Unity.WebForms

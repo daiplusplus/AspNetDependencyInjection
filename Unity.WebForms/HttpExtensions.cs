@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Web;
 
-using Microsoft.Practices.Unity;
-
 namespace Unity.WebForms
 {
 	/// <summary>

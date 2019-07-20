@@ -1,6 +1,7 @@
 using System.Web;
 
-using Microsoft.Practices.Unity;
+using Unity;
+using Unity.Lifetime;
 using Unity.WebForms;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod( typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart" )]
