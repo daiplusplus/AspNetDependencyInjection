@@ -10,7 +10,7 @@
 namespace SampleWebApplication {
     
     
-    public partial class _Default {
+    public partial class DefaultPage {
         
         /// <summary>
         /// InjectedUC control.

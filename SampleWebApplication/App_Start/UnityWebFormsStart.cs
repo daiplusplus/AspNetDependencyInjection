@@ -4,32 +4,31 @@ using Unity;
 using Unity.Lifetime;
 using Unity.WebForms;
 
-[assembly: WebActivatorEx.PostApplicationStartMethod( typeof(SampleWebApplication.App_Start.UnityWebFormsStart), "PostStart" )]
-namespace SampleWebApplication.App_Start
+using WebActivatorEx;
+using SampleWebApplication;
+
+[assembly: PostApplicationStartMethod( typeof(SampleApplicationUnityWebFormsStart), methodName: nameof(SampleApplicationUnityWebFormsStart.PostStart) )]
+
+namespace SampleWebApplication
 {
-	/// <summary>
-	///		Startup class for the Unity.WebForms NuGet package.
-	/// </summary>
-	internal static class UnityWebFormsStart
+	/// <summary>Startup class for the Unity.WebForms NuGet package.</summary>
+	internal static class SampleApplicationUnityWebFormsStart
 	{
-		/// <summary>
-		///     Initializes the unity container when the application starts up.
-		/// </summary>
-		/// <remarks>
-		///		Do not edit this method. Perform any modifications in the
-		///		<see cref="RegisterDependencies" /> method.
-		/// </remarks>
+		private static WebFormsUnityContainerOwner _containerOwner;
+
+		/// <summary>Initializes the unity container when the application starts up.</summary>
+		/// <remarks>Do not edit this method. Perform any modifications in the <see cref="RegisterDependencies" /> method.</remarks>
 		internal static void PostStart()
 		{
-			IUnityContainer container = new UnityContainer();
-			HttpContext.Current.Application.SetApplicationContainer( container );
+			IUnityContainer rootContainer = new UnityContainer();
 
-			RegisterDependencies( container );
+			RegisterDependencies( rootContainer );
+
+			_containerOwner = new WebFormsUnityContainerOwner( rootContainer );
+			_containerOwner.Install();
 		}
 
-		/// <summary>
-		///		Registers dependencies in the supplied container.
-		/// </summary>
+		/// <summary>Registers dependencies in the supplied container.</summary>
 		/// <param name="container">Instance of the container to populate.</param>
 		private static void RegisterDependencies( IUnityContainer container )
 		{
@@ -38,7 +37,10 @@ namespace SampleWebApplication.App_Start
 				// registers Service1 as '1 instance per child container' (new object for each request)
 				.RegisterType<Service1, Service1>( new HierarchicalLifetimeManager() )
 				// registers Service2 as 'new instance per resolution' (each call to resolve = new object)
-				.RegisterType<Service2, Service2>();
+				.RegisterType<Service2, Service2>()
+				.RegisterRequest<IExampleRequestLifelongService,ExampleRequestLifelongService>()
+				.RegisterRequest<Service4>();
+			
 		}
 	}
 }

@@ -142,6 +142,8 @@
     </Compile>
     <Compile Include="Service1.cs" />
     <Compile Include="Service2.cs" />
+    <Compile Include="Service3.cs" />
+    <Compile Include="Service4.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

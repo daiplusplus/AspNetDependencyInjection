@@ -1,5 +1,4 @@
-﻿<%@ Page Title="Home Page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true"
-	CodeBehind="Default.aspx.cs" Inherits="SampleWebApplication._Default" %>
+﻿<%@ Page Title="Home Page" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SampleWebApplication.DefaultPage" %>
 
 <%@ Register src="InjectedControl.ascx" tagName="InjectedControl" tagPrefix="UC" %>
 <%@ Register src="SampleExcludedExternalControl.ascx" tagName="SampleExcludedExternalControl" tagPrefix="UC" %>
@@ -17,10 +16,19 @@
 	<hr />
 
 	<fieldset>
+		<legend>Request-lifetime service</legend>
+
+		<p><code><%: this.InjectedService3.ToString() %></code></p>
+
+	</fieldset>
+
+	<hr />
+
+	<fieldset>
 		<legend>Injected Page</legend>
 		
-		<p>Service 1: <%: InjectedService1.SayHello() %></p>
-		<p>Service 2: <%: InjectedService2.SayHello() %></p>
+		<p>Service 1: <%: this.InjectedService1.SayHello() %></p>
+		<p>Service 2: <%: this.InjectedService2.SayHello() %></p>
 	</fieldset>
 	
 	<hr />
