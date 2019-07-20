@@ -71,6 +71,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unity.WebForms\UnityContainerServiceProvider.cs" />
     <Compile Include="Unity.WebForms\UnityHttpModule.cs" />
+    <Compile Include="Unity.WebForms\WebFormsUnityContainerOwner.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

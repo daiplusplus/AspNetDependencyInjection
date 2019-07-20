@@ -9,7 +9,7 @@ using Unity.WebForms.Configuration;
 
 namespace Unity.WebForms
 {
-	/// <summary>HttpModule that maintains a Unity container per request for dependency resolution.</summary>
+	/// <summary>HttpModule that establishes <see cref="IUnityContainer"/> container instances for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
 	public sealed class UnityHttpModule : IHttpModule
 	{
 		/// <summary>Indicates whether the configuration data has been loaded already or not.</summary>
@@ -21,10 +21,8 @@ namespace Unity.WebForms
 		#region Implementation of IHttpModule
 
 		/// <summary>Initializes a module and prepares it to handle requests.</summary>
-		/// <param name="context">An <see cref="T:System.Web.HttpApplication"/>
-		///		that provides access to the methods, properties, and events 
-		///		common to all application objects within an ASP.NET application.</param>
-		public void Init( HttpApplication context )
+		/// <param name="httpApplication">An <see cref="T:System.Web.HttpApplication"/> to associated with the root container.</param>
+		public void Init( HttpApplication httpApplication )
 		{
 			// Note that IHttpModule.Init can be called multiple times as the ASP.NET runtime will pool HttpApplication instances in the same process:
 			// https://stackoverflow.com/questions/1140915/httpmodule-init-method-is-called-several-times-why
@@ -42,9 +40,13 @@ namespace Unity.WebForms
 				_configurationLoaded = true;
 			}
 
-			context.BeginRequest             += this.OnContextBeginRequest;
-			context.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
-			context.EndRequest               += this.OnContextEndRequest;
+			if( StaticWebFormsUnityContainerOwner.RootContainer == null ) throw new InvalidOperationException( "No Unity container has been installed as the root container." );
+
+			httpApplication.SetApplicationContainer( StaticWebFormsUnityContainerOwner.RootContainer );
+
+			httpApplication.BeginRequest             += this.OnContextBeginRequest;
+			httpApplication.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
+			httpApplication.EndRequest               += this.OnContextEndRequest;
 		}
 
 		/// <summary>This method does nothing.</summary>
@@ -61,7 +63,7 @@ namespace Unity.WebForms
 		{
 			HttpApplication httpApplication = (HttpApplication)sender;
 
-			IUnityContainer applicationContainer = httpApplication.Context.Application.GetApplicationContainer();
+			IUnityContainer applicationContainer = httpApplication.GetApplicationContainer();
 			
 			IUnityContainer childContainer = applicationContainer.CreateChildContainer();
 
