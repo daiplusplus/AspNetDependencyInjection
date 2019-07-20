@@ -21,7 +21,7 @@ namespace Unity.WebForms.Configuration
 
 			if( String.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( message: "Namespace was empty or white-space after trimming.", paramName: nameof(prefix) );
 
-			if( prefix.Any( c => _invalidChars.Contains( c ) ) ) throw new ArgumentException( message: "Value contains an invalid character.", paramName: nameof(prefix) );
+			if( prefix.Any( c => _invalidChars.Contains( c ) || Char.IsWhiteSpace( c ) ) ) throw new ArgumentException( message: "Value contains an invalid character or whitespace.", paramName: nameof(prefix) );
 
 			return prefix;
 		}
