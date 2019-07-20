@@ -22,13 +22,22 @@ namespace SampleWebApplication {
         protected global::SampleWebApplication.InjectedControl InjectedUC;
         
         /// <summary>
-        /// SampleExternalControl control.
+        /// SampleExcludedExternalControl control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::Foo.SampleWebApplication.SampleExternalControl SampleExternalControl;
+        protected global::ExcludedNamespace.SampleWebApplication.SampleExcludedExternalControl SampleExcludedExternalControl;
+        
+        /// <summary>
+        /// SampleIncludedExternalControl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::IncludedNamespace.SampleWebApplication.SampleIncludedExternalControl SampleIncludedExternalControl;
         
         /// <summary>
         /// DynamicInjectedControl control.
