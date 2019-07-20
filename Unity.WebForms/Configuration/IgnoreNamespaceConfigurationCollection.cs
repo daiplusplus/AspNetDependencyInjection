@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 
 namespace Unity.WebForms.Configuration
 {
@@ -11,8 +12,8 @@ namespace Unity.WebForms.Configuration
 	{
 		public IgnoreNamespaceConfigurationCollection()
 		{
-			var element = new NamespaceConfigurationElement();
-			BaseAdd( element, true );
+			NamespaceConfigurationElement element = new NamespaceConfigurationElement();
+			this.BaseAdd( element, true );
 		}
 
 		#region ConfigurationElementCollection implementation
@@ -27,54 +28,57 @@ namespace Unity.WebForms.Configuration
 			return new NamespaceConfigurationElement();
 		}
 
-		protected override object GetElementKey(ConfigurationElement element)
+		protected override Object GetElementKey( ConfigurationElement element )
 		{
-			return ((NamespaceConfigurationElement) element).Prefix;
+			return ( (NamespaceConfigurationElement)element ).Prefix;
 		}
 
-		protected override void BaseAdd(ConfigurationElement element)
+		protected override void BaseAdd( ConfigurationElement element )
 		{
-			BaseAdd (element, true );
+			this.BaseAdd( element, true );
 		}
 
 		#endregion
 
-		public new NamespaceConfigurationElement this[string key]
+		public new NamespaceConfigurationElement this[String key]
 		{
-			get { return (NamespaceConfigurationElement) BaseGet(key); }
-		}
-
-		public int IndexOf(NamespaceConfigurationElement element)
-		{
-			return BaseIndexOf(element);
-		}
-
-		public void Add(NamespaceConfigurationElement element)
-		{
-			BaseAdd(element);
-		}
-
-		public void Remove(NamespaceConfigurationElement element)
-		{
-			if (BaseIndexOf(element) >= 0)
+			get
 			{
-				BaseRemove( element.Prefix );
+				return (NamespaceConfigurationElement)this.BaseGet( key );
 			}
 		}
 
-		public void RemoveAt(int index)
+		public Int32 IndexOf( NamespaceConfigurationElement element )
 		{
-			BaseRemoveAt(index);
+			return this.BaseIndexOf( element );
 		}
 
-		public void Remove(string key)
+		public void Add( NamespaceConfigurationElement element )
 		{
-			BaseRemove(key);
+			this.BaseAdd( element );
+		}
+
+		public void Remove( NamespaceConfigurationElement element )
+		{
+			if( this.BaseIndexOf( element ) >= 0 )
+			{
+				this.BaseRemove( element.Prefix );
+			}
+		}
+
+		public void RemoveAt( Int32 index )
+		{
+			this.BaseRemoveAt( index );
+		}
+
+		public void Remove( String key )
+		{
+			this.BaseRemove( key );
 		}
 
 		public void Clear()
 		{
-			BaseClear();
+			this.BaseClear();
 		}
 	}
 }

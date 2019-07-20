@@ -1,41 +1,35 @@
-﻿using System.Configuration;
+using System;
+using System.Configuration;
 
 namespace Unity.WebForms.Configuration
 {
-	/// <summary>
-	///		Defines an individual namespace element for exclusion when 
-	///		performing dependency injection.
-	/// </summary>
+	/// <summary>Defines an individual namespace element for exclusion when performing dependency injection.</summary>
 	public class NamespaceConfigurationElement : ConfigurationElement
 	{
-		private const string PrefixKey = "prefix";
+		private const String PrefixKey = "prefix";
 
-		/// <summary>
-		///		Initializes a new, empty, instance.
-		/// </summary>
+		/// <summary>Initializes a new, empty, instance.</summary>
 		public NamespaceConfigurationElement()
 		{
 		}
 
-		/// <summary>
-		///		Initializes a new instance with the supplied values.
+		/// <summary>Initializes a new instance with the supplied values.</summary>
+		/// <param name="prefix">The namespace prefix to exclude from dependency injection.</param>
 		/// </summary>
-		/// <param name="prefix"></param>
-		public NamespaceConfigurationElement( string prefix )
+		public NamespaceConfigurationElement( String prefix )
 		{
 			Prefix = prefix;
 		}
 
 		#region Properties
 
-		/// <summary>
+		/// <summary>The namespace prefix to exclude from injection scanning.</summary>
 		///		The namespace prefix to exclude from injection scanning.
-		/// </summary>
 		[ConfigurationProperty( PrefixKey, DefaultValue = "System", IsKey = true, IsRequired = true )]
 		[StringValidator(MinLength = 3, InvalidCharacters = "!@#$%^&*()+=[{]}\\|;:'\",<>/?~`")]
-		public string Prefix
+		public String Prefix
 		{
-			get { return (string)this[PrefixKey]; }
+			get { return (String)this[PrefixKey]; }
 			set { this[PrefixKey] = value; }
 		}
 
