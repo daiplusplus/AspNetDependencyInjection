@@ -12,11 +12,11 @@ The only difference is that this packages is a DLL integration with minimal sour
 This particular repo (at https://github.com/Jehoel/Unity.WebForms) is a git fork of S. Kyle Korndoerfer's original project at https://bitbucket.org/KyleK/unity.webforms with a main objective of supporting ASP.NET WebForms 4.7.2's `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true constructor dependency injection.
 
 This repo's objectives are:
-* Update to .NET Framework 4.7.2
-* Update existing dependencies, including Unity 5
-* Add in support for WebObjectActivator, as per Microsoft's example at https://github.com/aspnet/AspNetWebFormsDependencyInjection
-* Update the sample project
-* Publish to NuGet (under a different name)
+* Update to .NET Framework 4.7.2 (done)
+* Update existing dependencies, including Unity 5 (done)
+* Add in support for WebObjectActivator, as per Microsoft's example at https://github.com/aspnet/AspNetWebFormsDependencyInjection (done)
+* Update the sample project (done)
+* Publish to NuGet (under a different name) (TODO)
 
 ## Current Version
 * 1.4 (right before .NET 4.7.2 support)
@@ -28,7 +28,9 @@ This repo's objectives are:
 
 [http://nuget.org/packages/Unity.WebForms](http://nuget.org/packages/Unity.WebForms)
 
-### Version 2 (.NET 4.5, no support for WebObjectActivator)
+### Version 2.0 (.NET 4.7.2, with support for WebObjectActivator)
+
+
 
 ## Installation
 	Install-Package Unity.WebForms
@@ -47,12 +49,11 @@ Here are some of the sources used for building out this pacakge:
 
 
 ## Copyright
-Copyright © 2013 - 2015 S. Kyle Korndoerfer
+* Copyright 2013 - 2015 S. Kyle Korndoerfer
+* Copyright 2019 Dai Rees ( https://github.com/Jehoel )
 
 
 ## License
 Unity.WebForms is under the MIT license - [http://www.opensource.org/licenses/mit-license](http://www.opensource.org/licenses/mit-license)
-
-
 
 [wiki]:https://bitbucket.org/KyleK/unity.webforms/wiki/
