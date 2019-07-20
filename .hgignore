@@ -1,9 +1,0 @@
-syntax: glob
-*.suo
-_ReSharper.*
-bin/*
-obj/*
-*.user
-*.nupkg
-Backup/*
-packages/*

@@ -9,14 +9,26 @@ This package was inspired by similar packages from DevTrends, specifically:
 
 The only difference is that this packages is a DLL integration with minimal source code added. The only source file added is to allow the configuration of the Unity container with your types.
 
+This particular repo (at https://github.com/Jehoel/Unity.WebForms) is a git fork of S. Kyle Korndoerfer's original project at https://bitbucket.org/KyleK/unity.webforms with a main objective of supporting ASP.NET WebForms 4.7.2's `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true constructor dependency injection.
+
+This repo's objectives are:
+* Update to .NET Framework 4.7.2
+* Update existing dependencies, including Unity 5
+* Add in support for WebObjectActivator, as per Microsoft's example at https://github.com/aspnet/AspNetWebFormsDependencyInjection
+* Update the sample project
+* Publish to NuGet (under a different name)
 
 ## Current Version
-1.3
-
+* 1.4 (right before .NET 4.7.2 support)
+* 2.0 (this repo and project)
 
 ## NuGet Gallery
+
+### Version 1.4 (.NET 4.5, no support for WebObjectActivator)
+
 [http://nuget.org/packages/Unity.WebForms](http://nuget.org/packages/Unity.WebForms)
 
+### Version 2 (.NET 4.5, no support for WebObjectActivator)
 
 ## Installation
 	Install-Package Unity.WebForms
