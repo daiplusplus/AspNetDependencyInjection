@@ -40,13 +40,22 @@ namespace Unity.WebForms
 				_configurationLoaded = true;
 			}
 
-			if( StaticWebFormsUnityContainerOwner.RootContainer == null ) throw new InvalidOperationException( "No Unity container has been installed as the root container." );
-
-			httpApplication.SetApplicationContainer( StaticWebFormsUnityContainerOwner.RootContainer );
+			// These event hookups have to be done on every HttpApplication instance, even if the RootContainer isn't set yet - otherwise the event-handlers will never be invoked.
 
 			httpApplication.BeginRequest             += this.OnContextBeginRequest;
 			httpApplication.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
 			httpApplication.EndRequest               += this.OnContextEndRequest;
+
+			if( StaticWebFormsUnityContainerOwner.RootContainer == null )
+			{
+				// TODO: Is it possible to detect if a HttpApplication instance is 'special' or not?
+				// Because if this is not a 'special' HttpApplication then this method should throw an exception complaining that `StaticWebFormsUnityContainerOwner.RootContainer == null`.
+				//return;
+			}
+			else
+			{
+				httpApplication.SetApplicationContainer( StaticWebFormsUnityContainerOwner.RootContainer );
+			}
 		}
 
 		/// <summary>This method does nothing.</summary>

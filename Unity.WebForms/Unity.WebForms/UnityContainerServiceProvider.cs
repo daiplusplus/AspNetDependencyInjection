@@ -47,13 +47,34 @@ namespace Unity.WebForms
 			Object resolvedInstance;
 			try
 			{
-				resolvedInstance = this.container.Resolve( serviceType );
-				if( resolvedInstance != null ) return resolvedInstance;
+				HttpContext httpContext = HttpContext.Current;
+				if( httpContext != null && httpContext.TryGetChildContainer( out IUnityContainer childContainer ) )
+				{
+					// The `TryGetChildContainer` is used here when handling 'special' HttpApplication lifetimes. If the Child-Container isn't available then this GetService method isn't being called inside a HTTP request context.
+					resolvedInstance = childContainer.Resolve( serviceType );
+					if( resolvedInstance != null )
+					{
+						return resolvedInstance;
+					}
+				}
+				else
+				{
+					System.Diagnostics.Trace.WriteLine( "HttpContext.Current is null." );
+				}
+
+				resolvedInstance = this.container.Resolve( serviceType );				
+
+				if( resolvedInstance != null )
+				{
+					return resolvedInstance;
+				}
 			}
 			catch( ResolutionFailedException )
 			{
 				// Ignore and continue to the fallback IServiceProvider.
 			}
+
+			System.Diagnostics.Trace.WriteLine( "Could not resolve " + serviceType.FullName + "." );
 
 			if( this.next != null )
 			{

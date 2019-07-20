@@ -42,6 +42,12 @@ namespace Unity.WebForms
 			}
 		}
 
+		public static Boolean TryGetChildContainer( this HttpContext context, out IUnityContainer childContainer )
+		{
+			childContainer = context.Items[ RequestContainerKey ] as IUnityContainer;
+			return childContainer != null;
+		}
+
 		/// <summary>Gets the child container instance out of request state. Throws <see cref="InvalidOperationException"/> if the root container has not yet been set.</summary>
 		/// <param name="context">The current request context.</param>
 		/// <returns>The child Unity container reference.</returns>

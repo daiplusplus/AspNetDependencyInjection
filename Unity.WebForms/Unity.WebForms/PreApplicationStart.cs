@@ -1,6 +1,10 @@
 ﻿using System;
 
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+using WebActivatorEx;
+
+// Register the HttpModule on application start
+[assembly: PreApplicationStartMethod( typeof(Unity.WebForms.PreApplicationStart), nameof(Unity.WebForms.PreApplicationStart.PreStart) )]
 
 namespace Unity.WebForms
 {
