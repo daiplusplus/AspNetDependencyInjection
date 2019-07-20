@@ -18,7 +18,7 @@ namespace Unity.WebForms
 		/// <summary>Gets the container instance out of application state, creating it if necessary.</summary>
 		/// <param name="appState">The application state instance.</param>
 		/// <returns>The Unity container instance.</returns>
-		public static IUnityContainer GetContainer( this HttpApplicationState appState )
+		public static IUnityContainer GetApplicationContainer( this HttpApplicationState appState )
 		{
 			IUnityContainer myContainer = appState[GlobalContainerKey] as IUnityContainer;
 
@@ -43,7 +43,7 @@ namespace Unity.WebForms
 		/// <summary>Stores a Unity container instance into application state.</summary>
 		/// <param name="appState">The application state instance.</param>
 		/// <param name="container">The Unity container instance to store.</param>
-		public static void SetContainer( this HttpApplicationState appState, IUnityContainer container )
+		public static void SetApplicationContainer( this HttpApplicationState appState, IUnityContainer container )
 		{
 			appState.Lock();
 
@@ -68,7 +68,7 @@ namespace Unity.WebForms
 			{
 				lock( _thisLock )
 				{
-					childContainer = GetContainer( context.Application ).CreateChildContainer();
+					childContainer = GetApplicationContainer( context.Application ).CreateChildContainer();
 					context.SetChildContainer( childContainer );
 				}
 			}

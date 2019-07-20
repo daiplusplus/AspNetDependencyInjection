@@ -15,17 +15,8 @@ namespace Unity.WebForms
 		/// <summary>Indicates whether the configuration data has been loaded already or not.</summary>
 		private static Boolean _configurationLoaded = false;
 
-		/// <summary>Backing field for the <see cref="ParentContainer"/> property.</summary>
-		private IUnityContainer parentContainer;
-
-		/// <summary>Backing field for the <see cref="ChildContainer"/> property.</summary>
-		private IUnityContainer childContainer;
-
-		/// <summary>Backing field for the <see cref="Configuration" /> property.</summary>
-		private static UnityWebFormsConfiguration _configuration;
-
 		/// <summary>Backing field for the list of prefixes to ignore.</summary>
-		private static IReadOnlyList<NamespacePrefix> _prefixes;
+		private static IReadOnlyList<NamespacePrefix> _ignoreNamespacePrefixes;
 
 		#region Implementation of IHttpModule
 
@@ -35,26 +26,29 @@ namespace Unity.WebForms
 		///		common to all application objects within an ASP.NET application.</param>
 		public void Init( HttpApplication context )
 		{
-			context.BeginRequest             += this.ContextOnBeginRequest;
-			context.PreRequestHandlerExecute += this.OnPreRequestHandlerExecute;
-			context.EndRequest               += this.ContextOnEndRequest;
+			// Note that IHttpModule.Init can be called multiple times as the ASP.NET runtime will pool HttpApplication instances in the same process:
+			// https://stackoverflow.com/questions/1140915/httpmodule-init-method-is-called-several-times-why
 
-			// load optional configuration, if present
-			if( !_configurationLoaded && _configuration == null )
+			// Lazily optional configuration:
+			if( !_configurationLoaded )
 			{
-				_configuration = (UnityWebFormsConfiguration)ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
+				UnityWebFormsConfiguration configuration = (UnityWebFormsConfiguration)ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
 
-				_prefixes = _configuration.Prefixes
+				_ignoreNamespacePrefixes = configuration.Prefixes
 					.OfType<NamespaceConfigurationElement>()
 					.Select( el => new NamespacePrefix( el.Prefix ) )
 					.ToList();
 
 				_configurationLoaded = true;
 			}
+
+			context.BeginRequest             += this.OnContextBeginRequest;
+			context.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
+			context.EndRequest               += this.OnContextEndRequest;
 		}
 
-		/// <summary>Disposes of the resources (other than memory) used by the module that implements <see cref="T:System.Web.IHttpModule"/>.</summary>
-		public void Dispose()
+		/// <summary>This method does nothing.</summary>
+		void IHttpModule.Dispose()
 		{
 		}
 
@@ -63,36 +57,48 @@ namespace Unity.WebForms
 		#region Life-cycle event handlers
 
 		/// <summary>Initializes a new child container at the beginning of each request.</summary>
-		private void ContextOnBeginRequest( Object sender, EventArgs e )
+		private void OnContextBeginRequest( Object sender, EventArgs e )
 		{
-			this.ChildContainer = this.ParentContainer.CreateChildContainer();
+			HttpApplication httpApplication = (HttpApplication)sender;
+
+			IUnityContainer applicationContainer = httpApplication.Context.Application.GetApplicationContainer();
+			
+			IUnityContainer childContainer = applicationContainer.CreateChildContainer();
+
+			httpApplication.Context.SetChildContainer( childContainer );
 		}
 
 		/// <summary>Registers the injection event to fire when the page has been initialized.</summary>
-		private void OnPreRequestHandlerExecute( Object sender, EventArgs e )
+		private void OnContextPreRequestHandlerExecute( Object sender, EventArgs e )
 		{
-			/* static content; no need for a container */
-			if( HttpContext.Current.Handler == null )
+			HttpApplication httpApplication = (HttpApplication)sender;
+
+			IHttpHandler handler = httpApplication.Context.Handler;
+
+			/* No hander means static content; so no need for a container */
+			if( handler == null )
 			{
 				return;
 			}
-
-			IHttpHandler handler = HttpContext.Current.Handler;
-			this.ChildContainer.BuildUp( handler.GetType(), handler );
+			
+			IUnityContainer childContainer = httpApplication.Context.GetChildContainer();
+			childContainer.BuildUp( t: handler.GetType(), existing: handler );
 
 			// User controls are ready to be built up after the page initialization in complete
 			if( handler is Page page )
 			{
-				page.InitComplete += this.OnPageInitComplete;
+				page.InitComplete += ( Object icSender, EventArgs icEventArgs ) => this.OnPageInitComplete( icSender, icEventArgs, httpApplication.Context );
 			}
 		}
 
 		/// <summary>Build-up each control in the page's control tree.</summary>
-		private void OnPageInitComplete( Object sender, EventArgs e )
+		private void OnPageInitComplete( Object sender, EventArgs e, HttpContext httpContext )
 		{
-			if( _prefixes == null ) throw new InvalidOperationException( "This " + nameof(UnityHttpModule) + " instance has not been initialized." );
+			if( _ignoreNamespacePrefixes == null ) throw new InvalidOperationException( "This " + nameof(UnityHttpModule) + " instance has not been initialized." );
 
 			Page page = (Page)sender;
+
+			IUnityContainer childContainer = httpContext.GetChildContainer();
 
 			foreach( Control c in GetControlTree( page ) )
 			{
@@ -100,20 +106,23 @@ namespace Unity.WebForms
 				String baseTypeFullName = c.GetType().BaseType?.FullName ?? String.Empty;
 
 				// filter on namespace prefixes to avoid attempts to build up controls needlessly
-				Boolean controlIsMatchedByAPrefix = _prefixes.Any( p => p.Matches( typeFullName ) || p.Matches( baseTypeFullName ) );
+				Boolean controlIsMatchedByAPrefix = _ignoreNamespacePrefixes.Any( p => p.Matches( typeFullName ) || p.Matches( baseTypeFullName ) );
 				if( !controlIsMatchedByAPrefix )
 				{
-					this.ChildContainer.BuildUp( c.GetType(), c );
+					childContainer.BuildUp( c.GetType(), c );
 				}
 			}
 		}
 
 		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
-		private void ContextOnEndRequest( Object sender, EventArgs e )
+		private void OnContextEndRequest( Object sender, EventArgs e )
 		{
-			if( this.ChildContainer != null )
+			HttpApplication httpApplication = (HttpApplication)sender;
+
+			IUnityContainer childContainer = httpApplication.Context.GetChildContainer();
+			if( childContainer != null )
 			{
-				this.ChildContainer.Dispose();
+				childContainer.Dispose();
 			}
 		}
 
@@ -144,25 +153,5 @@ namespace Unity.WebForms
 		}
 
 		#endregion
-
-		/// <summary>Gets the parent container out of the application state.</summary>
-		private IUnityContainer ParentContainer
-		{
-			get { return this.parentContainer ?? ( this.parentContainer = HttpContext.Current.Application.GetContainer() ); }
-		}
-
-		/// <summary>Gets/sets the child container for the current request.</summary>
-		private IUnityContainer ChildContainer
-		{
-			get
-			{
-				return this.childContainer;
-			}
-			set
-			{
-				this.childContainer = value;
-				HttpContext.Current.SetChildContainer( value );
-			}
-		}
 	}
 }

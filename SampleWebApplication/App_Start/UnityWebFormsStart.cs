@@ -22,7 +22,7 @@ namespace SampleWebApplication.App_Start
 		internal static void PostStart()
 		{
 			IUnityContainer container = new UnityContainer();
-			HttpContext.Current.Application.SetContainer( container );
+			HttpContext.Current.Application.SetApplicationContainer( container );
 
 			RegisterDependencies( container );
 		}
