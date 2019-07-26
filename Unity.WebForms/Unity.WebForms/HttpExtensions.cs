@@ -4,7 +4,7 @@ using System.Web;
 namespace Unity.WebForms
 {
 	/// <summary>Collection of extension methods for the <see cref="HttpApplicationState" /> class.</summary>
-	public static class HttpExtensions
+	public static class SystemWebUnityContainerExtensions
 	{
 		/// <summary>Key used for locating the Unity container in the Http Application state.</summary>
 		private const String RootContainerKey = "EntLibContainer";
@@ -49,6 +49,13 @@ namespace Unity.WebForms
 			return childContainer != null;
 		}
 
+		/// <summary>Attempts to get the per-request child <see cref="IUnityContainer"/> from the provided <see cref="HttpContext"/>. Returns <c>false</c> if the child container does not exist (ignore the <paramref name="childContainer"/> parameter value). Returns <c>true</c> if it was found (and will be returned via <paramref name="childContainer"/>).</summary>
+		public static Boolean TryGetChildContainer( this HttpContextBase context, out IUnityContainer childContainer )
+		{
+			childContainer = context.Items[ RequestContainerKey ] as IUnityContainer;
+			return childContainer != null;
+		}
+
 		/// <summary>Gets the child container instance out of request state. Throws <see cref="InvalidOperationException"/> if the root container has not yet been set.</summary>
 		/// <param name="context">The current request context.</param>
 		/// <returns>The child Unity container reference.</returns>
@@ -59,10 +66,31 @@ namespace Unity.WebForms
 			return childContainer;
 		}
 
+		/// <summary>Gets the child container instance out of request state. Throws <see cref="InvalidOperationException"/> if the root container has not yet been set.</summary>
+		/// <param name="context">The current request context.</param>
+		/// <returns>The child Unity container reference.</returns>
+		public static IUnityContainer GetChildContainer( this HttpContextBase context )
+		{
+			IUnityContainer childContainer = context.Items[ RequestContainerKey ] as IUnityContainer;
+			if( childContainer == null ) throw new InvalidOperationException( "The child container has not been set for this HttpContext." );
+			return childContainer;
+		}
+
 		/// <summary>Stores the child Unity instance into request state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
 		/// <param name="context">The request context.</param>
 		/// <param name="container">The child container instance.</param>
 		public static void SetChildContainer( this HttpContext context, IUnityContainer container )
+		{
+			lock( _thisLock )
+			{
+				context.Items[RequestContainerKey] = container;
+			}
+		}
+
+		/// <summary>Stores the child Unity instance into request state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
+		/// <param name="context">The request context.</param>
+		/// <param name="container">The child container instance.</param>
+		public static void SetChildContainer( this HttpContextBase context, IUnityContainer container )
 		{
 			lock( _thisLock )
 			{
