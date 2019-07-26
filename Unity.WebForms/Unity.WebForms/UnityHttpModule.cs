@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -30,12 +30,18 @@ namespace Unity.WebForms
 			// Lazily optional configuration:
 			if( !_configurationLoaded )
 			{
-				UnityWebFormsConfiguration configuration = (UnityWebFormsConfiguration)ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
-
-				_ignoreNamespacePrefixes = configuration.Prefixes
-					.OfType<NamespaceConfigurationElement>()
-					.Select( el => new NamespacePrefix( el.Prefix ) )
-					.ToList();
+				Object configurationSectionObj = ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
+				if( configurationSectionObj is UnityWebFormsConfiguration configuration )
+				{
+					_ignoreNamespacePrefixes = configuration.Prefixes
+						.OfType<NamespaceConfigurationElement>()
+						.Select( el => new NamespacePrefix( el.Prefix ) )
+						.ToList();
+				}
+				else
+				{
+					_ignoreNamespacePrefixes = Array.Empty<NamespacePrefix>();
+				}
 
 				_configurationLoaded = true;
 			}
