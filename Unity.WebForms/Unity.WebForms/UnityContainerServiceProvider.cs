@@ -20,12 +20,12 @@ namespace Unity.WebForms
 
 		private readonly ConcurrentDictionary<Type,Byte> unresolvedTypesCache = new ConcurrentDictionary<Type,Byte>();
 
-		/// <summary>Instantiates a new instance of <see cref="UnityContainerServiceProvider"/>. You do not need to normally use this constructor directly - instead consider using <see cref="WebObjectActivatorSetup"/>.</summary>
+		/// <summary>Instantiates a new instance of <see cref="UnityContainerServiceProvider"/>. You do not need to normally use this constructor directly - instead consider using <see cref="WebFormsUnityContainerOwner"/>.</summary>
 		/// <param name="container">Required. The Unity <see cref="IUnityContainer"/> to use for <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</param>
 		/// <param name="next">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
-		/// <param name="unresolvableTypeCacheSizeLimit">Optional. The maximum size of the cache of unresolvable types. Defaults to 100,000 types.</param>
+		/// <param name="unresolvableTypesCacheSizeLimit">Optional. The maximum size of the cache of unresolvable types. Defaults to 100,000 types.</param>
 		/// <exception cref="ArgumentNullException">When <paramref name="container"/> is <c>null</c>.</exception>
-		/// <exception cref="ArgumentOutOfRangeException">When <paramref name="unresolvableTypeCacheSizeLimit"/> is below zero.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">When <paramref name="unresolvableTypesCacheSizeLimit"/> is below zero.</exception>
 		public UnityContainerServiceProvider( IUnityContainer container, IServiceProvider next = null, Int32 unresolvableTypesCacheSizeLimit = _defaultUnresolvableTypeCacheSizeLimit )
 		{
 			this.container                     = container ?? throw new ArgumentNullException( nameof( container ) );
@@ -35,6 +35,7 @@ namespace Unity.WebForms
 			if( this.unresolvedTypesCacheSizeLimit < 0 ) throw new ArgumentOutOfRangeException( message: "Value cannot be less than 0.", paramName: nameof(unresolvableTypesCacheSizeLimit) );
 		}
 
+		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
 		public Object GetService( Type serviceType )
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof( serviceType ) );
@@ -43,6 +44,10 @@ namespace Unity.WebForms
 			{
 				return DefaultCreateInstance( serviceType );
 			}
+
+			// At present, with Unity 5, all types will be resolved by the IUnityContainer instance - even if the requested type wasn't explicitly registered with Unity.
+			// This can be changed: https://stackoverflow.com/questions/31420619/unity-change-default-lifetime-manager-for-implicit-registrations-and-or-disable
+			// ...because right now it means that `unresolvedTypesCache` will never be used.
 
 			Object resolvedInstance;
 			try

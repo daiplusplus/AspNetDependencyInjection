@@ -4,6 +4,7 @@ using Unity.Lifetime;
 
 namespace Unity.WebForms
 {
+	/// <summary>Extension methods for <see cref="IUnityContainer"/> to register types that will have their lifetimes limited to an ASP.NET HTTP request lifetime. Similar to &quot;Scoped Services&quot; in ASP.NET Core's dependency-injection terminology.</summary>
 	public static class UnityContainerExtensions
 	{
 		// Type t
@@ -62,7 +63,7 @@ namespace Unity.WebForms
 		
 		// <TFrom,TTo>
 
-		/// <summary>Registers a type <typeparamref name="T"/> (implemented by <typeparamref name="TTo"/>) with a lifetime limited to an ASP.NET request's lifetime.</summary>
+		/// <summary>Registers a type <typeparamref name="TFrom"/> (implemented by <typeparamref name="TTo"/>) with a lifetime limited to an ASP.NET request's lifetime.</summary>
 		public static IUnityContainer RegisterRequest<TFrom, TTo>( this IUnityContainer container, params InjectionMember[] injectionMembers ) where TTo : TFrom
 		{
 			if( container == null ) throw new ArgumentNullException(nameof(container));
@@ -70,7 +71,7 @@ namespace Unity.WebForms
 			return container.RegisterType( registeredType: typeof(TFrom), mappedToType: typeof(TTo), name: null, new HierarchicalLifetimeManager(), injectionMembers );
 		}
 		
-		/// <summary>Registers a type <typeparamref name="T"/> (implemented by <typeparamref name="TTo"/>) with a lifetime limited to an ASP.NET request's lifetime.</summary>
+		/// <summary>Registers a type <typeparamref name="TFrom"/> (implemented by <typeparamref name="TTo"/>) with a lifetime limited to an ASP.NET request's lifetime.</summary>
 		public static IUnityContainer RegisterRequest<TFrom, TTo>( this IUnityContainer container, String name, params InjectionMember[] injectionMembers ) where TTo : TFrom
 		{
 			if( container == null ) throw new ArgumentNullException(nameof(container));

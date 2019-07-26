@@ -16,7 +16,7 @@ namespace Unity.WebForms
 		private static readonly Object _thisLock = new Object();
 
 		/// <summary>Gets the container instance out of application state. Throws <see cref="InvalidOperationException"/> if the root container has not yet been set.</summary>
-		/// <param name="appState">The application state instance.</param>
+		/// <param name="httpApplication">The Global.asax instance.</param>
 		/// <returns>The Unity container instance.</returns>
 		public static IUnityContainer GetApplicationContainer( this HttpApplication httpApplication )
 		{
@@ -26,7 +26,7 @@ namespace Unity.WebForms
 		}
 
 		/// <summary>Stores a Unity container instance into application state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular <see cref="HttpApplication"/> instance.</summary>
-		/// <param name="appState">The application state instance.</param>
+		/// <param name="httpApplication">The Global.asax instance.</param>
 		/// <param name="container">The Unity container instance to store.</param>
 		public static void SetApplicationContainer( this HttpApplication httpApplication, IUnityContainer container )
 		{
@@ -42,6 +42,7 @@ namespace Unity.WebForms
 			}
 		}
 
+		/// <summary>Attempts to get the per-request child <see cref="IUnityContainer"/> from the provided <see cref="HttpContext"/>. Returns <c>false</c> if the child container does not exist (ignore the <paramref name="childContainer"/> parameter value). Returns <c>true</c> if it was found (and will be returned via <paramref name="childContainer"/>).</summary>
 		public static Boolean TryGetChildContainer( this HttpContext context, out IUnityContainer childContainer )
 		{
 			childContainer = context.Items[ RequestContainerKey ] as IUnityContainer;
