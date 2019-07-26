@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Web;
 
@@ -35,6 +37,16 @@ namespace Unity.WebForms
 			if( this.unresolvedTypesCacheSizeLimit < 0 ) throw new ArgumentOutOfRangeException( message: "Value cannot be less than 0.", paramName: nameof(unresolvableTypesCacheSizeLimit) );
 		}
 
+		[Conditional("TRACE")]
+		private void TraceGetService( Type serviceType, String message )
+		{
+			const String _Category = nameof(UnityContainerServiceProvider);
+
+			String formatted = String.Format( CultureInfo.InvariantCulture, _Category + "." + nameof(this.GetService) + "( {0} ): {1}", serviceType.FullName, message );
+			
+			Trace.WriteLine( value: formatted, category: _Category );
+		}
+
 		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
 		public Object GetService( Type serviceType )
 		{
@@ -64,7 +76,7 @@ namespace Unity.WebForms
 				}
 				else
 				{
-					System.Diagnostics.Trace.WriteLine( "HttpContext.Current is null." );
+					this.TraceGetService( serviceType, "HttpContext.Current is null." );
 				}
 
 				resolvedInstance = this.container.Resolve( serviceType );				
@@ -79,7 +91,7 @@ namespace Unity.WebForms
 				// Ignore and continue to the fallback IServiceProvider.
 			}
 
-			System.Diagnostics.Trace.WriteLine( "Could not resolve " + serviceType.FullName + "." );
+			this.TraceGetService( serviceType, "Could not resolve serviceType." );
 
 			if( this.next != null )
 			{
