@@ -22,7 +22,6 @@ namespace $rootnamespace$
 			RegisterDependencies( rootContainer );
 
 			_containerOwner = new WebFormsUnityContainerOwner( rootContainer );
-			_containerOwner.Install();
 		}
 
 		/// <summary>Registers dependencies in the supplied container.</summary>

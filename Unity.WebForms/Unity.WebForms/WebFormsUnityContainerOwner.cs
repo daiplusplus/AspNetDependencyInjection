@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using System.Web.Hosting;
 
 namespace Unity.WebForms
@@ -6,41 +7,40 @@ namespace Unity.WebForms
 	/// <summary>Controls the lifespan of the provided <see cref="IUnityContainer"/> (or creates a new <see cref="IUnityContainer"/>). This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down.</summary>
 	public sealed class WebFormsUnityContainerOwner : IDisposable, IRegisteredObject
 	{
-		private UnityContainerServiceProvider ucsp;
-		private Boolean                       isDisposed;
+		private readonly UnityContainerServiceProvider ucsp;
 
+		/// <summary>Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/> and sets the provided container as the <see cref="System.Web.HttpRuntime.WebObjectActivator"/> using <see cref="UnityContainerServiceProvider.SetWebObjectActivatorContainer(IUnityContainer)"/>.</summary>
+		/// <param name="applicationContainer">Required. Throws <see cref="ArgumentNullException"/> if <c>null</c>.</param>
 		public WebFormsUnityContainerOwner( IUnityContainer applicationContainer )
 		{
 			this.Container = applicationContainer ?? throw new ArgumentNullException(nameof(applicationContainer));
 
 			HostingEnvironment.RegisterObject( this );
-		}
-
-		public IUnityContainer Container { get; } // TODO: Add Disposed check to this property getter?
-
-		public void Install()
-		{
-			if( this.isDisposed ) throw new ObjectDisposedException( objectName: nameof(WebFormsUnityContainerOwner) );
 
 			StaticWebFormsUnityContainerOwner.RootContainer = this.Container;
-			this.ucsp = UnityContainerServiceProvider.SetWebObjectActivatorContainer( this.Container );
+			this.ucsp = UnityContainerServiceProvider.SetWebObjectActivatorContainer(this.Container);
 		}
 
-		public void Stop( Boolean immediate )
+		/// <summary>Returns the container that was used to construct this <see cref="WebFormsUnityContainerOwner"/>.</summary>
+		public IUnityContainer Container { get; }
+
+		/// <summary>Calls <see cref="Dispose"/>.</summary>
+		/// <param name="immediate">This parameter is unused.</param>
+		void IRegisteredObject.Stop(Boolean immediate)
 		{
-			if( this.isDisposed ) throw new ObjectDisposedException( objectName: nameof(WebFormsUnityContainerOwner) );
-			if( this.ucsp == null ) throw new InvalidOperationException( "This instance has not yet installed its container." );
-
-			HostingEnvironment.UnregisterObject( this );
-			this.ucsp.RemoveAsWebObjectActivator();
-			StaticWebFormsUnityContainerOwner.RootContainer = null;
-
 			this.Dispose();
 		}
 
+		/// <summary>Calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, removes <see cref="Container"/> as <see cref="HttpRuntime.WebObjectActivator"/> and calls the <see cref="IDisposable.Dispose"/> method of <see cref="Container"/>.</summary>
 		public void Dispose()
 		{
-			this.isDisposed = true;
+			HostingEnvironment.UnregisterObject(this);
+
+			if( StaticWebFormsUnityContainerOwner.RootContainer == this.Container )
+			{
+				this.ucsp.RemoveAsWebObjectActivator();
+				StaticWebFormsUnityContainerOwner.RootContainer = null;
+			}
 
 			this.Container.Dispose();
 		}
