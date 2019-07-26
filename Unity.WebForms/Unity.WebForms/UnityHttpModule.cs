@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -134,10 +134,12 @@ namespace Unity.WebForms
 		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
 		private void OnContextEndRequest( Object sender, EventArgs e )
 		{
+			// I found there are times when this `OnContextEndRequest` would be called but `OnContextBeginRequest` was not called.
+			// This happened when ApplicationInsights' package installed its <httpModules> in <system.web> instead of <system.webServer> while `<system.webServer><validation validateIntegratedModeConfiguration="true" />`.
+
 			HttpApplication httpApplication = (HttpApplication)sender;
 
-			IUnityContainer childContainer = httpApplication.Context.GetChildContainer();
-			if( childContainer != null )
+			if( httpApplication.Context.TryGetChildContainer( out IUnityContainer childContainer ) )
 			{
 				childContainer.Dispose();
 			}
