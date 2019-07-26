@@ -82,6 +82,16 @@ namespace Unity.WebForms
 			
 			IUnityContainer childContainer = applicationContainer.CreateChildContainer();
 
+			// Register one-off, special services:
+			{
+				HttpContextBase httpContextBase = new HttpContextWrapper( httpApplication.Context );
+
+				// Registering `IHttpContextAccessor` only in the per-request container so services that are not registered per-request (e.g. globally singleton) cannot use this service.
+				// Also this needs to be done here in order to get a non-ThreadLocalStorage reference to HttpContext.
+				DefaultHttpContextAccessor httpContextAccessor = new DefaultHttpContextAccessor( httpContextBase );
+				childContainer.RegisterInstance<IHttpContextAccessor>( httpContextAccessor );
+			}
+
 			httpApplication.Context.SetChildContainer( childContainer );
 		}
 
