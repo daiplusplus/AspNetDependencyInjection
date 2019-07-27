@@ -68,6 +68,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\Configuration\DefaultWebConfiguration.cs" />
+    <Compile Include="Services\Configuration\IWebConfiguration.cs" />
+    <Compile Include="Services\Configuration\IWebConfigurationExtensions.cs" />
+    <Compile Include="Services\Configuration\PassthroughWebConfiguration.cs" />
     <Compile Include="Services\HttpContextAccessor\HttpContextAccessor.cs" />
     <Compile Include="Services\HttpContextAccessor\IHttpContextAccessor.cs" />
     <Compile Include="Unity.WebForms.Configuration\IgnoreNamespaceConfigurationCollection.cs" />

@@ -3,7 +3,7 @@ using System.Web;
 
 namespace Unity.WebForms
 {
-	/// <summary>Gets the <see cref="HttpContextBase"/> for the current request.</summary>
+	/// <summary>Gets the <see cref="HttpContextBase"/> for the current request in a thread-safe manner (by using an immutable instance field reference to the <see cref="HttpContextBase"/> available when the request was started).</summary>
 	public class DefaultHttpContextAccessor : IHttpContextAccessor
 	{
 		/// <summary>Constructs a new instance of <see cref="DefaultHttpContextAccessor"/> using the provided <paramref name="httpContextBase"/>.</summary>
