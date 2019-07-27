@@ -107,6 +107,7 @@
     <Compile Include="About.aspx.designer.cs">
       <DependentUpon>About.aspx</DependentUpon>
     </Compile>
+    <None Include="App_Start\UnityWebFormsStart.template.cs" />
     <Compile Include="App_Start\UnityWebFormsStart.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>

@@ -5,8 +5,9 @@ VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{8D3132E8-858A-49E2-96A7-1F74FCEE2EF2}"
 	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
 		nuget\Unity.WebForms.nuspec = nuget\Unity.WebForms.nuspec
-		nuget\Content\App_Start\UnityWebFormsStart.cs.pp = nuget\Content\App_Start\UnityWebFormsStart.cs.pp
+		nuget\Build.cmd = nuget\Build.cmd
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms", "Unity.WebForms\Unity.WebForms.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
@@ -14,11 +15,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleWebApplication", "SampleWebApplication\SampleWebApplication.csproj", "{DE9B082C-C377-421F-8B06-16EDCE7B7D03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebForms.Tests", "Unity.WebForms.Tests\Unity.WebForms.Tests.csproj", "{7FF0B492-DEF1-4005-A899-0E82910481C4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99D9D34A-8A5E-4237-8D10-36307EBBC076}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +40,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {97C9B0E1-1AEE-40E1-B4B2-EFFDF47EED74}
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal
