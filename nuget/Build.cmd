@@ -5,6 +5,4 @@ set /p uwfversion="Enter semver version number for Unity.WebForms package (e.g. 
 
 @echo on
 
-nuget pack Unity.Webforms.nuspec -OutputDirectory ../nuget-output -symbols -Version %uwfversion%
-
-
+nuget pack Unity.Webforms.nuspec -OutputDirectory ..\..\Unity.WebForms_local\nuget-output -symbols -Version %uwfversion%
