@@ -21,6 +21,7 @@ This repo's objectives are:
 * Update the sample project (done)
 * Publish to NuGet (`Jehoel.Unity.AspNetWebForms`) (done)
 * Add more tests (in progress)
+* Add support for DI constructor injection for `HttpModule`s
 
 ## Current Version
 * 1.4 (S. Kyle Korndoerfer's most recent version, released in 2015)

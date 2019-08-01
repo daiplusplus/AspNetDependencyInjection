@@ -8,6 +8,7 @@ using System.Web.Configuration;
 namespace Unity.WebForms.Services
 {
 	/// <summary>Implementation of <see cref="IWebConfiguration"/> that populates itself using <see cref="WebConfigurationManager"/>'s static properties. The dictionaries have case-insensitive keys.</summary>
+	/// <remarks>This class is designed to assist applications with shifting towards appSettings.json-type config used in ASP.NET Core - the idea being to use Dictionary-style configuration in WebForms first, then it's one less thing to fix when everything is broken immediately after migrating to ASP.NET Core.</remarks>
 	public class DefaultWebConfiguration : IWebConfiguration
 	{
 		private static Dictionary<String,String> ToDictionary( NameValueCollection nvc )
