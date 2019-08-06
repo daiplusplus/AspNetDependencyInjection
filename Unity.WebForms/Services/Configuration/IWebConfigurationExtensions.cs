@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 
 namespace Unity.WebForms.Services
@@ -6,6 +6,33 @@ namespace Unity.WebForms.Services
 	/// <summary>Provides useful extension methods for <see cref="IWebConfiguration"/> implementations.</summary>
 	public static class IWebConfigurationExtensions
 	{
+		/// <summary>Looks up <paramref name="appSettingName"/> in <see cref="IWebConfiguration.AppSettings"/> and throws <see cref="InvalidOperationException"/> if the specified <paramref name="appSettingName"/> does not exist or has an empty value, otherwise it returns it.</summary>
+		/// <exception cref="ArgumentNullException">When <paramref name="webConfiguration"/> is null or when <paramref name="appSettingName"/> is null, empty or whitespace.</exception>
+		/// <exception cref="InvalidOperationException">When <paramref name="appSettingName"/> cannot be found or is empty.</exception>
+		public static String RequireAppSetting( this IWebConfiguration webConfiguration, String appSettingName )
+		{
+			if( webConfiguration == null ) throw new ArgumentNullException(nameof(webConfiguration));
+			if( String.IsNullOrWhiteSpace(appSettingName) ) throw new ArgumentNullException( paramName: nameof(appSettingName) );
+
+			//
+
+			if( webConfiguration.AppSettings.TryGetValue( appSettingName, out String value ) )
+			{
+				if( String.IsNullOrWhiteSpace( value ) )
+				{
+					throw new InvalidOperationException( "The <appSettings> entry \"" + appSettingName + "\" is empty." );
+				}
+				else
+				{
+					return value;
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException( "The <appSettings> entry \"" + appSettingName + "\" is undefined." );
+			}
+		}
+
 		/// <summary>Looks up <paramref name="connectionStringName"/> in <see cref="IWebConfiguration.ConnectionStrings"/> and returns the <see cref="ConnectionStringSettings"/>'s <see cref="ConnectionStringSettings.ConnectionString"/> string value. Otherwise throws an exception.</summary>
 		/// <exception cref="ArgumentNullException">When <paramref name="webConfiguration"/> is null or when <paramref name="connectionStringName"/> is null, empty or whitespace.</exception>
 		/// <exception cref="InvalidOperationException">When <paramref name="connectionStringName"/> cannot be found or is empty.</exception>
