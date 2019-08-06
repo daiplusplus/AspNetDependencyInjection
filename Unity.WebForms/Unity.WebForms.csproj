@@ -68,6 +68,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\ChildContainer\DefaultChildContainerConfiguration.cs" />
+    <Compile Include="Services\ChildContainer\IChildContainerConfiguration.cs" />
     <Compile Include="Services\Configuration\DefaultWebConfiguration.cs" />
     <Compile Include="Services\Configuration\IWebConfiguration.cs" />
     <Compile Include="Services\Configuration\IWebConfigurationExtensions.cs" />

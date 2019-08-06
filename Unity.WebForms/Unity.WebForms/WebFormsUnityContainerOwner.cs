@@ -15,6 +15,12 @@ namespace Unity.WebForms
 		{
 			this.Container = applicationContainer ?? throw new ArgumentNullException(nameof(applicationContainer));
 
+			// Before continuing, ensure that IChildContainerConfiguration is registered, and if not, add our own dummy implementation:
+			if( !applicationContainer.IsRegistered<IChildContainerConfiguration>() )
+			{
+				applicationContainer.RegisterSingleton<IChildContainerConfiguration,DefaultChildContainerConfiguration>();
+			}
+
 			HostingEnvironment.RegisterObject( this );
 
 			StaticWebFormsUnityContainerOwner.RootContainer = this.Container;

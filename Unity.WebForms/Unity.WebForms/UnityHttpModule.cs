@@ -82,6 +82,11 @@ namespace Unity.WebForms
 			
 			IUnityContainer childContainer = applicationContainer.CreateChildContainer();
 
+			// Unity's `IsResolved` method is slow - so we register a dummy implementation by default:
+			// https://stackoverflow.com/questions/878994/is-there-tryresolve-in-unity
+
+			IChildContainerConfiguration childConfiguration = applicationContainer.Resolve<IChildContainerConfiguration>();
+
 			// Register one-off, special services:
 			{
 				HttpContextBase httpContextBase = new HttpContextWrapper( httpApplication.Context );
@@ -90,6 +95,8 @@ namespace Unity.WebForms
 				// Also this needs to be done here in order to get a non-ThreadLocalStorage reference to HttpContext.
 				DefaultHttpContextAccessor httpContextAccessor = new DefaultHttpContextAccessor( httpContextBase );
 				childContainer.RegisterInstance<IHttpContextAccessor>( httpContextAccessor );
+
+				childConfiguration.ConfigureRequestContainer( httpContextBase, childContainer );
 			}
 
 			httpApplication.Context.SetChildContainer( childContainer );
