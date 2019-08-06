@@ -37,7 +37,7 @@ namespace Unity.WebForms
 			if( this.unresolvedTypesCacheSizeLimit < 0 ) throw new ArgumentOutOfRangeException( message: "Value cannot be less than 0.", paramName: nameof(unresolvableTypesCacheSizeLimit) );
 		}
 
-		[Conditional("TRACE")]
+		[Conditional("TRACE_UNITY_ASPNET")]
 		private void TraceGetService( Type serviceType, String message )
 		{
 			const String _Category = nameof(UnityContainerServiceProvider);
