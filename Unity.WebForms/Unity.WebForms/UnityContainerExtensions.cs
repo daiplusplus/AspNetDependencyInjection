@@ -193,7 +193,7 @@ namespace Unity.WebForms
 
 		}
 
-		/// <summary>Registers <typeparamref name="TNamedFactory"/> as a singleton service, then registers a type <typeparamref name="T"/> that is instantiated by a <typeparamref name="TFactory"/> instance, with a lifetime limited to an ASP.NET request's lifetime.</summary>
+		/// <summary>Registers <typeparamref name="TNamedFactory"/> as a singleton service, then registers a type <typeparamref name="T"/> that is instantiated by a <typeparamref name="TNamedFactory"/> instance, with a lifetime limited to an ASP.NET request's lifetime.</summary>
 		public static IUnityContainer RegisterRequestFactory<T,TNamedFactory>( this IUnityContainer container, String name )
 			where TNamedFactory : INamedServiceFactory<T>
 		{
