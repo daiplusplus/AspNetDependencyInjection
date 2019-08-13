@@ -10,6 +10,7 @@ using Unity.WebForms.Internal;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Unity.WebForms.Services;
 
 namespace Unity.WebForms
 {
@@ -74,6 +75,12 @@ namespace Unity.WebForms
 			IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
 			
 			IServiceScope requestServiceScope = applicationServiceProvider.CreateScope();
+
+			// Register the current HttpContextBase inside the `helper` instance so it can be used by the DefaultHttpContextAccessor instance.
+			{
+				DefaultHttpContextAccessorFactoryHelper helper = requestServiceScope.ServiceProvider.GetRequiredService<DefaultHttpContextAccessorFactoryHelper>();
+				helper.HttpContext = new HttpContextWrapper( httpApplication.Context );
+			}
 
 			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
 		}

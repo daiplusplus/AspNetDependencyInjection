@@ -4,6 +4,9 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Web.Configuration;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 namespace Unity.WebForms.Services
 {
 	/// <summary>Provides an injectable representation of <see cref="WebConfigurationManager"/> that can be mocked for testing.</summary>
@@ -22,13 +25,13 @@ namespace Unity.WebForms.Services
 	}
 
 	/// <summary>Extension methods for services bundled with <see cref="Unity.WebForms"/>.</summary>
-	public static partial class UnityContainerAddServiceExtensions
+	public static partial class WebFormsServiceExtensions
 	{
 		/// <summary>Registers <see cref="DefaultWebConfiguration"/> as a singleton implementation of <see cref="IWebConfiguration"/>.</summary>
-		public static IUnityContainer AddWebConfiguration( this IUnityContainer container )
+		public static IServiceCollection AddWebConfiguration( this IServiceCollection services )
 		{
-			return container
-				.RegisterSingleton<IWebConfiguration,DefaultWebConfiguration>();
+			return services
+				.AddSingleton<IWebConfiguration,DefaultWebConfiguration>();
 		}
 	}
 }
