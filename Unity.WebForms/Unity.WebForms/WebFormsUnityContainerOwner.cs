@@ -1,34 +1,43 @@
 ﻿using System;
+using System.Threading;
 using System.Web;
 using System.Web.Hosting;
+
+using Unity.WebForms.Internal;
 
 namespace Unity.WebForms
 {
 	/// <summary>Controls the lifespan of the provided <see cref="IUnityContainer"/> (or creates a new <see cref="IUnityContainer"/>). This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down.</summary>
 	public sealed class WebFormsUnityContainerOwner : IDisposable, IRegisteredObject
 	{
-		private readonly UnityContainerServiceProvider ucsp;
+		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
+
+		private readonly IServiceProvider previousWoa;
+
+		private readonly MediWebObjectActivatorServiceProvider ucsp;
 
 		/// <summary>Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/> and sets the provided container as the <see cref="System.Web.HttpRuntime.WebObjectActivator"/> using <see cref="UnityContainerServiceProvider.SetWebObjectActivatorContainer(IUnityContainer)"/>.</summary>
-		/// <param name="applicationContainer">Required. Throws <see cref="ArgumentNullException"/> if <c>null</c>.</param>
-		public WebFormsUnityContainerOwner( IUnityContainer applicationContainer )
+		/// <param name="applicationServiceProvider">Required. Throws <see cref="ArgumentNullException"/> if <c>null</c>.</param>
+		public WebFormsUnityContainerOwner( IServiceProvider applicationServiceProvider )
 		{
-			this.Container = applicationContainer ?? throw new ArgumentNullException(nameof(applicationContainer));
-
-			// Before continuing, ensure that IChildContainerConfiguration is registered, and if not, add our own dummy implementation:
-			if( !applicationContainer.IsRegistered<IChildContainerConfiguration>() )
+			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
-				applicationContainer.RegisterSingleton<IChildContainerConfiguration,DefaultChildContainerConfiguration>();
+				throw new InvalidOperationException( "Another " + nameof(WebFormsUnityContainerOwner) + " has already been created." );
 			}
 
-			HostingEnvironment.RegisterObject( this );
+			this.ApplicationServiceProvider = applicationServiceProvider ?? throw new ArgumentNullException(nameof(applicationServiceProvider));
 
-			StaticWebFormsUnityContainerOwner.RootContainer = this.Container;
-			this.ucsp = UnityContainerServiceProvider.SetWebObjectActivatorContainer(this.Container);
+			StaticWebFormsUnityContainerOwner.RootServiceProvider = applicationServiceProvider;
+
+			this.previousWoa = HttpRuntime.WebObjectActivator;
+
+			HttpRuntime.WebObjectActivator = this.ucsp = new MediWebObjectActivatorServiceProvider( applicationServiceProvider, this.previousWoa, onUnresolvedType: null );
+
+			HostingEnvironment.RegisterObject( this );
 		}
 
-		/// <summary>Returns the container that was used to construct this <see cref="WebFormsUnityContainerOwner"/>.</summary>
-		public IUnityContainer Container { get; }
+		/// <summary>Returns the <see cref="IServiceProvider"/> that was used to construct this <see cref="WebFormsUnityContainerOwner"/>.</summary>
+		public IServiceProvider ApplicationServiceProvider { get; }
 
 		/// <summary>Calls <see cref="Dispose"/>.</summary>
 		/// <param name="immediate">This parameter is unused.</param>
@@ -37,24 +46,30 @@ namespace Unity.WebForms
 			this.Dispose();
 		}
 
-		/// <summary>Calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, removes <see cref="Container"/> as <see cref="HttpRuntime.WebObjectActivator"/> and calls the <see cref="IDisposable.Dispose"/> method of <see cref="Container"/>.</summary>
+		/// <summary>Calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, un-sets the <see cref="MediWebObjectActivatorServiceProvider"/> from <see cref="HttpRuntime.WebObjectActivator"/> and restores its original value, and calls the <see cref="IDisposable.Dispose"/> method of <see cref="ApplicationServiceProvider"/>.</summary>
 		public void Dispose()
 		{
 			HostingEnvironment.UnregisterObject(this);
 
-			if( StaticWebFormsUnityContainerOwner.RootContainer == this.Container )
+			if( StaticWebFormsUnityContainerOwner.RootServiceProvider == this.ApplicationServiceProvider )
 			{
-				this.ucsp.RemoveAsWebObjectActivator();
-				StaticWebFormsUnityContainerOwner.RootContainer = null;
+				StaticWebFormsUnityContainerOwner.RootServiceProvider = null;
 			}
 
-			this.Container.Dispose();
+			HttpRuntime.WebObjectActivator = this.previousWoa;
+
+			if( this.ApplicationServiceProvider is IDisposable disposable )
+			{
+				disposable.Dispose();
+			}
+
+			_semaphore.Release();
 		}
 	}
 
 	internal static class StaticWebFormsUnityContainerOwner
 	{
 		/// <summary>The single root, application-level container that is associated with each <see cref="System.Web.HttpApplication"/> instance and <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</summary>
-		public static IUnityContainer RootContainer { get; set; }
+		public static IServiceProvider RootServiceProvider { get; set; }
 	}
 }
