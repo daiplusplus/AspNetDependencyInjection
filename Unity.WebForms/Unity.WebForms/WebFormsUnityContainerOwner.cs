@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
-
+using Microsoft.Extensions.DependencyInjection;
 using Unity.WebForms.Internal;
 
 namespace Unity.WebForms
 {
 	/// <summary>Controls the lifespan of the provided <see cref="IUnityContainer"/> (or creates a new <see cref="IUnityContainer"/>). This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down.</summary>
-	public sealed class WebFormsUnityContainerOwner : IDisposable, IRegisteredObject
+	public class WebFormsUnityContainerOwner : IDisposable, IRegisteredObject
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
@@ -16,9 +16,21 @@ namespace Unity.WebForms
 
 		private readonly MediWebObjectActivatorServiceProvider ucsp;
 
-		/// <summary>Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/> and sets the provided container as the <see cref="System.Web.HttpRuntime.WebObjectActivator"/> using <see cref="UnityContainerServiceProvider.SetWebObjectActivatorContainer(IUnityContainer)"/>.</summary>
+		public static WebFormsUnityContainerOwner Configure( Action<IServiceCollection> configureServices )
+		{
+			if( configureServices == null ) throw new ArgumentNullException(nameof(configureServices));
+
+			ServiceCollection services = new ServiceCollection();
+			configureServices( services );
+
+			ServiceProvider rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
+
+			return new WebFormsUnityContainerOwner( applicationServiceProvider: rootServiceProvider );
+		}
+
+		/// <summary>Not intended to be called from consuming application code unless you have prepared your own <see cref="IServiceProvider"/>. Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/> and sets the provided container as the <see cref="System.Web.HttpRuntime.WebObjectActivator"/> using <see cref="UnityContainerServiceProvider.SetWebObjectActivatorContainer(IUnityContainer)"/>.</summary>
 		/// <param name="applicationServiceProvider">Required. Throws <see cref="ArgumentNullException"/> if <c>null</c>.</param>
-		public WebFormsUnityContainerOwner( IServiceProvider applicationServiceProvider )
+		protected WebFormsUnityContainerOwner( IServiceProvider applicationServiceProvider )
 		{
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{

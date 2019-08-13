@@ -78,8 +78,11 @@ namespace Unity.WebForms
 
 			// Register the current HttpContextBase inside the `helper` instance so it can be used by the DefaultHttpContextAccessor instance.
 			{
-				DefaultHttpContextAccessorFactoryHelper helper = requestServiceScope.ServiceProvider.GetRequiredService<DefaultHttpContextAccessorFactoryHelper>();
-				helper.HttpContext = new HttpContextWrapper( httpApplication.Context );
+				DefaultHttpContextAccessorFactoryHelper helper = requestServiceScope.ServiceProvider.GetService<DefaultHttpContextAccessorFactoryHelper>();
+				if( helper != null )
+				{
+					helper.HttpContext = new HttpContextWrapper( httpApplication.Context );
+				}
 			}
 
 			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
