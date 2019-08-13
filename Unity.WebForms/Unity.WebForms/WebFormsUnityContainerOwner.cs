@@ -34,6 +34,8 @@ namespace Unity.WebForms
 			HttpRuntime.WebObjectActivator = this.ucsp = new MediWebObjectActivatorServiceProvider( applicationServiceProvider, this.previousWoa, onUnresolvedType: null );
 
 			HostingEnvironment.RegisterObject( this );
+
+			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( UnityHttpModule ) ); // TODO: Can we un-register the module?
 		}
 
 		/// <summary>Returns the <see cref="IServiceProvider"/> that was used to construct this <see cref="WebFormsUnityContainerOwner"/>.</summary>
