@@ -6,45 +6,41 @@ using System.Web;
 using System.Web.UI;
 
 using Unity.WebForms.Configuration;
+using Unity.WebForms.Internal;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Unity.WebForms
 {
 	/// <summary>HttpModule that establishes <see cref="IUnityContainer"/> container instances for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
 	public sealed class UnityHttpModule : IHttpModule
 	{
-		/// <summary>Indicates whether the configuration data has been loaded already or not.</summary>
-		private static Boolean _configurationLoaded = false;
+		// TODO: Consider moving this to MediWebObjectActivatorServiceProvider and filter services there?
+		private static IReadOnlyList<NamespacePrefix> _ignoreNamespacePrefixes = LoadIgnoredNamespacePrefixes();
 
-		/// <summary>Backing field for the list of prefixes to ignore.</summary>
-		private static IReadOnlyList<NamespacePrefix> _ignoreNamespacePrefixes;
-
-		#region Implementation of IHttpModule
+		private static IReadOnlyList<NamespacePrefix> LoadIgnoredNamespacePrefixes()
+		{
+			Object configurationSectionObj = ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
+			if( configurationSectionObj is UnityWebFormsConfiguration configuration )
+			{
+				return configuration.Prefixes
+					.OfType<NamespaceConfigurationElement>()
+					.Select( el => new NamespacePrefix( el.Prefix ) )
+					.ToList();
+			}
+			else
+			{
+				return Array.Empty<NamespacePrefix>();
+			}
+		}
 
 		/// <summary>Initializes a module and prepares it to handle requests.</summary>
-		/// <param name="httpApplication">An <see cref="T:System.Web.HttpApplication"/> to associated with the root container.</param>
+		/// <param name="httpApplication">An <see cref="HttpApplication"/> to associated with the root container.</param>
 		public void Init( HttpApplication httpApplication )
 		{
 			// Note that IHttpModule.Init can be called multiple times as the ASP.NET runtime will pool HttpApplication instances in the same process:
 			// https://stackoverflow.com/questions/1140915/httpmodule-init-method-is-called-several-times-why
-
-			// Lazily optional configuration:
-			if( !_configurationLoaded )
-			{
-				Object configurationSectionObj = ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
-				if( configurationSectionObj is UnityWebFormsConfiguration configuration )
-				{
-					_ignoreNamespacePrefixes = configuration.Prefixes
-						.OfType<NamespaceConfigurationElement>()
-						.Select( el => new NamespacePrefix( el.Prefix ) )
-						.ToList();
-				}
-				else
-				{
-					_ignoreNamespacePrefixes = Array.Empty<NamespacePrefix>();
-				}
-
-				_configurationLoaded = true;
-			}
 
 			// These event hookups have to be done on every HttpApplication instance, even if the RootContainer isn't set yet - otherwise the event-handlers will never be invoked.
 
@@ -52,7 +48,7 @@ namespace Unity.WebForms
 			httpApplication.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
 			httpApplication.EndRequest               += this.OnContextEndRequest;
 
-			if( StaticWebFormsUnityContainerOwner.RootContainer == null )
+			if( StaticWebFormsUnityContainerOwner.RootServiceProvider == null )
 			{
 				// TODO: Is it possible to detect if a HttpApplication instance is 'special' or not?
 				// Because if this is not a 'special' HttpApplication then this method should throw an exception complaining that `StaticWebFormsUnityContainerOwner.RootContainer == null`.
@@ -60,7 +56,7 @@ namespace Unity.WebForms
 			}
 			else
 			{
-				httpApplication.SetApplicationContainer( StaticWebFormsUnityContainerOwner.RootContainer );
+				httpApplication.SetApplicationServiceProvider( StaticWebFormsUnityContainerOwner.RootServiceProvider );
 			}
 		}
 
@@ -69,59 +65,41 @@ namespace Unity.WebForms
 		{
 		}
 
-		#endregion
-
 		#region Life-cycle event handlers
 
-		/// <summary>Initializes a new child container at the beginning of each request.</summary>
 		private void OnContextBeginRequest( Object sender, EventArgs e )
 		{
 			HttpApplication httpApplication = (HttpApplication)sender;
 
-			IUnityContainer applicationContainer = httpApplication.GetApplicationContainer();
+			IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
 			
-			IUnityContainer childContainer = applicationContainer.CreateChildContainer();
+			IServiceScope requestServiceScope = applicationServiceProvider.CreateScope();
 
-			// Unity's `IsResolved` method is slow - so we register a dummy implementation by default:
-			// https://stackoverflow.com/questions/878994/is-there-tryresolve-in-unity
-
-			IChildContainerConfiguration childConfiguration = applicationContainer.Resolve<IChildContainerConfiguration>();
-
-			// Register one-off, special services:
-			{
-				HttpContextBase httpContextBase = new HttpContextWrapper( httpApplication.Context );
-
-				// Registering `IHttpContextAccessor` only in the per-request container so services that are not registered per-request (e.g. globally singleton) cannot use this service.
-				// Also this needs to be done here in order to get a non-ThreadLocalStorage reference to HttpContext.
-				DefaultHttpContextAccessor httpContextAccessor = new DefaultHttpContextAccessor( httpContextBase );
-				childContainer.RegisterInstance<IHttpContextAccessor>( httpContextAccessor );
-
-				childConfiguration.ConfigureRequestContainer( httpContextBase, childContainer );
-			}
-
-			httpApplication.Context.SetChildContainer( childContainer );
+			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
 		}
 
-		/// <summary>Registers the injection event to fire when the page has been initialized.</summary>
 		private void OnContextPreRequestHandlerExecute( Object sender, EventArgs e )
 		{
 			HttpApplication httpApplication = (HttpApplication)sender;
 
 			IHttpHandler handler = httpApplication.Context.Handler;
 
-			/* No hander means static content; so no need for a container */
 			if( handler == null )
 			{
+				// No hander means static content; so no need for DI
 				return;
 			}
-			
-			IUnityContainer childContainer = httpApplication.Context.GetChildContainer();
-			childContainer.BuildUp( t: handler.GetType(), existing: handler );
-
-			// User controls are ready to be built up after the page initialization in complete
-			if( handler is Page page )
+			else
 			{
-				page.InitComplete += ( Object icSender, EventArgs icEventArgs ) => this.OnPageInitComplete( icSender, icEventArgs, httpApplication.Context );
+//				IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
+
+//				IServiceScope requestServiceScope = httpApplication.Context.GetRequestServiceScope();
+
+				// User controls are ready to be built up after the page initialization in complete
+				if( handler is Page page )
+				{
+					page.InitComplete += ( Object icSender, EventArgs icEventArgs ) => this.OnPageInitComplete( icSender, icEventArgs, httpApplication.Context );
+				}
 			}
 		}
 
@@ -132,7 +110,7 @@ namespace Unity.WebForms
 
 			Page page = (Page)sender;
 
-			IUnityContainer childContainer = httpContext.GetChildContainer();
+			IServiceScope requestServiceScope = httpContext.GetRequestServiceScope();
 
 			foreach( Control c in GetControlTree( page ) )
 			{
@@ -143,7 +121,7 @@ namespace Unity.WebForms
 				Boolean controlIsMatchedByAPrefix = _ignoreNamespacePrefixes.Any( p => p.Matches( typeFullName ) || p.Matches( baseTypeFullName ) );
 				if( !controlIsMatchedByAPrefix )
 				{
-					childContainer.BuildUp( c.GetType(), c );
+//					childContainer.BuildUp( c.GetType(), c );
 				}
 			}
 		}
@@ -156,9 +134,9 @@ namespace Unity.WebForms
 
 			HttpApplication httpApplication = (HttpApplication)sender;
 
-			if( httpApplication.Context.TryGetChildContainer( out IUnityContainer childContainer ) )
+			if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
 			{
-				childContainer.Dispose();
+				requestServiceScope.Dispose();
 			}
 		}
 
