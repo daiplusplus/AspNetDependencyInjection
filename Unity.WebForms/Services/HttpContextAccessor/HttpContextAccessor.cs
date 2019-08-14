@@ -46,7 +46,7 @@ namespace Unity.WebForms.Services
 			if( services == null ) throw new ArgumentNullException(nameof(services));
 
 			return services
-				.AddScoped<DefaultHttpContextAccessorFactoryHelper>()
+				.AddScoped<DefaultHttpContextAccessorHelper>()
 				.AddScoped<IHttpContextAccessor>( CreateHttpContextAccessor );
 		}
 
@@ -62,7 +62,7 @@ namespace Unity.WebForms.Services
 
 		private static IHttpContextAccessor CreateHttpContextAccessor( IServiceProvider sp )
 		{
-			DefaultHttpContextAccessorFactoryHelper helper = sp.GetRequiredService<DefaultHttpContextAccessorFactoryHelper>();
+			DefaultHttpContextAccessorHelper helper = sp.GetRequiredService<DefaultHttpContextAccessorHelper>();
 			if( helper.HttpContext is null ) throw new InvalidOperationException( "The " + nameof(HttpContextBase) + " has not been set for this Service Scope." );
 
 			return new DefaultHttpContextAccessor( helper.HttpContext );
@@ -77,7 +77,7 @@ namespace Unity.WebForms.Services
 		}
 	}
 
-	internal class DefaultHttpContextAccessorFactoryHelper
+	internal class DefaultHttpContextAccessorHelper
 	{
 		public HttpContextBase HttpContext { get; set; }
 	}

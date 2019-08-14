@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
@@ -27,35 +27,36 @@ namespace Unity.WebForms
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
-			ServiceProvider rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-
-			return new WebFormsUnityContainerOwner( applicationServiceProvider: rootServiceProvider );
+			return new WebFormsUnityContainerOwner( services );
 		}
 
-		/// <summary>Not intended to be called from consuming application code unless you have prepared your own <see cref="IServiceProvider"/>. Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/> and sets the provided container as the <see cref="System.Web.HttpRuntime.WebObjectActivator"/> using <see cref="UnityContainerServiceProvider.SetWebObjectActivatorContainer(IUnityContainer)"/>.</summary>
-		/// <param name="applicationServiceProvider">Required. Throws <see cref="ArgumentNullException"/> if <c>null</c>.</param>
-		protected WebFormsUnityContainerOwner( IServiceProvider applicationServiceProvider )
+		/// <summary>Not intended to be called from consuming application code unless you have prepared your own <see cref="IServiceProvider"/>. Constructs a new instance of <see cref="WebFormsUnityContainerOwner"/>. Registers this instance with <see cref="HostingEnvironment.RegisterObject(IRegisteredObject)"/>, sets the <see cref="IServiceProvider"/> as the basis of <see cref="System.Web.HttpRuntime.WebObjectActivator"/> and adds <see cref="UnityHttpModule"/> to ASP.NET.</summary>
+		protected WebFormsUnityContainerOwner( IServiceCollection services )
 		{
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
-				throw new InvalidOperationException( "Another " + nameof(WebFormsUnityContainerOwner) + " has already been created." );
+				throw new InvalidOperationException( "Another " + nameof(WebFormsUnityContainerOwner) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
 			}
 
 			//
 
 			services.AddSingleton<Unity.WebForms.Services.IServiceProviderAccessor>( sp => new Unity.WebForms.Services.DefaultServiceProviderAccessor( sp ) );
 
-			this.previousWoa = HttpRuntime.WebObjectActivator;
+			this.services            = services ?? throw new ArgumentNullException(nameof(services));
+			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
+			this.previousWoa         = HttpRuntime.WebObjectActivator;
+			this.ucsp                = new MediWebObjectActivatorServiceProvider( this.rootServiceProvider, this.previousWoa, onUnresolvedType: null );
 
-			HttpRuntime.WebObjectActivator = this.ucsp = new MediWebObjectActivatorServiceProvider( applicationServiceProvider, this.previousWoa, onUnresolvedType: null );
-
+			HttpRuntime.WebObjectActivator = this.ucsp;
 			HostingEnvironment.RegisterObject( this );
-
-			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( UnityHttpModule ) ); // TODO: Can we un-register the module?
+			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( UnityHttpModule ) ); // TODO: Can we un-register the module? // NOTE: Because WebObjectActivator is configured before the UnityHttpModule is added, it means that UnityHttpModule can use DI in its own constructor to get the ServiceProvider! :D
 		}
 
-		/// <summary>Returns the <see cref="IServiceProvider"/> that was used to construct this <see cref="WebFormsUnityContainerOwner"/>.</summary>
-		public IServiceProvider ApplicationServiceProvider { get; }
+		/// <summary>Call this method from a <see cref="WebActivatorEx.PostApplicationStartMethodAttribute"/> or other method (after your original <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked) to register additional services or reconfigure existing services if you need to perform additional service registration after your Global.asax has initialized.</summary>
+		public void Reconfigure( Action<IServiceCollection> reconfigureServices )
+		{
+			throw new NotImplementedException();
+		}
 
 		/// <summary>Calls <see cref="Dispose"/>.</summary>
 		/// <param name="immediate">This parameter is unused.</param>
