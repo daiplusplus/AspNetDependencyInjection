@@ -145,19 +145,21 @@
     <Compile Include="Service2.cs" />
     <Compile Include="Service3.cs" />
     <Compile Include="Service4.cs" />
-    <Compile Include="Site.Master.cs">
-      <DependentUpon>Site.Master</DependentUpon>
+    <Compile Include="SingletonService.cs" />
+    <Compile Include="Site.master.cs">
+      <DependentUpon>Site.master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Site.Master.designer.cs">
-      <DependentUpon>Site.Master</DependentUpon>
+    <Compile Include="Site.master.designer.cs">
+      <DependentUpon>Site.master</DependentUpon>
     </Compile>
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Site.Master" />
+    <Content Include="Site.master" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Unity.WebForms\Unity.WebForms.csproj">

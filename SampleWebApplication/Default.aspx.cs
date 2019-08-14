@@ -13,17 +13,19 @@ namespace SampleWebApplication
 		private readonly IExampleRequestLifelongService exampleService;
 		private readonly Service4 service4;
 
-		public DefaultPage( IExampleRequestLifelongService exampleService, Service4 service4 )
+		public DefaultPage( Service1 service1, Service2 service2, IExampleRequestLifelongService exampleService, Service4 service4 )
 		{
-			this.exampleService = exampleService ?? throw new ArgumentNullException(nameof(exampleService));
-			this.service4 = service4 ?? throw new ArgumentNullException(nameof(service4));
+			this.InjectedService1 = service1;
+			this.InjectedService2 = service2;
+			this.exampleService   = exampleService ?? throw new ArgumentNullException(nameof(exampleService));
+			this.service4         = service4       ?? throw new ArgumentNullException(nameof(service4));
 		}
 
 		protected override void OnInit( EventArgs e )
 		{
-			if ( !IsPostBack )
+			if( !this.IsPostBack )
 			{
-				AddControls();
+				this.AddControls();
 			}
 
 			base.OnInit( e );
@@ -44,8 +46,7 @@ namespace SampleWebApplication
 		private void AddControls()
 		{
 			InjectedControl newControl = LoadControl("InjectedControl.ascx") as InjectedControl;
-			Container.BuildUp( newControl );
-			DynamicInjectedControl.Controls.Add( newControl );
+			this.DynamicInjectedControl.Controls.Add( newControl );
 		}
 
 		#endregion
@@ -53,18 +54,12 @@ namespace SampleWebApplication
 		#region Dependencies
 
 		/// <summary>Gets/sets the <see cref="Service1" /> dependency (injected).</summary>
-		[Dependency]
 		public Service1 InjectedService1 { get; set; }
 
 		/// <summary>Gets/sets the <see cref="Service2" /> dependency (injected).</summary>
-		[Dependency]
 		public Service2 InjectedService2 { get; set; }
 
 		public IExampleRequestLifelongService InjectedService3 => this.exampleService;
-
-		/// <summary>Gets/sets the <see cref="IUnityContainer"/> instance for dynamic resolution.</summary>
-		[Dependency]
-		public IUnityContainer Container { get; set; }
 
 		#endregion
 	}
