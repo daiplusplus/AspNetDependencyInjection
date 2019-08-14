@@ -48,26 +48,9 @@ namespace Unity.WebForms.Internal
 
 			try
 			{
-				HttpContext httpContext = HttpContext.Current;
-				if( httpContext != null )
-				{
-					if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
-					{
-						return this.GetService( serviceType, requestServiceScope.ServiceProvider );
-					}
-					else if( httpContext.ApplicationInstance.TryGetApplicationServiceProvider( out IServiceProvider applicationServiceProvider ) )
-					{
-						return this.GetService( serviceType, applicationServiceProvider );
-					}
-					else
-					{
-						return this.GetService( serviceType, serviceProvider: this.rootServiceProvider );
-					}
-				}
-				else
-				{
-					return this.GetService( serviceType, serviceProvider: this.rootServiceProvider );
-				}
+				IServiceProvider serviceProvider = this.GetServiceProvider();
+
+				return this.GetService( serviceType, serviceProvider );
 			}
 			catch( Exception ex )
 			{
@@ -77,9 +60,28 @@ namespace Unity.WebForms.Internal
 			}
 		}
 
-		private IServiceProvider GetServiceProvider( HttpContext httpContext )
+		private IServiceProvider GetServiceProvider()
 		{
-
+			HttpContext httpContext = HttpContext.Current;
+			if( httpContext != null )
+			{
+				if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+				{
+					return requestServiceScope.ServiceProvider;
+				}
+				else if( httpContext.ApplicationInstance.TryGetApplicationServiceProvider( out IServiceProvider applicationServiceProvider ) )
+				{
+					return applicationServiceProvider;
+				}
+				else
+				{
+					return this.rootServiceProvider;
+				}
+			}
+			else
+			{
+				return this.rootServiceProvider;
+			}
 		}
 
 		private Object GetService( Type serviceType, IServiceProvider serviceProvider )
@@ -142,6 +144,7 @@ namespace Unity.WebForms.Internal
 			}
 		}
 
+		/// <summary>An <see cref="ObjectFactory"/>.</summary>
 		private static Object DefaultCreateInstance( Type type )
 		{
 			return DefaultCreateInstance( type, args: null );
@@ -149,13 +152,19 @@ namespace Unity.WebForms.Internal
 
 		private static Object DefaultCreateInstance( Type type, params Object[] args )
 		{
-			
+			return ActivatorServiceProvider.Instance.GetService( serviceType: type, args: args );
 		}
 	}
 
 	/// <summary>Does not perform any caching or object lifetime management - everything is transient.</summary>
 	internal class ActivatorServiceProvider : IServiceProvider
 	{
+		public static ActivatorServiceProvider Instance { get; } = new ActivatorServiceProvider();
+
+		private ActivatorServiceProvider()
+		{
+		}
+
 		public Object GetService( Type serviceType )
 		{
 			return GetService( serviceType );
