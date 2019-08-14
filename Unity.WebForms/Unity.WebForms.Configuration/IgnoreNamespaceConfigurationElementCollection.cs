@@ -8,10 +8,10 @@ namespace Unity.WebForms.Configuration
 	///		contain the list of namspace prefixes to ignore when checking for
 	///		dependencies to inject.
 	/// </summary>
-	public class IgnoreNamespaceConfigurationCollection : ConfigurationElementCollection
+	public class IgnoreNamespaceConfigurationElementCollection : ConfigurationElementCollection
 	{
-		/// <summary>Constructs and initializes a new instance of <see cref="IgnoreNamespaceConfigurationCollection"/>.</summary>
-		public IgnoreNamespaceConfigurationCollection()
+		/// <summary>Constructs and initializes a new instance of <see cref="IgnoreNamespaceConfigurationElementCollection"/>.</summary>
+		public IgnoreNamespaceConfigurationElementCollection()
 		{
 			NamespaceConfigurationElement element = new NamespaceConfigurationElement();
 			this.BaseAdd( element, true );

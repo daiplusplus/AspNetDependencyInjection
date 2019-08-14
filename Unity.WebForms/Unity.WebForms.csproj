@@ -75,10 +75,10 @@
     <Compile Include="Services\HttpContextAccessor\HttpContextAccessor.cs" />
     <Compile Include="Services\HttpContextAccessor\IHttpContextAccessor.cs" />
     <Compile Include="Services\ServiceProviderAccessor\IServiceProviderAccessor.cs" />
-    <Compile Include="Unity.WebForms.Configuration\IgnoreNamespaceConfigurationCollection.cs" />
+    <Compile Include="Unity.WebForms.Configuration\IgnoreNamespaceConfigurationElementCollection.cs" />
     <Compile Include="Unity.WebForms.Configuration\NamespaceConfigurationElement.cs" />
     <Compile Include="Unity.WebForms.Configuration\NamespacePrefix.cs" />
-    <Compile Include="Unity.WebForms.Configuration\UnityWebFormsConfiguration.cs" />
+    <Compile Include="Unity.WebForms.Configuration\UnityWebFormsConfigurationSection.cs" />
     <Compile Include="Unity.WebForms\HttpExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unity.WebForms\UnityContainerServiceProvider.cs" />
