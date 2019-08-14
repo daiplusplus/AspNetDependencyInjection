@@ -1,20 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Web;
-using System.Web.UI;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Unity.WebForms.Configuration;
 using Unity.WebForms.Internal;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Unity.WebForms.Services;
 
 namespace Unity.WebForms
 {
-	/// <summary>HttpModule that establishes <see cref="IUnityContainer"/> container instances for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
+	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
 	public sealed class UnityHttpModule : IHttpModule
 	{
 		// TODO: Consider moving this to MediWebObjectActivatorServiceProvider and filter services there?
@@ -36,29 +34,35 @@ namespace Unity.WebForms
 			}
 		}
 
-		/// <summary>Initializes a module and prepares it to handle requests.</summary>
-		/// <param name="httpApplication">An <see cref="HttpApplication"/> to associated with the root container.</param>
+		private readonly IServiceProvider rootServiceProvider;
+
+		/// <summary>Constructs a new instance of <see cref="UnityHttpModule"/>. This constructor is invoked by the ASP.NET runtime which uses the <see cref="HttpRuntime.WebObjectActivator"/> to provide the constructor parameters.</summary>
+		public UnityHttpModule( IServiceProviderAccessor rootServiceProviderAccessor )
+		{
+			if( rootServiceProviderAccessor == null ) throw new ArgumentNullException(nameof(rootServiceProviderAccessor));
+
+			this.rootServiceProvider = rootServiceProviderAccessor.RootServiceProvider ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.RootServiceProvider) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
+		}
+
+		/// <summary>Initializes an <see cref="IHttpModule"/> for a new <see cref="HttpApplication"/> instance. This method is invoked for each new <see cref="HttpApplication"/> instance created - ASP.NET will create multiple <see cref="HttpApplication"/> instances in the same AppDomain (but why?)</summary>
+		/// <param name="httpApplication">An <see cref="HttpApplication"/> to associate with the root <see cref="IServiceProvider"/> which is used to create an <see cref="IServiceScope"/> for each request.</param>
 		public void Init( HttpApplication httpApplication )
 		{
 			// Note that IHttpModule.Init can be called multiple times as the ASP.NET runtime will pool HttpApplication instances in the same process:
+			// (Apparently ASP.NET creates a new HttpApplication instance for each request? Is that true? That seems... unnecessary, I thought they were long-lived and serviced multiple requests - so one HttpApplication per Request-Thread-pool thread?)
+
 			// https://stackoverflow.com/questions/1140915/httpmodule-init-method-is-called-several-times-why
+			// https://lowleveldesign.org/2011/07/20/global-asax-in-asp-net/
 
-			// These event hookups have to be done on every HttpApplication instance, even if the RootContainer isn't set yet - otherwise the event-handlers will never be invoked.
+			// These event hookups have to be done on every HttpApplication instance - otherwise the event-handlers will never be invoked.
 
-			httpApplication.BeginRequest             += this.OnContextBeginRequest;
-			httpApplication.PreRequestHandlerExecute += this.OnContextPreRequestHandlerExecute;
-			httpApplication.EndRequest               += this.OnContextEndRequest;
+			httpApplication.BeginRequest += this.OnContextBeginRequest;
+			httpApplication.EndRequest   += this.OnContextEndRequest;
 
-			if( StaticWebFormsUnityContainerOwner.RootServiceProvider == null )
-			{
-				// TODO: Is it possible to detect if a HttpApplication instance is 'special' or not?
-				// Because if this is not a 'special' HttpApplication then this method should throw an exception complaining that `StaticWebFormsUnityContainerOwner.RootContainer == null`.
-				//return;
-			}
-			else
-			{
-				httpApplication.SetApplicationServiceProvider( StaticWebFormsUnityContainerOwner.RootServiceProvider );
-			}
+			// TODO: Is it possible to detect if a HttpApplication instance is 'special' or not? Does it matter?
+			// Are special instances created before or after PreStart and PostStart WebActivatorEx events?
+			
+			httpApplication.SetApplicationServiceProvider( this.rootServiceProvider );
 		}
 
 		/// <summary>This method does nothing.</summary>
@@ -78,7 +82,7 @@ namespace Unity.WebForms
 
 			// Register the current HttpContextBase inside the `helper` instance so it can be used by the DefaultHttpContextAccessor instance.
 			{
-				DefaultHttpContextAccessorFactoryHelper helper = requestServiceScope.ServiceProvider.GetService<DefaultHttpContextAccessorFactoryHelper>();
+				DefaultHttpContextAccessorHelper helper = requestServiceScope.ServiceProvider.GetService<DefaultHttpContextAccessorHelper>();
 				if( helper != null )
 				{
 					helper.HttpContext = new HttpContextWrapper( httpApplication.Context );

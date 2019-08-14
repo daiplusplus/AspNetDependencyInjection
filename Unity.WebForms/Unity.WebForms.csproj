@@ -74,6 +74,7 @@
     <Compile Include="Services\Configuration\PassthroughWebConfiguration.cs" />
     <Compile Include="Services\HttpContextAccessor\HttpContextAccessor.cs" />
     <Compile Include="Services\HttpContextAccessor\IHttpContextAccessor.cs" />
+    <Compile Include="Services\ServiceProviderAccessor\IServiceProviderAccessor.cs" />
     <Compile Include="Unity.WebForms.Configuration\IgnoreNamespaceConfigurationCollection.cs" />
     <Compile Include="Unity.WebForms.Configuration\NamespaceConfigurationElement.cs" />
     <Compile Include="Unity.WebForms.Configuration\NamespacePrefix.cs" />

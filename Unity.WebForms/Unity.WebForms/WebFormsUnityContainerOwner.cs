@@ -1,21 +1,25 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Unity.WebForms.Internal;
 
 namespace Unity.WebForms
 {
-	/// <summary>Controls the lifespan of the provided <see cref="IUnityContainer"/> (or creates a new <see cref="IUnityContainer"/>). This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down.</summary>
+	/// <summary>Controls the lifespan of the configured <see cref="IServiceCollection"/>. This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down. Only 1 instance of this class can exist at a time in a single AppDomain.</summary>
 	public class WebFormsUnityContainerOwner : IDisposable, IRegisteredObject
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
-		private readonly IServiceProvider previousWoa;
-
+		private readonly IServiceCollection services;
+		private readonly ServiceProvider    rootServiceProvider;
+		private readonly IServiceProvider   previousWoa;
 		private readonly MediWebObjectActivatorServiceProvider ucsp;
 
+		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="WebFormsUnityContainerOwner"/> and to configure services in the root service provider.</summary>
 		public static WebFormsUnityContainerOwner Configure( Action<IServiceCollection> configureServices )
 		{
 			if( configureServices == null ) throw new ArgumentNullException(nameof(configureServices));
@@ -37,9 +41,9 @@ namespace Unity.WebForms
 				throw new InvalidOperationException( "Another " + nameof(WebFormsUnityContainerOwner) + " has already been created." );
 			}
 
-			this.ApplicationServiceProvider = applicationServiceProvider ?? throw new ArgumentNullException(nameof(applicationServiceProvider));
+			//
 
-			StaticWebFormsUnityContainerOwner.RootServiceProvider = applicationServiceProvider;
+			services.AddSingleton<Unity.WebForms.Services.IServiceProviderAccessor>( sp => new Unity.WebForms.Services.DefaultServiceProviderAccessor( sp ) );
 
 			this.previousWoa = HttpRuntime.WebObjectActivator;
 
@@ -60,30 +64,19 @@ namespace Unity.WebForms
 			this.Dispose();
 		}
 
-		/// <summary>Calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, un-sets the <see cref="MediWebObjectActivatorServiceProvider"/> from <see cref="HttpRuntime.WebObjectActivator"/> and restores its original value, and calls the <see cref="IDisposable.Dispose"/> method of <see cref="ApplicationServiceProvider"/>.</summary>
+		/// <summary>Calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, un-sets the <see cref="MediWebObjectActivatorServiceProvider"/> from <see cref="HttpRuntime.WebObjectActivator"/> and restores its original value, and calls the <see cref="IDisposable.Dispose"/> method of the root <see cref="ServiceProvider"/>.</summary>
 		public void Dispose()
 		{
 			HostingEnvironment.UnregisterObject(this);
 
-			if( StaticWebFormsUnityContainerOwner.RootServiceProvider == this.ApplicationServiceProvider )
+			if( HttpRuntime.WebObjectActivator == this.ucsp )
 			{
-				StaticWebFormsUnityContainerOwner.RootServiceProvider = null;
+				HttpRuntime.WebObjectActivator = this.previousWoa;
 			}
 
-			HttpRuntime.WebObjectActivator = this.previousWoa;
-
-			if( this.ApplicationServiceProvider is IDisposable disposable )
-			{
-				disposable.Dispose();
-			}
+			this.rootServiceProvider.Dispose();
 
 			_semaphore.Release();
 		}
-	}
-
-	internal static class StaticWebFormsUnityContainerOwner
-	{
-		/// <summary>The single root, application-level container that is associated with each <see cref="System.Web.HttpApplication"/> instance and <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</summary>
-		public static IServiceProvider RootServiceProvider { get; set; }
 	}
 }
