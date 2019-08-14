@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -88,54 +88,6 @@ namespace Unity.WebForms
 			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
 		}
 
-		private void OnContextPreRequestHandlerExecute( Object sender, EventArgs e )
-		{
-			HttpApplication httpApplication = (HttpApplication)sender;
-
-			IHttpHandler handler = httpApplication.Context.Handler;
-
-			if( handler == null )
-			{
-				// No hander means static content; so no need for DI
-				return;
-			}
-			else
-			{
-//				IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
-
-//				IServiceScope requestServiceScope = httpApplication.Context.GetRequestServiceScope();
-
-				// User controls are ready to be built up after the page initialization in complete
-				if( handler is Page page )
-				{
-					page.InitComplete += ( Object icSender, EventArgs icEventArgs ) => this.OnPageInitComplete( icSender, icEventArgs, httpApplication.Context );
-				}
-			}
-		}
-
-		/// <summary>Build-up each control in the page's control tree.</summary>
-		private void OnPageInitComplete( Object sender, EventArgs e, HttpContext httpContext )
-		{
-			if( _ignoreNamespacePrefixes == null ) throw new InvalidOperationException( "This " + nameof(UnityHttpModule) + " instance has not been initialized." );
-
-			Page page = (Page)sender;
-
-			IServiceScope requestServiceScope = httpContext.GetRequestServiceScope();
-
-			foreach( Control c in GetControlTree( page ) )
-			{
-				String typeFullName     = c.GetType().FullName           ?? String.Empty;
-				String baseTypeFullName = c.GetType().BaseType?.FullName ?? String.Empty;
-
-				// filter on namespace prefixes to avoid attempts to build up controls needlessly
-				Boolean controlIsMatchedByAPrefix = _ignoreNamespacePrefixes.Any( p => p.Matches( typeFullName ) || p.Matches( baseTypeFullName ) );
-				if( !controlIsMatchedByAPrefix )
-				{
-//					childContainer.BuildUp( c.GetType(), c );
-				}
-			}
-		}
-
 		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
 		private void OnContextEndRequest( Object sender, EventArgs e )
 		{
@@ -147,32 +99,6 @@ namespace Unity.WebForms
 			if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
 			{
 				requestServiceScope.Dispose();
-			}
-		}
-
-		#endregion
-
-		#region Helpers
-
-		/// <summary>Traverses through the control tree to build up the dependencies.</summary>
-		/// <param name="root">The root control to traverse.</param>
-		/// <returns>Any child controls to be processed.</returns>
-		private static IEnumerable<Control> GetControlTree( Control root )
-		{
-			if( root.HasControls() )
-			{
-				foreach( Control child in root.Controls )
-				{
-					yield return child;
-
-					if( child.HasControls() )
-					{
-						foreach( Control c in GetControlTree( child ) )
-						{
-							yield return c;
-						}
-					}
-				}
 			}
 		}
 
