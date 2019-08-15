@@ -15,7 +15,7 @@ namespace AspNetDependencyInjection
 	public static partial class ServiceCollectionExtensions
 	{
 		/// <summary>Convenience method that registers <typeparamref name="TServiceFactory"/> as a Singleton service and registers <typeparamref name="TService"/> as a Scoped service that uses <typeparamref name="TServiceFactory"/> as a factory.</summary>
-		public static IServiceCollection AddScopedWithFactoryService<TService,TServiceFactory>( this IServiceCollection services )
+		public static IServiceCollection AddScopedWithFactory<TService,TServiceFactory>( this IServiceCollection services )
 			where TService        : class
 			where TServiceFactory : class, IServiceFactory<TService>
 		{

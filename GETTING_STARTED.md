@@ -126,7 +126,7 @@ Then your registration code should look like this:
 ```
 services
     .AddWebConfiguration()
-	.AddScopedWithFactoryService<MyDbContext,MyDbContextFactory>();
+	.AddScopedWithFactory<MyDbContext,MyDbContextFactory>();
 ```
 
 Or if you don't wish to implement `IServiceFactory<TService`, the equivalent long-form of the above is:
