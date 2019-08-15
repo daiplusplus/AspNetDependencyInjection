@@ -107,8 +107,8 @@
     <Compile Include="About.aspx.designer.cs">
       <DependentUpon>About.aspx</DependentUpon>
     </Compile>
-    <None Include="App_Start\UnityWebFormsStart.template.cs" />
-    <Compile Include="App_Start\UnityWebFormsStart.cs" />
+    <None Include="App_Start\SampleApplicationStart.template.cs" />
+    <Compile Include="App_Start\SampleApplicationStart.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -162,9 +162,9 @@
     <Content Include="Site.master" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Unity.WebForms\Unity.WebForms.csproj">
+    <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
       <Project>{7e9e872b-41be-4b55-9519-d2ff3f92eb4e}</Project>
-      <Name>Unity.WebForms</Name>
+      <Name>AspNetDependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

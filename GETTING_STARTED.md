@@ -1,91 +1,94 @@
-# Installation, Getting Started and Troubleshooting guide for `Unity.WebForms` (`Jehoel.Unity.WebForms`)
+# Installation, Getting Started and Troubleshooting guide for `AspNetDependencyInjection` (`Jehoel.AspNetDependencyInjection`)
 
 ## Installation and Getting Started steps:
 
 ### Step 1: Install the package:
 
 1. In Visual Studio, open the Package Manager Console and ensure the "Default project" selector is your web-application project.
-2. Run `Install-Package Jehoel.Unity.AspNetWebForms`
-3. This will add the package reference to your project. Now you need to configure the Unity container.
+2. Run `Install-Package Jehoel.AspNetDependencyInjection`
+3. This will add the package reference to your project in addition to its other dependencies such as `Microsoft.Extensions.DependencyInjection`.
+4. Now you need to configure the Dependency Injection `IServiceProvider` in your application's startup logic. Continue to step 2 below.
 
 ### Step 2: Copy this `ConfigureServices` file into your project:
 
-* Note that previous versions of the NuGet `Unity.WebForms` package added a starter file to the parent project at `App_Start\UnityWebFormsStart.cs`.
-	* This has now been removed from `Jehoel.Unity.WebForms` because NuGet packages are not meant to include mutable content files intended to be edited by the consuming project's author, instead only immutable content files are meant to be included.
-	* So you need to manually add code that configure the web-application's root Unity Container.
-
-* Personally, I put this file in the same directory as `Global.asax` and name it `Global-Unity.asax.cs` just so all of my application's startup code is together.
-	* Though if you want to be consistent with other OWIN conventions, feel free to put it in `App_Start\UnityWebFormsStart.cs`.
-		* Note that the `App_Start` directory is *not* special in ASP.NET 4 (unlike the `App_Code`, `App_Data`, `App_Theme`, `App_Browser` and `App_WebReference` folders).
+(As NuGet does not recommend providing project files in NuGet packages anymore, so no startup or service configuration file will be added to your project when you install the package, instead copy the code below to a new file and provide values for the placeholders)
 
 ```
 using System;
-using System.Web;
 
-using Unity;
-using Unity.WebForms;
+using Microsoft.Extensions.DependencyInjection;
+using SampleWebApplication;
 
-[assembly: WebActivatorEx.PostApplicationStartMethod( typeof($rootnamespace$.UnityWebFormsStart), nameof($rootnamespace$.UnityWebFormsStart.PostStart) )]
+using WebActivatorEx;
+using AspNetDependencyInjection;
 
-namespace $rootnamespace$
+[assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
+//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
+
+namespace SampleWebApplication
 {
-    /// <summary>Unity.WebForms startup and configuration class for your ASP.NET WebForms project.</summary>
-    internal static class UnityWebFormsStart
-    {
-        private static WebFormsUnityContainerOwner _containerOwner;
+	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
+	internal static class SampleApplicationStart
+	{
+		private static ApplicationDependencyInjection _di;
 
-        /// <summary>Initializes the unity container when the application starts up.</summary>
-        /// <remarks>Do not edit this method. Perform any modifications in the <see cref="RegisterDependencies" /> method.</remarks>
-        internal static void PostStart()
-        {
-            IUnityContainer rootContainer = new UnityContainer();
+		/// <summary>Invoked when the ASP.NET application starts up, before Global's Application_Start method runs. Dependency-injection should be configured here.</summary>
+		internal static void PreStart()
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-            RegisterDependencies( rootContainer );
+			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
+		}
 
-            _containerOwner = new WebFormsUnityContainerOwner( rootContainer );
-        }
+		/// <summary>Registers dependencies in the supplied container.</summary>
+		/// <param name="container">Instance of the container to populate.</param>
+		private static void ConfigureServices( IServiceCollection services )
+		{
+			// TODO: Add any dependencies needed here
+			services
+				.AddDefaultHttpContextAccessor()
+				.AddScoped<Service1>()
+				.AddTransient<Service2>()
+				.AddScoped<IExampleRequestLifelongService,ExampleRequestLifelongService>()
+				.AddScoped<Service4>()
+				.AddSingleton<SingletonService>();
+		}
 
-        /// <summary>Registers dependencies in the supplied container.</summary>
-        /// <param name="container">Instance of the container to populate.</param>
-        private static void RegisterDependencies( IUnityContainer container )
-        {
-            // TODO: Add any dependencies needed here
-            container
-                // Registers a service such that Unity.WebForms will only ever create a single instance for the life of the container (i.e. the instance is shared by all HttpApplication and HttpContext instances)
-                .RegisterSingleton<ISingletonService,SingletonImplementation>()
+		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
+		internal static void PostStart()
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
 
-                // Registers a service such that Unity.WebForms will create (and dispose, if necessary) a new instance for each HTTP request where that service is requested.
-                // If requested outside of a HTTP request's context then the service will have the same lifetime as the root container.
-                // When multiple dependents depend on one of these dependencies then they will share the same instance.
-                // Examples include Entity Framework DbContexts and OAuth2/OIDC-based HttpClient factories that use request cookies to store tokens.
-                .RegisterRequest<YourDbContext>()
+			//_di.Reconfigure( ReconfigureServices );
+		}
 
-                // Registers a service such that Unity.WebForms will create a new instance for each call to Resolve (i.e. a transient dependency).
-                // Examples include services that depend on request-lifetime-limited ILogger instances
-                // WARNING: Do not register services that implement `IDisposable` with `RegisterType` unless your code will be responsible for wrapping the returned object in a `using(service){}` block or otherwise manually calling `.Dispose()` as Unity will not dispose of transient objects.
-                .RegisterType<ITransientService,TransientServiceImplementation>();
-        }
-    }
+		private static void ReconfigureServices( IServiceCollection services )
+		{
+			
+		}
+	}
 }
 ```
 
-### Step 3: Customize `RegisterDependencies` by adding your service registrations.
+### Step 3: Customize `ConfigureServices` by adding your service registrations.
 
-This README assumes you're already familiar with Unity and/or DI service registration in general.
-
-This project adds a new set of extension method to `IUnityContainer` to simplify service registration for services that should have their lifetimes constrained to their associated HTTP request. `RegisterRequest`. There are many overloads for registration using generic types or `System.Type`, named and unnamed registrations, and so on.
+This README assumes you're already familiar with `Microsoft.Extensions.DependencyInjection`.
 
 ## Frequently asked questions
 
 (Actually, I have never been asked these questions, but I imagine people attempting to use this library might ask these questions)
 
+### Can I use constructor dependency-injection with my HttpModule and HttpHandler classes? (`IHttpModule`, `IHttpHandler`, etc)
+
+Yes! Provided that your HttpModule or HttpHandler is instantiated after the Dependency Injection system is set-up so that `WebObjectActivator` is set, as ASP.NET will use `WebObjectActivator` to instantiate the HttpModule and HttpHandler instances.
+
 ### What if you need to access the `HttpContext` (`HttpContextBase`) associated with the current request in a request-scoped service?
 
-This project adds a built-in service: `Unity.WebForms.IHttpContextAccessor`. This service is registered only in the per-request child `IUnityContainer` to prevent inadvertent resolution of `IHttpContentAccessor` 
+This project adds a built-in service: `AspNetDependencyInjection.IHttpContextAccessor`. You can add this service by using `.AddDefaultHttpContextAccessor()` in your `ConfigureServices` method.
 
 ### What if I need access to values in web.config like `<appSettings>`?
 
-To avoid making a static reference to `WebConfigurationManager` and to make your components testable, use `Unity.WebForms.Services.IWebConfiguration`. Add it using `container.AddWebConfiguration()`.
+To avoid making a static reference to `WebConfigurationManager` and to make your components testable, use `AspNetDependencyInjection.IWebConfiguration`. Add it using `container.AddWebConfiguration()`.
 
 `IWebConfiguration` provides access to:
 
@@ -128,19 +131,19 @@ container
 
 If you need to choose your connection-string at runtime based on an `<appSetting>` value, then use `IWebConfigurationExtensions.RequireIndirectConnectionString` instead of `RequireConnectionString`.
 
-Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new child `IUnityContainer` though you would be responsible for disposing it.
+Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new `IServiceScope` though you would be responsible for disposing it.
 
 
 ## Included services
 
 All included services are exposed as interfaces so you can replace them with your own implementation for testing purposes or for different production scenarios.
 
-### `Unity.WebForms.IHttpContextAccessor`
+### `AspNetDependencyInjection.IHttpContextAccessor`
 
 * Provides thread-safe access to `HttpContext` (as a `HttpContextBase`).
-* Always automatically registered in the per-request child `IUnityContainer`.
+* This service is must be registered by your application by using `services.AddDefaultHttpContextAccessor()`.
 
-### `Unity.WebForms.Services.IWebConfiguration`
+### `AspNetDependencyInjection.IWebConfiguration`
 
 * Provides access to `WebConfigurationManager`.
 * Requires manual registration. Call `container.AddWebConfiguration()`.
@@ -177,6 +180,12 @@ When performing any troubleshooting involving ASP.NET's built-in support for con
 
 	* These packages don't seem to be required to use WebObjectActivator-based constructors.
 
+* Delete any potentially stale temporary ASP.NET intermediate files and runtime compilation files
+
+	* Issues can arise when the ASP.NET's intermediate files (when your `*.aspx`, `*.ascx`, and `*.master` files are transpiled to `*.cs`) were created without support for `WebObjectActivator`.
+	* Delete all intermediate and output files from your project to cause Visual Studio and ASP.NET to recreate them with WebObjectActivator support. You should only have to do this once after updating your project to target the .NET Framework 4.7.2
+	* See the heading "Steps to take to delete all output, intermediate, and temporary files" below.
+
 ### <abbr title="Yellow Screen of Death">YSoD</abbr> error: "Constructor on type 'ASP.Default_aspx' not found."
 
 (Where `Default_aspx` is the web-page, master-page or user-control being used)
@@ -186,13 +195,14 @@ When running your webapplication you may get a yellow-screen-of-death with a sta
     [MissingMethodException: Constructor on type 'ASP.login_aspx' not found.]
        System.RuntimeType.CreateInstanceImpl(BindingFlags bindingAttr, Binder binder, Object[] args, CultureInfo culture, Object[] activationAttributes, StackCrawlMark& stackMark) +1431
        System.Activator.CreateInstance(Type type, BindingFlags bindingAttr, Binder binder, Object[] args, CultureInfo culture, Object[] activationAttributes) +184
-       Unity.WebForms.UnityContainerServiceProvider.DefaultCreateInstance(Type type) +32
-       Unity.WebForms.UnityContainerServiceProvider.GetService(Type serviceType) +375
-       __ASP.FastObjectFactory_app_web_xkkmukhw.Create_ASP_Defaultaspx() +118
+       [...]
+       __ASP.FastObjectFactory_app_web_a1b2c3d4.Create_ASP_Defaultaspx() +118
+
+This happens when the configured `IServiceProvider` is unable to resolve constructor parameters for your Page, User Control or 
 
 First, perform the .NET Framework target version verification checks described immediately underneath the "Troubleshooting" header above.
 
-This can happen when the intermediate files (when your `*.aspx`, `*.ascx`, and `*.master` files are transpiled to `*.cs`) were created without support for `WebObjectActivator`. Delete all intermediate and output files from your project to cause Visual Studio and ASP.NET to recreate them with WebObjectActivator support. You should only have to do this once.
+This can happen 
 
 ### Steps to take to delete all output, intermediate, and temporary files:
 

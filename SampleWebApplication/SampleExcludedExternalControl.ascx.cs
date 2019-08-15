@@ -2,11 +2,9 @@
 
 using SampleWebApplication;
 
-using Unity;
-
 namespace ExcludedNamespace.SampleWebApplication
 {
-	/// <summary>This control's dependencies should be excluded from DI because it is in the "Foo." namespace which is excluded as per the &lt;Unity.WebForms&gt;&lt;ignoreNamspaces&gt; configuration in web.config.</summary>
+	/// <summary>This control's dependencies should be excluded from DI because it is in the "Foo." namespace which is excluded as per the &lt;ignoreNamspaces&gt; configuration in web.config.</summary>
 	public partial class SampleExcludedExternalControl : System.Web.UI.UserControl
 	{
 		public SampleExcludedExternalControl( Service1 service1, Service2 service2 )
