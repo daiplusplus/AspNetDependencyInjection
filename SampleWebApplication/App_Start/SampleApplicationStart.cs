@@ -1,3 +1,4 @@
+using System;
 
 using Microsoft.Extensions.DependencyInjection;
 using SampleWebApplication;
@@ -6,7 +7,7 @@ using WebActivatorEx;
 using AspNetDependencyInjection;
 
 [assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
-[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
+//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
 
 namespace SampleWebApplication
 {

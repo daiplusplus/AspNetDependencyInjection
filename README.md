@@ -1,45 +1,32 @@
 
-# Unity.WebForms
+# AspNetDependencyInjection
 
-(Currently listed on NuGet.org as `Jehoel.Unity.AspNetWebForms`)
+(Currently listed on NuGet.org as `Jehoel.AspNetDependencyInjection`)
 
-**Unity.WebForms** is a collection of various ideas on Dependency Injection utilizing the [Unity](http://unity.codeplex.com/) container in ASP.NET WebForm applications, formalized into a single NuGet package for easy integration into an existing application.
+**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
 
-This package was inspired by similar packages from DevTrends, specifically:
+* This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity`, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
+	* ...which itself is a derivative and fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms)
+		* ...which cites [DevTrends Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/) and [DevTrends Unity.WCF](http://nuget.org/packages/Unity.Wcf/) as original works.
 
-* [DevTrends Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/)
-* [DevTrends Unity.WCF](http://nuget.org/packages/Unity.Wcf/)
+* This particular package's main objective is supporting ASP.NET Web Forms 4.7.2's new `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true _constructor_ dependency injection. Previously applications had to use "property injection" which many consider to be an anti-pattern.
 
-The only difference is that this packages is a DLL integration with minimal source code added. The only source file added is to allow the configuration of the Unity container with your types.
-
-This particular package (`Jehoel.Unity.AspNetWebForms`) and repo (at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms)) is a git fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms) with a main objective of supporting ASP.NET WebForms 4.7.2's new `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true constructor dependency injection.
-
-This repo's objectives are:
-* Update to .NET Framework 4.7.2 (done)
-* Update existing dependencies, including Unity 5 (done)
-* Add in support for WebObjectActivator, as per Microsoft's example at https://github.com/aspnet/AspNetWebFormsDependencyInjection (done)
-* Update the sample project (done)
-* Publish to NuGet (`Jehoel.Unity.AspNetWebForms`) (done)
-* Add more tests (in progress)
-* Add support for DI constructor injection for `HttpModule`s
+* This project is *not* intended for use with ASP.NET MVC, ASP.NET Web API, ASP.NET 5, nor ASP.NET Core. Those platforms already have established dependency-injection infrastructure ecosystems available to their users.
 
 ## Current Version
-* 1.4 (S. Kyle Korndoerfer's most recent version, released in 2015)
-* 2.0 (this repo and project, updated in 2019 for ASP.NET 4.7.2 and WebObjectActivator)
+* 1.4 - S. Kyle Korndoerfer's most recent version of `Unity.WebForms`, released in 2015. See [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms).
+* 2.0 - My `Unity.WebForms` project, updated in 2019 for ASP.NET 4.7.2 and WebObjectActivator). See [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
+* 3.0 - After being extensively modified to use `Microsoft.Extensions.DependencyInjection` and renamed to `AspNetDependencyInjection` (as it now is unrelated to `Unity`.
 
 ## NuGet Gallery
 
-### Version 1.4 (.NET 4.5, no support for WebObjectActivator)
-
-[http://nuget.org/packages/Unity.WebForms](http://nuget.org/packages/Unity.WebForms)
-
-### Version 2.0 (.NET 4.7.2, with support for WebObjectActivator)
-
-[http://nuget.org/packages/Jehoel.Unity.AspNetWebForms](http://nuget.org/packages/Jehoel.Unity.AspNetWebForms)
+```
+Install-Package Jehoel.AspNetDependencyInjection
+```
 
 ## Installation and Getting Started
 
-Please see the `GETTING_STARTED.md` file in the GitHub repository: [https://github.com/Jehoel/Unity.WebForms/blob/master/GETTING_STARTED.md](https://github.com/Jehoel/Unity.WebForms/blob/master/GETTING_STARTED.md)
+Please see the `GETTING_STARTED.md` file in the GitHub repository: [https://github.com/Jehoel/AspNetDependencyInjection/blob/master/GETTING_STARTED.md](https://github.com/Jehoel/AspNetDependencyInjection/blob/master/GETTING_STARTED.md)
 
 ## References / Links
 Here are some of the sources used for building out this package:
@@ -61,6 +48,4 @@ Here are some of the sources used for building out this package:
 
 
 ## License
-Unity.WebForms is under the MIT license - [http://www.opensource.org/licenses/mit-license](http://www.opensource.org/licenses/mit-license)
-
-[wiki]:https://bitbucket.org/KyleK/unity.webforms/wiki/
+`AspNetDependencyInjection` and all related prior projects are licensed under the MIT license - [http://www.opensource.org/licenses/mit-license](http://www.opensource.org/licenses/mit-license)

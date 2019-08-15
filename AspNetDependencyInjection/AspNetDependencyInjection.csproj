@@ -90,7 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AspNetDependencyInjection\UnityContainerServiceProvider.cs" />
     <Compile Include="AspNetDependencyInjection\UnityHttpModule.cs" />
-    <Compile Include="AspNetDependencyInjection\WebFormsUnityContainerOwner.cs" />
+    <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjection.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
