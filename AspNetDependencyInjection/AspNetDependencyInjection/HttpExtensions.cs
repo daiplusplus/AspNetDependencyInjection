@@ -37,7 +37,7 @@ namespace AspNetDependencyInjection.Internal
 
 		/// <summary>Stores a <see cref="IServiceScope"/> instance into application state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular <see cref="HttpApplication"/> instance.</summary>
 		/// <param name="httpApplication">The Global.asax instance.</param>
-		/// <param name="newApplicationServiceProvider">The Unity container instance to store.</param>
+		/// <param name="newApplicationServiceProvider">The <see cref="IServiceProvider"/> to store inside <paramref name="httpApplication"/>'s <see cref="HttpApplicationState"/>.</param>
 		public static void SetApplicationServiceProvider( this HttpApplication httpApplication, IServiceProvider newApplicationServiceProvider )
 		{
 			httpApplication.Application.Lock();
@@ -86,7 +86,7 @@ namespace AspNetDependencyInjection.Internal
 			return childContainer;
 		}
 
-		/// <summary>Stores the child Unity instance into request state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
+		/// <summary>Stores the provided <paramref name="serviceScope"/> into request state (<see cref="HttpContext.Items"/>). This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
 		/// <param name="context">The request context.</param>
 		/// <param name="serviceScope">The request's service-scope.</param>
 		public static void SetRequestServiceScope( this HttpContext context, IServiceScope serviceScope )
@@ -97,7 +97,7 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
-		/// <summary>Stores the child Unity instance into request state. This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
+		/// <summary>Stores the provided <paramref name="serviceScope"/> into request state (<see cref="HttpContextBase.Items"/>). This method does not normally need to called from web-application code but is exposed if you wish to override the container for a particular request.</summary>
 		/// <param name="context">The request context.</param>
 		/// <param name="serviceScope">The request's service-scope.</param>
 		public static void SetRequestServiceScope( this HttpContextBase context, IServiceScope serviceScope )

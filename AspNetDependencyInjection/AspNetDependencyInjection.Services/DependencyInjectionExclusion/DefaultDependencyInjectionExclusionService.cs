@@ -12,8 +12,8 @@ namespace AspNetDependencyInjection.Services
 	{
 		private static IEnumerable<String> LoadIgnoredNamespacePrefixes()
 		{
-			Object configurationSectionObj = ConfigurationManager.GetSection( UnityWebFormsConfigurationSection.SectionPath );
-			if( configurationSectionObj is UnityWebFormsConfigurationSection configuration )
+			Object configurationSectionObj = ConfigurationManager.GetSection( AspNetDependencyInjectionConfigurationSection.SectionPath );
+			if( configurationSectionObj is AspNetDependencyInjectionConfigurationSection configuration )
 			{
 				return configuration.Prefixes
 					.OfType<NamespaceConfigurationElement>()

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "Unity.WebForms" )]
-[assembly: AssemblyDescription( "Dependency Injection in ASP.NET WebForms using Unity" )]
+[assembly: AssemblyTitle( "AspNetDependencyInjection" )]
+[assembly: AssemblyDescription( "Dependency Injection in \"Classic\" ASP.NET using Microsoft.Extensions.DependencyInjection." )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "Unity.WebForms" )]
-[assembly: AssemblyCopyright( "Copyright © 2013 - 2015 S. Kyle Korndoerfer" )]
+[assembly: AssemblyProduct( "AspNetDependencyInjection" )]
+[assembly: AssemblyCopyright( "Copyright © 2013 - 2019 S. Kyle Korndoerfer, Dai Rees (@Jehoel on GitHub)" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 [assembly: NeutralResourcesLanguageAttribute( "en-US" )]
@@ -33,6 +33,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "2.0.*" )]
+[assembly: AssemblyVersion( "1.0.*" )]
 //[assembly: AssemblyFileVersion( "2.0.0.0" )]
-

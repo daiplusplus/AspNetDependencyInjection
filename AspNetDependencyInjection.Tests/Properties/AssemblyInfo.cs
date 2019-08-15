@@ -2,12 +2,12 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle( "Unity.WebForms.Tests" )]
+[assembly: AssemblyTitle( "AspNetDependencyInjection.Tests" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "Unity.WebForms.Tests" )]
-[assembly: AssemblyCopyright( "Copyright ©  2019" )]
+[assembly: AssemblyProduct( "AspNetDependencyInjection.Tests" )]
+[assembly: AssemblyCopyright( "Copyright ©  2019 - Dai Rees (@Jehoel on GitHub)" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 

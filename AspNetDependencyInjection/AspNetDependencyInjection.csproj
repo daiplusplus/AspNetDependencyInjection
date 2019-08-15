@@ -85,7 +85,7 @@
     <Compile Include="AspNetDependencyInjection.Configuration\IgnoreNamespaceConfigurationElementCollection.cs" />
     <Compile Include="AspNetDependencyInjection.Configuration\NamespaceConfigurationElement.cs" />
     <Compile Include="AspNetDependencyInjection.Configuration\NamespacePrefix.cs" />
-    <Compile Include="AspNetDependencyInjection.Configuration\UnityWebFormsConfigurationSection.cs" />
+    <Compile Include="AspNetDependencyInjection.Configuration\AspNetDependencyInjectionConfigurationSection.cs" />
     <Compile Include="AspNetDependencyInjection\HttpExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AspNetDependencyInjection\UnityContainerServiceProvider.cs" />
