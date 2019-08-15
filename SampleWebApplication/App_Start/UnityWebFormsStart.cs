@@ -4,30 +4,24 @@ using SampleWebApplication;
 
 using WebActivatorEx;
 
-[assembly: PreApplicationStartMethod ( typeof( SampleApplicationUnityWebFormsStart ), methodName: nameof( SampleApplicationUnityWebFormsStart.PreStart  ) )]
-[assembly: PostApplicationStartMethod( typeof( SampleApplicationUnityWebFormsStart ), methodName: nameof( SampleApplicationUnityWebFormsStart.PostStart ) )]
+[assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
 
 namespace SampleWebApplication
 {
 	using Unity.WebForms.Services;
 
 	/// <summary>Startup class for the Unity.WebForms NuGet package.</summary>
-	internal static class SampleApplicationUnityWebFormsStart
+	internal static class SampleApplicationStart
 	{
-		private static Unity.WebForms.WebFormsUnityContainerOwner _containerOwner;
+		private static Unity.WebForms.ApplicationDependencyInjection _di;
 
-		/// <summary>Initializes the unity container when the application starts up.</summary>
-		/// <remarks>Do not edit this method. Perform any modifications in the <see cref="RegisterDependencies" /> method.</remarks>
+		/// <summary>Invoked when the ASP.NET application starts up, before Global's Application_Start method runs. Dependency-injection should be configured here.</summary>
 		internal static void PreStart()
 		{
-			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationUnityWebFormsStart) + "." + nameof(PreStart) + "() called." );
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			_containerOwner = Unity.WebForms.WebFormsUnityContainerOwner.Configure( ConfigureServices );
-		}
-
-		internal static void PostStart()
-		{
-			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationUnityWebFormsStart) + "." + nameof(PostStart) + "() called." );
+			_di = Unity.WebForms.ApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
 		/// <summary>Registers dependencies in the supplied container.</summary>
@@ -42,6 +36,19 @@ namespace SampleWebApplication
 				.AddScoped<IExampleRequestLifelongService,ExampleRequestLifelongService>()
 				.AddScoped<Service4>()
 				.AddSingleton<SingletonService>();
+		}
+
+		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
+		internal static void PostStart()
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
+
+			//_di.Reconfigure( ReconfigureServices );
+		}
+
+		private static void ReconfigureServices( IServiceCollection services )
+		{
+			
 		}
 	}
 }

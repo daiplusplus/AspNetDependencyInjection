@@ -4,44 +4,48 @@ using System.Web;
 using Unity;
 using Unity.WebForms;
 
-[assembly: WebActivatorEx.PostApplicationStartMethod( typeof($rootnamespace$.UnityWebFormsStart), nameof($rootnamespace$.UnityWebFormsStart.PostStart) )]
+[assembly: WebActivatorEx.PreApplicationStartMethod( typeof($rootnamespace$.ApplicationStart), nameof($rootnamespace$.ApplicationStart.PostStart) )]
 
 namespace $rootnamespace$
 {
-	/// <summary>Unity.WebForms startup and configuration class for your ASP.NET WebForms project.</summary>
-	internal static class UnityWebFormsStart
+	/// <summary>Startup class for your application. Configures dependency-injection.</summary>
+	internal static class ApplicationStart
 	{
-		private static WebFormsUnityContainerOwner _containerOwner;
+		private static Unity.WebForms.ApplicationDependencyInjection _di;
 
-		/// <summary>Initializes the unity container when the application starts up.</summary>
-		/// <remarks>Do not edit this method. Perform any modifications in the <see cref="RegisterDependencies" /> method.</remarks>
-		internal static void PostStart()
+		/// <summary>Invoked when the ASP.NET application starts up, before Global's Application_Start method runs. Dependency-injection should be configured here.</summary>
+		internal static void PreStart()
 		{
-			IUnityContainer rootContainer = new UnityContainer();
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			RegisterDependencies( rootContainer );
-
-			_containerOwner = new WebFormsUnityContainerOwner( rootContainer );
+			_di = Unity.WebForms.ApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
 		/// <summary>Registers dependencies in the supplied container.</summary>
 		/// <param name="container">Instance of the container to populate.</param>
-		private static void RegisterDependencies( IUnityContainer container )
+		private static void ConfigureServices( IServiceCollection services )
 		{
 			// TODO: Add any dependencies needed here
-			container
-				// Registers a service such that Unity.WebForms will only ever create a single instance for the life of the container (i.e. the instance is shared by all HttpApplication and HttpContext instances)
-				.RegisterSingleton<ISingletonService,SingletonImplementation>()
+			services
+				.AddDefaultHttpContextAccessor()
+				.AddScoped<Service1>()
+				.AddTransient<Service2>()
+				.AddScoped<IExampleRequestLifelongService,ExampleRequestLifelongService>()
+				.AddScoped<Service4>()
+				.AddSingleton<SingletonService>();
+		}
 
-				// Registers a service such that Unity.WebForms will create (and dispose, if necessary) a new instance for each HTTP request where that service is requested.
-				// If requested outside of a HTTP request's context then the service will have the same lifetime as the root container.
-				// When multiple dependents depend on one of these dependencies then they will share the same instance.
-				// Examples include Entity Framework DbContexts and OAuth2/OIDC-based HttpClient factories that use request cookies to store tokens.
-				.RegisterRequest<YourDbContext>()
+		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
+		internal static void PostStart()
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
 
-				// Registers a service such that Unity.WebForms will create a new instance for each call to Resolve (i.e. a transient dependency).
-				// Examples include services that depend on request-lifetime-limited ILogger instances.
-				.RegisterType<ITransientService,TransientServiceImplementation>();
+			_di.Reconfigure( ReconfigureServices );
+		}
+
+		private static void ReconfigureServices( IServiceCollection services )
+		{
+			
 		}
 	}
 }

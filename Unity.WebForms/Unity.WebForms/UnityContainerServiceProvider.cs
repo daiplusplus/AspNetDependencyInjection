@@ -13,20 +13,20 @@ namespace Unity.WebForms.Internal
 {
 	/// <summary></summary>
 	/// <remarks>While this class implements <see cref="IServiceProvider"/> it is not intended to be used as a DI service-provider for use with Microsoft.Extensions.DependencyInjection - it is only so it can be used with <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</remarks>
-	public sealed class MediWebObjectActivator : IServiceProvider
+	public sealed class DependencyInjectionWebObjectActivator : IServiceProvider
 	{
 		private readonly IServiceProvider rootServiceProvider;
 		private readonly IServiceProvider fallback;
-		private readonly IAspNetDIExclusionService excluded;
+		private readonly IDependencyInjectionExclusionService excluded;
 
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
-		/// <summary>Instantiates a new instance of <see cref="MediWebObjectActivator"/>. You do not need to normally use this constructor directly - instead consider using <see cref="WebFormsUnityContainerOwner"/>.</summary>
+		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
 		/// <param name="rootServiceProvider">Required. The <see cref="IServiceProvider"/> container or service-provider to use for <see cref="HttpRuntime.WebObjectActivator"/>.</param>
 		/// <param name="fallback">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
 		/// <param name="excluded">Required. A service which indicates which types and namespaces should be excluded from DI and always constructed by <see cref="Activator"/>.</param>
 		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="excluded"/> is <c>null</c>.</exception>
-		public MediWebObjectActivator( IServiceProvider rootServiceProvider, IServiceProvider fallback, IAspNetDIExclusionService excluded )
+		public DependencyInjectionWebObjectActivator( IServiceProvider rootServiceProvider, IServiceProvider fallback, IDependencyInjectionExclusionService excluded )
 		{
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
 			this.fallback            = fallback;
