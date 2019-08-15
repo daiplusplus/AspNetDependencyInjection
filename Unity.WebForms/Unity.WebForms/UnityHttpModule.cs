@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -15,25 +15,6 @@ namespace Unity.WebForms
 	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
 	public sealed class UnityHttpModule : IHttpModule
 	{
-		// TODO: Consider moving this to MediWebObjectActivatorServiceProvider and filter services there?
-		private static IReadOnlyList<NamespacePrefix> _ignoreNamespacePrefixes = LoadIgnoredNamespacePrefixes();
-
-		private static IReadOnlyList<NamespacePrefix> LoadIgnoredNamespacePrefixes()
-		{
-			Object configurationSectionObj = ConfigurationManager.GetSection( UnityWebFormsConfiguration.SectionPath );
-			if( configurationSectionObj is UnityWebFormsConfiguration configuration )
-			{
-				return configuration.Prefixes
-					.OfType<NamespaceConfigurationElement>()
-					.Select( el => new NamespacePrefix( el.Prefix ) )
-					.ToList();
-			}
-			else
-			{
-				return Array.Empty<NamespacePrefix>();
-			}
-		}
-
 		private readonly IServiceProvider rootServiceProvider;
 
 		/// <summary>Constructs a new instance of <see cref="UnityHttpModule"/>. This constructor is invoked by the ASP.NET runtime which uses the <see cref="HttpRuntime.WebObjectActivator"/> to provide the constructor parameters.</summary>
