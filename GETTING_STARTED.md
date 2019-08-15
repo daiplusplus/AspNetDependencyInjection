@@ -37,7 +37,11 @@ namespace SampleWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
+			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, use `ApplicationDependencyInjection`:
 			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
+
+			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `MvcApplicationDependencyInjection`:
+			_di = MvcApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
@@ -142,6 +146,15 @@ If you need to choose your connection-string at runtime based on an `<appSetting
 
 Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new `IServiceScope`, though you would be responsible for disposing of the `DbContext`.
 
+### What's the difference between `ApplicationDependencyInjection` and `MvcApplicationDependencyInjection`?
+
+* `MvcApplicationDependencyInjection` is a subclass of `ApplicationDependencyInjection`.
+* `MvcApplicationDependencyInjection` is in its own separate assembly that has references to `System.Web.Mvc`, whereas `ApplicationDependencyInjection` does not.
+* `MvcApplicationDependencyInjection` performs the same set-up as `ApplicationDependencyInjection` but also sets-up the ASP.NET MVC-specific `System.Web.Mvc.IDependencyResolver`.
+
+* In conclusion:
+	* If you're not using ASP.NET MVC, use `ApplicationDependencyInjection` so you don't need to reference `System.Web.Mvc.dll`.
+	* If you are using ASP.NET MVC, use `MvcApplicationDependencyInjection` so your `IDependencyResolver` is configured correctly.
 
 ## Included services
 

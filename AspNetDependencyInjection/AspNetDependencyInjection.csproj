@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,7 +24,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
     <DocumentationFile>bin\Debug\AspNetDependencyInjection.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -34,11 +34,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-    <PostBuildEvent>
-        mkdir $(SolutionDir)nuget\lib\net472
-        copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\lib\net472\$(TargetFileName)
-    </PostBuildEvent>
     <DocumentationFile>bin\Release\AspNetDependencyInjection.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
@@ -101,15 +96,13 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-  </PropertyGroup>
-  <PropertyGroup>
     <PostBuildEvent>if "$(ConfigurationName)" == "Release" (
 
-mkdir $(SolutionDir)nuget\lib\net472
+mkdir $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472
 
-copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\lib\net472\$(TargetFileName)
-copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.pdb $(SolutionDir)nuget\lib\net472\AspNetDependencyInjection.pdb
-copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.xml $(SolutionDir)nuget\lib\net472\AspNetDependencyInjection.xml
+copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\$(TargetFileName)
+copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.pdb $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\AspNetDependencyInjection.pdb
+copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.xml $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\AspNetDependencyInjection.xml
 
 )
 </PostBuildEvent>

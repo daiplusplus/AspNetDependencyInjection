@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleWebApplication", "Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.Tests", "AspNetDependencyInjection.Tests\AspNetDependencyInjection.Tests.csproj", "{7FF0B492-DEF1-4005-A899-0E82910481C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.Mvc", "AspNetDependencyInjection.Mvc\AspNetDependencyInjection.Mvc.csproj", "{1B4BE5D4-F919-44E9-B570-151EEE5698DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{7FF0B492-DEF1-4005-A899-0E82910481C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FF0B492-DEF1-4005-A899-0E82910481C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FF0B492-DEF1-4005-A899-0E82910481C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B4BE5D4-F919-44E9-B570-151EEE5698DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B4BE5D4-F919-44E9-B570-151EEE5698DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B4BE5D4-F919-44E9-B570-151EEE5698DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B4BE5D4-F919-44E9-B570-151EEE5698DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
