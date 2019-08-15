@@ -34,6 +34,7 @@
 				<dependency id="Microsoft.Extensions.DependencyInjection" version="2.2.0" />
 				<dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.2.0" />
 				<dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0" />
+				<dependency id="Jehoel.AspNetDependencyInjection" version="SPECIFY_VERSION" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
