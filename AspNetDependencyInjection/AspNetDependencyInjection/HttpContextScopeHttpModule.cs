@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Web;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using AspNetDependencyInjection.Configuration;
-using AspNetDependencyInjection.Internal;
-using AspNetDependencyInjection.Services;
-
 namespace AspNetDependencyInjection.Internal
 {
-	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
+	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/> instance.</summary>
 	public sealed class HttpContextScopeHttpModule : IHttpModule
 	{
 		private readonly ApplicationDependencyInjection appdi;
