@@ -1,13 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Web;
-using Microsoft.Extensions.DependencyInjection;
 
-using AspNetDependencyInjection.Configuration;
-using AspNetDependencyInjection.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AspNetDependencyInjection.Internal
 {
@@ -49,19 +44,27 @@ namespace AspNetDependencyInjection.Internal
 			{
 				IServiceProvider serviceProvider = this.GetServiceProviderForCurrentHttpContext();
 
-				ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
-
-				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.DefaultObjectFactoryFactory, factoryArgument: helper );
-
-				if( helper.Instance != null )
+				// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
+				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
 				{
-					// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
-					return helper.Instance;
+					return existingObjectFactory( serviceProvider, arguments: null );
 				}
 				else
 				{
-					// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
-					return objectFactory( serviceProvider: serviceProvider, arguments: null );
+					ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
+
+					ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.DefaultObjectFactoryFactory, factoryArgument: helper );
+
+					if( helper.Instance != null )
+					{
+						// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
+						return helper.Instance;
+					}
+					else
+					{
+						// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
+						return objectFactory( serviceProvider: serviceProvider, arguments: null );
+					}
 				}
 			}
 		}
