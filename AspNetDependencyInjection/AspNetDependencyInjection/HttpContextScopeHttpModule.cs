@@ -15,6 +15,7 @@ namespace AspNetDependencyInjection.Internal
 	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
 	public sealed class HttpContextScopeHttpModule : IHttpModule
 	{
+		private readonly ApplicationDependencyInjection appdi;
 		private readonly IServiceProvider rootServiceProvider;
 
 		/// <summary>Constructs a new instance of <see cref="HttpContextScopeHttpModule"/>. This constructor is invoked by the ASP.NET runtime which uses the <see cref="HttpRuntime.WebObjectActivator"/> to provide the constructor parameters.</summary>
@@ -22,6 +23,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( rootServiceProviderAccessor == null ) throw new ArgumentNullException(nameof(rootServiceProviderAccessor));
 
+			this.appdi = rootServiceProviderAccessor.ApplicationDI ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.ApplicationDI) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 			this.rootServiceProvider = rootServiceProviderAccessor.RootServiceProvider ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.RootServiceProvider) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 		}
 
@@ -47,6 +49,11 @@ namespace AspNetDependencyInjection.Internal
 			// TODO: Is it possible to detect if a HttpApplication instance is "special" or not? Does it matter?
 			// Are special instances created before or after PreStart and PostStart WebActivatorEx events?
 			
+			if( this.appdi.UseHttpApplicationScopes )
+			{
+				throw new NotImplementedException(); // TODO: Don't forget to dispose when the HttpApplication instance is destroyed!
+			}
+
 			httpApplication.SetApplicationServiceProvider( this.rootServiceProvider );
 		}
 
@@ -58,6 +65,11 @@ namespace AspNetDependencyInjection.Internal
 		private void OnContextBeginRequest( Object sender, EventArgs e )
 		{
 			HttpApplication httpApplication = (HttpApplication)sender;
+
+			if( this.appdi.UseHttpApplicationScopes || !this.appdi.UseRequestScopes )
+			{
+				throw new NotImplementedException();
+			}
 
 			IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
 			
@@ -78,14 +90,17 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
 		private void OnContextEndRequest( Object sender, EventArgs e )
 		{
-			// I found there are times when this `OnContextEndRequest` would be called but `OnContextBeginRequest` was not called.
-			// This happened when ApplicationInsights' package installed its <httpModules> in <system.web> instead of <system.webServer> while `<system.webServer><validation validateIntegratedModeConfiguration="true" />`.
-
-			HttpApplication httpApplication = (HttpApplication)sender;
-
-			if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+			if( this.appdi.UseRequestScopes )
 			{
-				requestServiceScope.Dispose();
+				// I found there are times when this `OnContextEndRequest` would be called but `OnContextBeginRequest` was not called.
+				// This happened when ApplicationInsights' package installed its <httpModules> in <system.web> instead of <system.webServer> while `<system.webServer><validation validateIntegratedModeConfiguration="true" />`.
+
+				HttpApplication httpApplication = (HttpApplication)sender;
+
+				if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+				{
+					requestServiceScope.Dispose();
+				}
 			}
 		}
 	}
