@@ -10,6 +10,8 @@ namespace AspNetDependencyInjection.Internal
 	/// <remarks>While this class implements <see cref="IServiceProvider"/> it is not intended to be used as a DI service-provider for use with Microsoft.Extensions.DependencyInjection - it is only so it can be used with <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</remarks>
 	public sealed class DependencyInjectionWebObjectActivator : IServiceProvider
 	{
+		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
+
 		private readonly IServiceProvider rootServiceProvider;
 		private readonly IServiceProvider fallback;
 		private readonly IDependencyInjectionExclusionService excluded;
@@ -17,12 +19,14 @@ namespace AspNetDependencyInjection.Internal
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
-		/// <param name="rootServiceProvider">Required. The <see cref="IServiceProvider"/> container or service-provider to use for <see cref="HttpRuntime.WebObjectActivator"/>.</param>
+		/// <param name="configuration">Required.</param>
+		/// <param name="rootServiceProvider">Required. The root <see cref="IServiceProvider"/> to use. The actual <see cref="IServiceProvider"/> used inside <see cref="GetService(Type)"/> depends on the current <see cref="HttpContext.Current"/>.</param>
 		/// <param name="fallback">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
 		/// <param name="excluded">Required. A service which indicates which types and namespaces should be excluded from DI and always constructed by <see cref="Activator"/>.</param>
 		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="excluded"/> is <c>null</c>.</exception>
-		public DependencyInjectionWebObjectActivator( IServiceProvider rootServiceProvider, IServiceProvider fallback, IDependencyInjectionExclusionService excluded )
+		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IServiceProvider fallback, IDependencyInjectionExclusionService excluded )
 		{
+			this.config              = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
 			this.fallback            = fallback;
 			this.excluded            = excluded ?? throw new ArgumentNullException(nameof(excluded));
@@ -77,15 +81,19 @@ namespace AspNetDependencyInjection.Internal
 
 			if( httpContext != null )
 			{
-				if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+				if( this.config.UseRequestScopes && httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) ) // This will return false when `UseRequestScopes == false`.
 				{
 					return requestServiceScope.ServiceProvider;
 				}
-				else if( httpContext.ApplicationInstance.TryGetApplicationServiceProvider( out IServiceProvider applicationServiceProvider ) )
+				else if( this.config.UseHttpApplicationScopes && httpContext.ApplicationInstance.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) ) // This will return false when `UseHttpApplicationScopes == true`.
 				{
-					return applicationServiceProvider;
+					return httpApplicationServiceScope.ServiceProvider;
 				}
-				else
+				else if( httpContext.ApplicationInstance.TryGetRootServiceProvider( out IServiceProvider httpApplicationRootServiceProvider ) ) // This should never return false
+				{
+					return httpApplicationRootServiceProvider;
+				}
+				else // This should never happen, but just-in-case:
 				{
 					return this.rootServiceProvider;
 				}

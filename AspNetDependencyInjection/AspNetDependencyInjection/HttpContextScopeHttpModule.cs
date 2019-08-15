@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Web;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using AspNetDependencyInjection.Configuration;
-using AspNetDependencyInjection.Internal;
-using AspNetDependencyInjection.Services;
-
 namespace AspNetDependencyInjection.Internal
 {
-	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/>. All <see cref="HttpApplication"/> instances share the same container as  </summary>
+	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/> instance.</summary>
 	public sealed class HttpContextScopeHttpModule : IHttpModule
 	{
+		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 		private readonly IServiceProvider rootServiceProvider;
 
 		/// <summary>Constructs a new instance of <see cref="HttpContextScopeHttpModule"/>. This constructor is invoked by the ASP.NET runtime which uses the <see cref="HttpRuntime.WebObjectActivator"/> to provide the constructor parameters.</summary>
@@ -22,6 +16,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( rootServiceProviderAccessor == null ) throw new ArgumentNullException(nameof(rootServiceProviderAccessor));
 
+			this.config              = rootServiceProviderAccessor.Configuration       ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.Configuration) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 			this.rootServiceProvider = rootServiceProviderAccessor.RootServiceProvider ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.RootServiceProvider) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 		}
 
@@ -41,13 +36,22 @@ namespace AspNetDependencyInjection.Internal
 
 			// These event hookups have to be done on every HttpApplication instance - otherwise the event-handlers will never be invoked.
 
-			httpApplication.BeginRequest += this.OnContextBeginRequest;
-			httpApplication.EndRequest   += this.OnContextEndRequest;
+			if( this.config.UseRequestScopes )
+			{
+				httpApplication.BeginRequest += this.OnContextBeginRequest;
+				httpApplication.EndRequest   += this.OnContextEndRequest;
+			}
 
-			// TODO: Is it possible to detect if a HttpApplication instance is "special" or not? Does it matter?
-			// Are special instances created before or after PreStart and PostStart WebActivatorEx events?
-			
-			httpApplication.SetApplicationServiceProvider( this.rootServiceProvider );
+			httpApplication.SetRootServiceProvider( this.rootServiceProvider );
+
+			if( this.config.UseHttpApplicationScopes )
+			{
+				httpApplication.Disposed += this.OnHttpApplicationDisposed;
+
+				IServiceScope httpApplicationScope = this.rootServiceProvider.CreateScope();
+
+				httpApplication.SetHttpApplicationServiceScope( httpApplicationScope );
+			}
 		}
 
 		/// <summary>This method does nothing.</summary>
@@ -55,13 +59,20 @@ namespace AspNetDependencyInjection.Internal
 		{
 		}
 
+		/// <summary>Sets-up per-request IServiceScope.</summary>
 		private void OnContextBeginRequest( Object sender, EventArgs e )
 		{
 			HttpApplication httpApplication = (HttpApplication)sender;
 
-			IServiceProvider applicationServiceProvider = httpApplication.GetApplicationServiceProvider();
-			
-			IServiceScope requestServiceScope = applicationServiceProvider.CreateScope();
+			IServiceScope requestServiceScope;
+			if( this.config.UseHttpApplicationScopes )
+			{
+				requestServiceScope = httpApplication.GetHttpApplicationServiceScope().ServiceProvider.CreateScope();
+			}
+			else
+			{
+				requestServiceScope = httpApplication.GetRootServiceProvider().CreateScope();
+			}
 
 			// Register the current HttpContextBase inside the `helper` instance so it can be used by the DefaultHttpContextAccessor instance.
 			{
@@ -75,7 +86,7 @@ namespace AspNetDependencyInjection.Internal
 			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
 		}
 
-		/// <summary>Ensures that the child container gets disposed of properly at the end of each request cycle.</summary>
+		/// <summary>Ensures that the per-request IServiceScope gets disposed of properly at the end of each request cycle.</summary>
 		private void OnContextEndRequest( Object sender, EventArgs e )
 		{
 			// I found there are times when this `OnContextEndRequest` would be called but `OnContextBeginRequest` was not called.
@@ -86,6 +97,17 @@ namespace AspNetDependencyInjection.Internal
 			if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
 			{
 				requestServiceScope.Dispose();
+			}
+		}
+
+		/// <summary>Ensures that the per-HttpApplication IServiceScope gets disposed of properly at the end of each HttpApplication lifespan.</summary>
+		private void OnHttpApplicationDisposed( Object sender, EventArgs e )
+		{
+			HttpApplication httpApplication = (HttpApplication)sender;
+
+			if( httpApplication.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) )
+			{
+				httpApplicationServiceScope.Dispose();
 			}
 		}
 	}

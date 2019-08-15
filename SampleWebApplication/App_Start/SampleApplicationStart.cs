@@ -24,8 +24,6 @@ namespace SampleWebApplication
 			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
-		/// <summary>Registers dependencies in the supplied container.</summary>
-		/// <param name="container">Instance of the container to populate.</param>
 		private static void ConfigureServices( IServiceCollection services )
 		{
 			// TODO: Add any dependencies needed here

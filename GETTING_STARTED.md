@@ -40,13 +40,15 @@ namespace SampleWebApplication
 			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
-		/// <summary>Registers dependencies in the supplied container.</summary>
-		/// <param name="container">Instance of the container to populate.</param>
 		private static void ConfigureServices( IServiceCollection services )
 		{
 			// TODO: Add any dependencies needed here
 			services
-				.AddDefaultHttpContextAccessor()
+				// Useful services built-in to AspNetDependencyInjection:
+				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
+				.AddWebConfiguration() // Adds `IWebConfiguration`
+
+				// Example services:
 				.AddScoped<Service1>()
 				.AddTransient<Service2>()
 				.AddScoped<IExampleRequestLifelongService,ExampleRequestLifelongService>()
@@ -88,7 +90,7 @@ This project adds a built-in service: `AspNetDependencyInjection.IHttpContextAcc
 
 ### What if I need access to values in web.config like `<appSettings>`?
 
-To avoid making a static reference to `WebConfigurationManager` and to make your components testable, use `AspNetDependencyInjection.IWebConfiguration`. Add it using `container.AddWebConfiguration()`.
+To avoid making a static reference to `WebConfigurationManager` and to make your components testable, use `AspNetDependencyInjection.IWebConfiguration`. Add it using `services.AddWebConfiguration()`.
 
 `IWebConfiguration` provides access to:
 
@@ -98,9 +100,7 @@ To avoid making a static reference to `WebConfigurationManager` and to make your
 
 ### What about Entity Framework's `DbContext`?
 
-`DbContext` should be registered using `RegisterRequestFactory`. Supply a factory method (or `IServiceFactory` implementation) that uses the `DbContext(String connectionString)` constructor with the connection-string pulled from your configuration system.
-
-If you're using `web.config` for configuration then you can define an `IServiceFactory<DbContext>` which itself takes a dependency on `IWebConfiguration` to get the connection-string from your web.config file:
+To have a DbContext that is lifetime-limited to each HTTP request ("scoped") with a named connection-string pulled from your `web.config` file, use the code below:
 
 ```
 public class MyDbContextFactory : IServiceFactory<MyDbContext>
@@ -124,14 +124,23 @@ public class MyDbContextFactory : IServiceFactory<MyDbContext>
 Then your registration code should look like this:
 
 ```
-container
+services
     .AddWebConfiguration()
-    .RegisterRequestFactory<MyDbContext,MyDbContextFactory>();
+	.AddScopedWithFactory<MyDbContext,MyDbContextFactory>();
 ```
 
-If you need to choose your connection-string at runtime based on an `<appSetting>` value, then use `IWebConfigurationExtensions.RequireIndirectConnectionString` instead of `RequireConnectionString`.
+Or if you don't wish to implement `IServiceFactory<TService`, the equivalent long-form of the above is:
 
-Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new `IServiceScope` though you would be responsible for disposing it.
+```
+services
+	.AddWebConfiguration()
+	.AddSingleton<MyDbContextFactory>()
+    .AddScoped<MyDbContext,MyDbContextFactory>( sp => sp.GetRequiredService<MyDbContextFactory>().CreateInstance() );
+```
+
+If you need to choose your connection-string at runtime based on an `<appSetting>` value, then modify the `MyDbContextFactory` constructor to use `IWebConfigurationExtensions.RequireIndirectConnectionString` instead of `RequireConnectionString`.
+
+Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new `IServiceScope`, though you would be responsible for disposing of the `DbContext`.
 
 
 ## Included services
@@ -146,7 +155,7 @@ All included services are exposed as interfaces so you can replace them with you
 ### `AspNetDependencyInjection.IWebConfiguration`
 
 * Provides access to `WebConfigurationManager`.
-* Requires manual registration. Call `container.AddWebConfiguration()`.
+* Requires manual registration. Call `services.AddWebConfiguration()`.
 * Comes with extension methods to easily get connection-strings directly by name or indirectly via a named `<appSettings>` entry.
 
 ## Troubleshooting

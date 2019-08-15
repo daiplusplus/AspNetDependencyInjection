@@ -68,6 +68,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AspNetDependencyInjection.Services\ServiceFactory\IServiceFactory.cs" />
+    <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjectionConfiguration.cs" />
     <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\ServiceCollectionExtensions.cs" />
     <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionExclusion\DefaultDependencyInjectionExclusionService.cs" />
     <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionExclusion\ServiceCollectionExtensions.cs" />
@@ -87,6 +89,7 @@
     <Compile Include="AspNetDependencyInjection.Configuration\NamespacePrefix.cs" />
     <Compile Include="AspNetDependencyInjection.Configuration\AspNetDependencyInjectionConfigurationSection.cs" />
     <Compile Include="AspNetDependencyInjection\HttpExtensions.cs" />
+    <Compile Include="AspNetDependencyInjection\IScopedHttpApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AspNetDependencyInjection\DependencyInjectionWebObjectActivator.cs" />
     <Compile Include="AspNetDependencyInjection\HttpContextScopeHttpModule.cs" />
