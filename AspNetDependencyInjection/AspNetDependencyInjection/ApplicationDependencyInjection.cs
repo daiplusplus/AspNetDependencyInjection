@@ -83,8 +83,9 @@ namespace AspNetDependencyInjection
 			throw new NotImplementedException();
 		}
 
-		/// <summary>Calls <see cref="Dispose"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>
+		/// <summary>Calls <see cref="Dispose()"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>
 		/// <param name="immediate">This parameter is unused.</param>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes" )]
 		void IRegisteredObject.Stop(Boolean immediate)
 		{
 			this.Dispose();

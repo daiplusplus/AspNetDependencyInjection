@@ -56,10 +56,12 @@ namespace SampleWebApplication
 			Interlocked.Increment( ref _sharedCallCount );
 		}
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations" )]
 		public void Dispose()
 		{
 			if( this.isDisposed )
 			{
+				// This exception is only thrown for demonstration purposes. Never throw an exception from a Dispose method in production code!
 				throw new InvalidOperationException( "This instance is already disposed." );
 			}
 			else
