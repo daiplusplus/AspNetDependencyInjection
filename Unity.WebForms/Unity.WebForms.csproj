@@ -68,13 +68,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Services\ExclusionConfiguration\DefaultAspNetDIExclusionService.cs" />
+    <Compile Include="Services\DependencyInjectionExclusion\DefaultDependencyInjectionExclusionService.cs" />
     <Compile Include="Unity.WebForms\ActivatorServiceProvider.cs" />
     <Compile Include="Services\Configuration\DefaultWebConfiguration.cs" />
     <Compile Include="Services\Configuration\IWebConfiguration.cs" />
     <Compile Include="Services\Configuration\IWebConfigurationExtensions.cs" />
     <Compile Include="Services\Configuration\PassthroughWebConfiguration.cs" />
-    <Compile Include="Services\ExclusionConfiguration\IAspNetDIExclusionService.cs" />
+    <Compile Include="Services\DependencyInjectionExclusion\IDependencyInjectionExclusionService.cs" />
     <Compile Include="Services\HttpContextAccessor\HttpContextAccessor.cs" />
     <Compile Include="Services\HttpContextAccessor\IHttpContextAccessor.cs" />
     <Compile Include="Services\ServiceProviderAccessor\IServiceProviderAccessor.cs" />
