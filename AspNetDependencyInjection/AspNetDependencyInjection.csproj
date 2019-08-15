@@ -68,6 +68,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AspNetDependencyInjection.Services\ServiceFactory\IServiceFactory.cs" />
     <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjectionConfiguration.cs" />
     <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\ServiceCollectionExtensions.cs" />
     <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionExclusion\DefaultDependencyInjectionExclusionService.cs" />
