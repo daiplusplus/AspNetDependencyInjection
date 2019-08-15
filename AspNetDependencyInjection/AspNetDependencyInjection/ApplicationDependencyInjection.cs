@@ -10,7 +10,7 @@ using AspNetDependencyInjection.Internal;
 namespace AspNetDependencyInjection
 {
 	/// <summary>Controls the lifespan of the configured <see cref="IServiceCollection"/>. This class implements <see cref="IRegisteredObject"/> to ensure the root <see cref="IServiceProvider"/> is disposed when the <see cref="HostingEnvironment"/> shuts down. Only 1 instance of this class can exist at a time in a single AppDomain.</summary>
-	public sealed class ApplicationDependencyInjection : IDisposable, IRegisteredObject
+	public class ApplicationDependencyInjection : IDisposable, IRegisteredObject
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
@@ -19,7 +19,16 @@ namespace AspNetDependencyInjection
 		private readonly IServiceProvider                      previousWoa;
 		private readonly DependencyInjectionWebObjectActivator woa;
 
-		internal ImmutableApplicationDependencyInjectionConfiguration Configuration { get; }
+		private Boolean isDisposed;
+
+		/// <summary>Exposes <see cref="ImmutableApplicationDependencyInjectionConfiguration"/>.</summary>
+		protected internal ImmutableApplicationDependencyInjectionConfiguration Configuration      { get; }
+
+		/// <summary>Exposes <see cref="DependencyInjectionWebObjectActivator"/>.</summary>
+		protected internal DependencyInjectionWebObjectActivator                WebObjectActivator { get; }
+
+		/// <summary>Indicates if this <see cref="ApplicationDependencyInjection"/> instance has already been resolved.</summary>
+		protected          Boolean                                              IsDisposed => this.isDisposed;
 
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
 		public static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
@@ -39,7 +48,8 @@ namespace AspNetDependencyInjection
 			return new ApplicationDependencyInjection( configuration, services );
 		}
 
-		private ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
+		/// <summary>Constructor for subclasses. When the constructor returns all static/global state will have been set (e.g. <see cref="HttpRuntime"/>, <see cref="HostingEnvironment"/> and dynamic modules added).</summary>
+		protected ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
@@ -83,16 +93,31 @@ namespace AspNetDependencyInjection
 		/// <summary>Consuming applications should not need to call this method directly as it is called by <see cref="HostingEnvironment"/>. This method calls <see cref="HostingEnvironment.UnregisterObject(IRegisteredObject)"/>, un-sets the <see cref="DependencyInjectionWebObjectActivator"/> from <see cref="HttpRuntime.WebObjectActivator"/> and restores its original value, and calls the <see cref="IDisposable.Dispose"/> method of the root <see cref="ServiceProvider"/>.</summary>
 		public void Dispose()
 		{
-			HostingEnvironment.UnregisterObject(this);
+			this.Dispose( disposing: true );
+			GC.SuppressFinalize( this );
+		}
 
-			if( HttpRuntime.WebObjectActivator == this.woa )
+		/// <summary>See <see cref="IDisposable.Dispose"/>.</summary>
+		/// <param name="disposing">When <c>true</c>, the <see cref="Dispose()"/> method was called. When <c>false</c> the finalizer was invoked.</param>
+		protected virtual void Dispose( Boolean disposing )
+		{
+			if( this.isDisposed ) return;
+
+			if( disposing )
 			{
-				HttpRuntime.WebObjectActivator = this.previousWoa;
+				HostingEnvironment.UnregisterObject(this);
+
+				if( HttpRuntime.WebObjectActivator == this.woa )
+				{
+					HttpRuntime.WebObjectActivator = this.previousWoa;
+				}
+
+				this.rootServiceProvider.Dispose();
+
+				_semaphore.Release();
 			}
 
-			this.rootServiceProvider.Dispose();
-
-			_semaphore.Release();
+			this.isDisposed = true;
 		}
 	}
 }
