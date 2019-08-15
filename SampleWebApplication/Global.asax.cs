@@ -7,8 +7,16 @@ using System.Web.SessionState;
 
 namespace SampleWebApplication
 {
-    public class Global : System.Web.HttpApplication
+    public class SampleWebApplicationHttpApplication : HttpApplication
     {
+		private static Int32 _idSeed;
+
+		private readonly Int32 id = System.Threading.Interlocked.Increment( ref _idSeed );
+
+		public SampleWebApplicationHttpApplication()
+		{
+
+		}
 
         void Application_Start(object sender, EventArgs e)
         {
