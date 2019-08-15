@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Unity.WebForms.Configuration;
+using AspNetDependencyInjection.Configuration;
 
-namespace Unity.WebForms.Tests
+namespace AspNetDependencyInjection.Tests
 {
 	[TestClass]
 	public class ConfigurationTests

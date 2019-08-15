@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using AspNetDependencyInjection.Configuration;
 
-using Unity.WebForms.Configuration;
-
-namespace Unity.WebForms.Services
+namespace AspNetDependencyInjection.Services
 {
 	/// <summary>Uses web.config to determine which types and namespaces should be excluded from DI.</summary>
 	public class DefaultDependencyInjectionExclusionService : IDependencyInjectionExclusionService
@@ -63,22 +60,6 @@ namespace Unity.WebForms.Services
 			String fn = type.FullName;
 
 			return this.ignoreTypeNames.Contains( fn ) || this.ignoreNamespacePrefixes.Any( np => np.Matches( fn ) );
-		}
-	}
-
-	/// <summary>Extension methods for services bundled with <see cref="Unity.WebForms"/>.</summary>
-	public static partial class WebFormsServiceExtensions
-	{
-		/// <summary>Registers <see cref="DefaultDependencyInjectionExclusionService"/> as a singleton implementation of <see cref="IDependencyInjectionExclusionService"/>.</summary>
-		public static IServiceCollection AddDefaultAspNetDIExclusions( this IServiceCollection services, Boolean excludeAspNetNamespacesFromDI = true, IEnumerable<String> additionalExclusions = null )
-		{
-			return services
-				.AddSingleton<IDependencyInjectionExclusionService>( sp => new DefaultDependencyInjectionExclusionService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
-		}
-
-		internal static void TryAddDefaultAspNetDIExclusions( this IServiceCollection services )
-		{
-			services.TryAddSingleton<IDependencyInjectionExclusionService>( sp => new DefaultDependencyInjectionExclusionService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace Unity.WebForms.Configuration
+namespace AspNetDependencyInjection.Configuration
 {
 	/// <summary>
 	///		Defines an optional custom 'ignoreNamespaces' collection that will

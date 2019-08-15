@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.Web;
 
-namespace Unity.WebForms
+namespace AspNetDependencyInjection
 {
 	/// <summary>Gets the <see cref="HttpContextBase"/> for the current request.</summary>
 	public interface IHttpContextAccessor

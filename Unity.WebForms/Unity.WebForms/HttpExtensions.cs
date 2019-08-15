@@ -2,7 +2,7 @@
 using System.Web;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Unity.WebForms.Internal
+namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Collection of extension methods for the <see cref="HttpApplicationState" /> class.</summary>
 	public static class HttpContextExtensions

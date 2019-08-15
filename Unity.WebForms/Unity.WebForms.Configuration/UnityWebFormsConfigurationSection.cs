@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace Unity.WebForms.Configuration
+namespace AspNetDependencyInjection.Configuration
 {
 	/// <summary>Defines the Unity.WebForms configuration settings node inside an application configuration file.</summary>
 	public class UnityWebFormsConfigurationSection : ConfigurationSection

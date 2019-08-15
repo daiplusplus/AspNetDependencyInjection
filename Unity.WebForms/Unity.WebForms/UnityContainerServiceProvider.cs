@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,10 +6,10 @@ using System.Globalization;
 using System.Web;
 using Microsoft.Extensions.DependencyInjection;
 
-using Unity.WebForms.Configuration;
-using Unity.WebForms.Services;
+using AspNetDependencyInjection.Configuration;
+using AspNetDependencyInjection.Services;
 
-namespace Unity.WebForms.Internal
+namespace AspNetDependencyInjection.Internal
 {
 	/// <summary></summary>
 	/// <remarks>While this class implements <see cref="IServiceProvider"/> it is not intended to be used as a DI service-provider for use with Microsoft.Extensions.DependencyInjection - it is only so it can be used with <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</remarks>

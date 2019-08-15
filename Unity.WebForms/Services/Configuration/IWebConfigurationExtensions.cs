@@ -1,7 +1,7 @@
 using System;
 using System.Configuration;
 
-namespace Unity.WebForms.Services
+namespace AspNetDependencyInjection
 {
 	/// <summary>Provides useful extension methods for <see cref="IWebConfiguration"/> implementations.</summary>
 	public static class IWebConfigurationExtensions

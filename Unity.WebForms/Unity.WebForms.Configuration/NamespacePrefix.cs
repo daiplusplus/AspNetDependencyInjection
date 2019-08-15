@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Unity.WebForms.Configuration
+namespace AspNetDependencyInjection.Configuration
 {
 	/// <summary>Represents a CLR namespace prefix selector. If a prefix is `MyCompany.MyProduct` then it will match `MyCompany.MyProduct` and `MyCompany.MyProduct.Component` (a child namespace) but not `MyCompany.MyProducts` (as that is a different namespace at the same level).</summary>
 	public class NamespacePrefix

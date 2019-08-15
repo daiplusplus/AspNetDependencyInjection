@@ -5,12 +5,10 @@ using System.Web.Hosting;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Unity.WebForms.Internal;
+using AspNetDependencyInjection.Internal;
 
-namespace Unity.WebForms
+namespace AspNetDependencyInjection
 {
-	using svcs = Unity.WebForms.Services;
-
 	/// <summary>Controls the lifespan of the configured <see cref="IServiceCollection"/>. This class implements <see cref="IRegisteredObject"/> to ensure the container is disposed when the <see cref="HostingEnvironment"/> shuts down. Only 1 instance of this class can exist at a time in a single AppDomain.</summary>
 	public sealed class ApplicationDependencyInjection : IDisposable, IRegisteredObject
 	{
@@ -39,17 +37,17 @@ namespace Unity.WebForms
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
 			}
 
-			// Register necessary services:
+			// Register necessary internal services:
 
-			svcs.WebFormsServiceExtensions.TryAddDefaultAspNetDIExclusions( services );
-			services.AddSingleton<svcs.IServiceProviderAccessor>( sp => new svcs.DefaultServiceProviderAccessor( sp ) );
+			services.TryAddDefaultAspNetExclusions();
+			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( sp ) );
 
 			// Initialize fields:
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
 			this.previousWoa         = HttpRuntime.WebObjectActivator;
-			this.woa                = new DependencyInjectionWebObjectActivator( this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<svcs.IDependencyInjectionExclusionService>() );
+			this.woa                = new DependencyInjectionWebObjectActivator( this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
 
 			// And register:
 

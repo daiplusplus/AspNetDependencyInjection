@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace Unity.WebForms.Services
+namespace AspNetDependencyInjection.Services
 {
 	/// <summary>Implements <see cref="IWebConfiguration"/> using values passed to its constructor. Intended for testing purposes. For production use in an ASP.NET environment, use <see cref="DefaultWebConfiguration"/>.</summary>
 	public class PassthroughWebConfiguration : IWebConfiguration

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Unity.WebForms.Internal
+namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Does not perform any caching or object lifetime management - everything is transient.</summary>
 	internal class ActivatorServiceProvider : IServiceProvider

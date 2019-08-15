@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace Unity.WebForms.Configuration
+namespace AspNetDependencyInjection.Configuration
 {
 	/// <summary>Defines an individual namespace element for exclusion when performing dependency injection.</summary>
 	public class NamespaceConfigurationElement : ConfigurationElement

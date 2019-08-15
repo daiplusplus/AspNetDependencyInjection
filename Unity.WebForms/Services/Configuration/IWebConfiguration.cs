@@ -4,10 +4,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Web.Configuration;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-
-namespace Unity.WebForms.Services
+namespace AspNetDependencyInjection
 {
 	/// <summary>Provides an injectable representation of <see cref="WebConfigurationManager"/> that can be mocked for testing.</summary>
 	public interface IWebConfiguration
@@ -22,16 +19,5 @@ namespace Unity.WebForms.Services
 		/// <summary>Returns an <see cref="IReadOnlyDictionary{String,String}"/> representation of a .NET configuration section provided by either <see cref="DictionarySectionHandler"/>, <see cref="NameValueSectionHandler"/>, <see cref="NameValueFileSectionHandler"/> or <see cref="SingleTagSectionHandler"/> (or any configuration section that is resolvable to <see cref="System.Collections.IDictionary"/> or <see cref="NameValueCollection"/>). Returns <c>null</c> if the section does not exist.</summary>
 		/// <exception cref="InvalidOperationException">Thrown when the <paramref name="sectionName"/> refers to a section that cannot be converted to an <see cref="IReadOnlyDictionary{String,String}"/>.</exception>
 		IReadOnlyDictionary<String,String> GetKeyValueSection( String sectionName );
-	}
-
-	/// <summary>Extension methods for services bundled with <see cref="Unity.WebForms"/>.</summary>
-	public static partial class WebFormsServiceExtensions
-	{
-		/// <summary>Registers <see cref="DefaultWebConfiguration"/> as a singleton implementation of <see cref="IWebConfiguration"/>.</summary>
-		public static IServiceCollection AddWebConfiguration( this IServiceCollection services )
-		{
-			return services
-				.AddSingleton<IWebConfiguration,DefaultWebConfiguration>();
-		}
 	}
 }
