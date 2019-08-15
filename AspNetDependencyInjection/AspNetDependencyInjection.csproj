@@ -88,8 +88,8 @@
     <Compile Include="AspNetDependencyInjection.Configuration\AspNetDependencyInjectionConfigurationSection.cs" />
     <Compile Include="AspNetDependencyInjection\HttpExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AspNetDependencyInjection\UnityContainerServiceProvider.cs" />
-    <Compile Include="AspNetDependencyInjection\UnityHttpModule.cs" />
+    <Compile Include="AspNetDependencyInjection\DependencyInjectionWebObjectActivator.cs" />
+    <Compile Include="AspNetDependencyInjection\HttpContextScopeHttpModule.cs" />
     <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjection.cs" />
   </ItemGroup>
   <ItemGroup>
