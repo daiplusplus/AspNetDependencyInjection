@@ -14,33 +14,46 @@ namespace AspNetDependencyInjection
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
-		private readonly IServiceCollection services;
-		private readonly ServiceProvider    rootServiceProvider;
-		private readonly IServiceProvider   previousWoa;
+		private readonly IServiceCollection                    services;
+		private readonly ServiceProvider                       rootServiceProvider;
+		private readonly IServiceProvider                      previousWoa;
 		private readonly DependencyInjectionWebObjectActivator woa;
+
+		internal Boolean UseRequestScopes         { get; }
+		internal Boolean UseHttpApplicationScopes { get; }
 
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
 		public static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
 		{
+			return Configure( new ApplicationDependencyInjectionConfiguration(), configureServices );
+		}
+
+		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
+		public static ApplicationDependencyInjection Configure( ApplicationDependencyInjectionConfiguration configuration, Action<IServiceCollection> configureServices )
+		{
+			if( configuration     == null ) throw new ArgumentNullException(nameof(configuration));
 			if( configureServices == null ) throw new ArgumentNullException(nameof(configureServices));
 
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
-			return new ApplicationDependencyInjection( services );
+			return new ApplicationDependencyInjection( configuration, services );
 		}
 
-		private ApplicationDependencyInjection( IServiceCollection services )
+		private ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
 			}
 
+			this.UseRequestScopes         = configuration.UseRequestScopes;
+			this.UseHttpApplicationScopes = configuration.UseHttpApplicationScopes;
+
 			// Register necessary internal services:
 
 			services.TryAddDefaultAspNetExclusions();
-			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( sp ) );
+			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this, sp ) );
 
 			// Initialize fields:
 
