@@ -53,9 +53,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Unity.WebForms\Unity.WebForms.csproj">
+    <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
       <Project>{7e9e872b-41be-4b55-9519-d2ff3f92eb4e}</Project>
-      <Name>Unity.WebForms</Name>
+      <Name>AspNetDependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

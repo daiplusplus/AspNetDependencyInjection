@@ -52,7 +52,7 @@ namespace AspNetDependencyInjection.Services
 				.ToHashSet();
 		}
 
-		/// <summary>Returns <c>true</c> if the specified <paramref name="type"/> should be created using <see cref="Activator"/> (ASP.NET's default object factory) instead of using the configured <see cref="IServiceProvider"/>. The <see cref="DependencyInjectionExclusionServiceExtensions.IsIncluded(IDependencyInjectionExclusionService, Type)"/> extension method calls this method and returns the inverse (logical NOT) of this method's return value.</summary>
+		/// <summary>See the documentation of <see cref="IDependencyInjectionExclusionService.IsExcluded(Type)"/>.</summary>
 		public Boolean IsExcluded( Type type )
 		{
 			if( type == null ) throw new ArgumentNullException(nameof(type));
