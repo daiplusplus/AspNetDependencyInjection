@@ -77,15 +77,19 @@ namespace AspNetDependencyInjection.Internal
 
 			if( httpContext != null )
 			{
-				if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+				if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) ) // This will return false when `UseRequestScopes == false`.
 				{
 					return requestServiceScope.ServiceProvider;
 				}
-				else if( httpContext.ApplicationInstance.TryGetApplicationServiceProvider( out IServiceProvider applicationServiceProvider ) )
+				else if( httpContext.ApplicationInstance.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) ) // This will return false when `UseHttpApplicationScopes == true`.
 				{
-					return applicationServiceProvider;
+					return httpApplicationServiceScope.ServiceProvider;
 				}
-				else
+				else if( httpContext.ApplicationInstance.TryGetRootServiceProvider( out IServiceProvider httpApplicationRootServiceProvider ) ) // This should never return false
+				{
+					return httpApplicationRootServiceProvider;
+				}
+				else // This should never happen, but just-in-case:
 				{
 					return this.rootServiceProvider;
 				}
