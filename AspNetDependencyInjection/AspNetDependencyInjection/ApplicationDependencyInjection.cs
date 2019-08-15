@@ -19,8 +19,7 @@ namespace AspNetDependencyInjection
 		private readonly IServiceProvider                      previousWoa;
 		private readonly DependencyInjectionWebObjectActivator woa;
 
-		internal Boolean UseRequestScopes         { get; }
-		internal Boolean UseHttpApplicationScopes { get; }
+		internal ImmutableApplicationDependencyInjectionConfiguration Configuration { get; }
 
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
 		public static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
@@ -47,20 +46,19 @@ namespace AspNetDependencyInjection
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
 			}
 
-			this.UseRequestScopes         = configuration.UseRequestScopes;
-			this.UseHttpApplicationScopes = configuration.UseHttpApplicationScopes;
+			this.Configuration = configuration.ToImmutable();
 
 			// Register necessary internal services:
 
 			services.TryAddDefaultAspNetExclusions();
-			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this, sp ) );
+			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
 			this.previousWoa         = HttpRuntime.WebObjectActivator;
-			this.woa                = new DependencyInjectionWebObjectActivator( this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
+			this.woa                = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
 
 			// And register:
 

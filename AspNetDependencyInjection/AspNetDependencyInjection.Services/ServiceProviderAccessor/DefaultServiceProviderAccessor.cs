@@ -6,14 +6,14 @@ namespace AspNetDependencyInjection.Services
 	public class DefaultServiceProviderAccessor : IServiceProviderAccessor
 	{
 		/// <summary>Constructs a new instance of <see cref="DefaultServiceProviderAccessor"/>.</summary>
-		public DefaultServiceProviderAccessor( ApplicationDependencyInjection applicationDependencyInjection, IServiceProvider serviceProvider )
+		public DefaultServiceProviderAccessor( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider serviceProvider )
 		{
-			this.ApplicationDI       = applicationDependencyInjection ?? throw new ArgumentNullException(nameof(applicationDependencyInjection));
+			this.Configuration       = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			this.RootServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		}
 
-		/// <summary>Exposes <see cref="ApplicationDependencyInjection"/>.</summary>
-		public ApplicationDependencyInjection ApplicationDI { get; }
+		/// <summary>Exposes <see cref="ApplicationDependencyInjection"/>'s <see cref="ApplicationDependencyInjection.Configuration"/>.</summary>
+		public ImmutableApplicationDependencyInjectionConfiguration Configuration { get; }
 
 		/// <summary>The root <see cref="IServiceProvider"/> configured during startup.</summary>
 		public IServiceProvider RootServiceProvider { get; }

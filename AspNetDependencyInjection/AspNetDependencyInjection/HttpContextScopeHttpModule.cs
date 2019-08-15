@@ -8,7 +8,7 @@ namespace AspNetDependencyInjection.Internal
 	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/> instance.</summary>
 	public sealed class HttpContextScopeHttpModule : IHttpModule
 	{
-		private readonly ApplicationDependencyInjection appdi;
+		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 		private readonly IServiceProvider rootServiceProvider;
 
 		/// <summary>Constructs a new instance of <see cref="HttpContextScopeHttpModule"/>. This constructor is invoked by the ASP.NET runtime which uses the <see cref="HttpRuntime.WebObjectActivator"/> to provide the constructor parameters.</summary>
@@ -16,7 +16,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( rootServiceProviderAccessor == null ) throw new ArgumentNullException(nameof(rootServiceProviderAccessor));
 
-			this.appdi               = rootServiceProviderAccessor.ApplicationDI       ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.ApplicationDI) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
+			this.config              = rootServiceProviderAccessor.Configuration       ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.Configuration) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 			this.rootServiceProvider = rootServiceProviderAccessor.RootServiceProvider ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.RootServiceProvider) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 		}
 
@@ -36,7 +36,7 @@ namespace AspNetDependencyInjection.Internal
 
 			// These event hookups have to be done on every HttpApplication instance - otherwise the event-handlers will never be invoked.
 
-			if( this.appdi.UseRequestScopes )
+			if( this.config.UseRequestScopes )
 			{
 				httpApplication.BeginRequest += this.OnContextBeginRequest;
 				httpApplication.EndRequest   += this.OnContextEndRequest;
@@ -44,7 +44,7 @@ namespace AspNetDependencyInjection.Internal
 
 			httpApplication.SetRootServiceProvider( this.rootServiceProvider );
 
-			if( this.appdi.UseHttpApplicationScopes )
+			if( this.config.UseHttpApplicationScopes )
 			{
 				httpApplication.Disposed += this.OnHttpApplicationDisposed;
 
@@ -65,7 +65,7 @@ namespace AspNetDependencyInjection.Internal
 			HttpApplication httpApplication = (HttpApplication)sender;
 
 			IServiceScope requestServiceScope;
-			if( this.appdi.UseHttpApplicationScopes )
+			if( this.config.UseHttpApplicationScopes )
 			{
 				requestServiceScope = httpApplication.GetHttpApplicationServiceScope().ServiceProvider.CreateScope();
 			}
