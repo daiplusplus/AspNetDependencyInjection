@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
-		<id>Jehoel.Unity.AspNetWebForms</id>
+		<id>Jehoel.AspNetDependencyInjection</id>
 		
 		<!--
 		When using NuGet/Nuspec as part of an MSBuild process or when using `nuget pack MyProject.csproj` (so the *.nuspec file is not the primary source of truth) then `$placeholder$` values are copied from the parent .csproj.
@@ -19,24 +19,26 @@
 		<owners>KyKoSoft, Jehoel</owners>
 		
 		<license type="expression">MIT</license>
-		<projectUrl>https://github.com/Jehoel/Unity.WebForms</projectUrl>
+		<projectUrl>https://github.com/Jehoel/AspNetDependencyInjection</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		
-		<description>Dependency Injection in ASP.NET WebForms using Unity and WebObjectActivator. This package requires .NET Framework 4.7.2 or later.</description>
-		<summary>Dependency Injection in ASP.NET WebForms using Unity and WebObjectActivator.</summary>
-		<releaseNotes>Targets .NET 4.7.2 and Unity 5.11.1.</releaseNotes>
+		<description>Dependency Injection in ASP.NET WebForms using Microsoft.Extensions.DependencyInjection and WebObjectActivator. This package requires .NET Framework 4.7.2 or later.</description>
+		<summary>Dependency Injection in ASP.NET WebForms using Microsoft.Extensions.DependencyInjection and WebObjectActivator.</summary>
+		<releaseNotes>Targets .NET 4.7.2</releaseNotes>
 		<copyright>Copyright 2013 - 2015 S. Kyle Korndoerfer, 2019 Dai Rees</copyright>
-		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor</tags>
+		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor Microsoft.Extensions.DependencyInjection medi</tags>
 		
 		<dependencies>
 			<group targetFramework="net472">
-				<dependency id="Unity" version="5.11.1" />
 				<dependency id="WebActivatorEx" version="2.2.0" />
 				<dependency id="Microsoft.Web.Infrastructure" version="1.0.0" />
+				<dependency id="Microsoft.Extensions.DependencyInjection" version="2.2.0" />
+				<dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.2.0" />
 			</group>
 		</dependencies>
 		<frameworkAssemblies>
 			<frameworkAssembly assemblyName="System.Web" />
+			<frameworkAssembly assemblyName="System.Configuration" />
 		</frameworkAssemblies>
 	</metadata>
 	

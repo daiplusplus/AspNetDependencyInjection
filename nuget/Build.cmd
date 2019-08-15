@@ -8,6 +8,6 @@ set /p uwfversion="Semver package version number: "
 
 @echo on
 
-nuget pack AspNetDependencyInjection.nuspec -OutputDirectory ..\..\AspNetDependencyInjection_local\nuget-output -symbols -Version %uwfversion%
+nuget pack AspNetDependencyInjection.nuspec -OutputDirectory ..\..\Unity.WebForms_local\nuget-output -symbols -Version %uwfversion%
 
 REM TODO: Automatically publish to nuget.org using `nuget.exe push` - but how do I update the package README like how the web upload interface does?

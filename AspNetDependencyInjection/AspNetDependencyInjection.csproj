@@ -105,8 +105,8 @@
 mkdir $(SolutionDir)nuget\lib\net472
 
 copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\lib\net472\$(TargetFileName)
-copy $(ProjectDir)$(OutDir)Unity.WebForms.pdb $(SolutionDir)nuget\lib\net472\Unity.WebForms.pdb
-copy $(ProjectDir)$(OutDir)Unity.WebForms.xml $(SolutionDir)nuget\lib\net472\Unity.WebForms.xml
+copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.pdb $(SolutionDir)nuget\lib\net472\AspNetDependencyInjection.pdb
+copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.xml $(SolutionDir)nuget\lib\net472\AspNetDependencyInjection.xml
 
 )
 </PostBuildEvent>

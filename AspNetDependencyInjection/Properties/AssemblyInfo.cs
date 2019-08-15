@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright( "Copyright © 2013 - 2019 S. Kyle Korndoerfer, Dai Rees (@Jehoel on GitHub)" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
-[assembly: NeutralResourcesLanguageAttribute( "en-US" )]
+[assembly: NeutralResourcesLanguage( "en-US" )]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -33,5 +33,9 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "1.0.*" )]
+[assembly: AssemblyVersion( "3.0.*" )]
 //[assembly: AssemblyFileVersion( "2.0.0.0" )]
+
+// Version 1.x = S. Kyle Korndoerfer's Unity.WebForms.
+// Version 2.x = Jehoel's Unity.WebForms using WebObjectActivator.
+// Version 3.x = AspNetDependencyInjection using Microsoft.Extensions.DependencyInjection.

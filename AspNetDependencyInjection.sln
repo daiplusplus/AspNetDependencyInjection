@@ -5,10 +5,10 @@ VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{8D3132E8-858A-49E2-96A7-1F74FCEE2EF2}"
 	ProjectSection(SolutionItems) = preProject
+		nuget\AspNetDependencyInjection.nuspec = nuget\AspNetDependencyInjection.nuspec
 		nuget\Build.cmd = nuget\Build.cmd
 		GETTING_STARTED.md = GETTING_STARTED.md
 		README.md = README.md
-		nuget\Unity.WebForms.nuspec = nuget\Unity.WebForms.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection", "AspNetDependencyInjection\AspNetDependencyInjection.csproj", "{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}"
