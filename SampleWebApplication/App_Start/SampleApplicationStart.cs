@@ -1,24 +1,26 @@
-using System;
-using System.Web;
 
-using Unity;
+using Microsoft.Extensions.DependencyInjection;
+using SampleWebApplication;
+
+using WebActivatorEx;
 using AspNetDependencyInjection;
 
-[assembly: WebActivatorEx.PreApplicationStartMethod( typeof($rootnamespace$.ApplicationStart), nameof($rootnamespace$.ApplicationStart.PostStart) )]
+[assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
 
-namespace $rootnamespace$
+namespace SampleWebApplication
 {
-	/// <summary>Startup class for your application. Configures dependency-injection.</summary>
-	internal static class ApplicationStart
+	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
+	internal static class SampleApplicationStart
 	{
-		private static Unity.WebForms.ApplicationDependencyInjection _di;
+		private static ApplicationDependencyInjection _di;
 
 		/// <summary>Invoked when the ASP.NET application starts up, before Global's Application_Start method runs. Dependency-injection should be configured here.</summary>
 		internal static void PreStart()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			_di = Unity.WebForms.ApplicationDependencyInjection.Configure( ConfigureServices );
+			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
 		}
 
 		/// <summary>Registers dependencies in the supplied container.</summary>
@@ -40,7 +42,7 @@ namespace $rootnamespace$
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
 
-			_di.Reconfigure( ReconfigureServices );
+			//_di.Reconfigure( ReconfigureServices );
 		}
 
 		private static void ReconfigureServices( IServiceCollection services )

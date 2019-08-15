@@ -2,8 +2,6 @@
 
 using SampleWebApplication;
 
-using Unity;
-
 namespace IncludedNamespace.SampleWebApplication
 {
 	public partial class SampleIncludedExternalControl : System.Web.UI.UserControl

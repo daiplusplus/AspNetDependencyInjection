@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Web.UI;
 
-using Unity;
-
 namespace SampleWebApplication
 {
 	/// <summary>
