@@ -20,6 +20,7 @@ namespace AspNetDependencyInjection
 		// And because there's no other instance-state we can hook using reflection or ...wait...
 		// We can abuse HttpApplication._handlerFactories which is a simple `Hashtable` - provided we use a string key value that will never be used by ASP.NET, we should be good!
 
+		/// <summary>Sets or sets the <see cref="IServiceScope"/> for this specific <see cref="HttpApplication"/> instance. Implementations should use a simple C# auto-property or store the value in a single field and must not share <see cref="IServiceScope"/> values with other instances of <see cref="HttpApplication"/>.</summary>
 		IServiceScope HttpApplicationServiceScope { get; set; }
 	}
 }
@@ -96,7 +97,7 @@ namespace AspNetDependencyInjection.Internal
 		private static readonly Func<HttpApplication,Boolean> _httpApplication_initInternalCompleted = Internal.ReflectionUtility.CreateFieldGetter<HttpApplication,Boolean>( fieldName: "_initInternalCompleted" );
 		private static readonly Func<HttpApplication,Boolean> _httpApplication_initSpecialCompleted  = Internal.ReflectionUtility.CreateFieldGetter<HttpApplication,Boolean>( fieldName: "_initSpecialCompleted"  );
 
-		private static readonly Func<HttpApplication,Hashtable> _httpApplication_handlerFactories  = Internal.ReflectionUtility.CreateFieldGetter<HttpApplication,Hashtable>( fieldName: "_handlerFactories;" );
+		private static readonly Func<HttpApplication,Hashtable> _httpApplication_handlerFactories  = Internal.ReflectionUtility.CreateFieldGetter<HttpApplication,Hashtable>( fieldName: "_handlerFactories" );
 
 		/// <summary>Indicates if the specified <paramref name="httpApplication"/> is a "special" instance or a normal instance. Throws <see cref="InvalidOperationException"/> if the <paramref name="httpApplication"/> is not yet initialized.</summary>
 		/// <exception cref="InvalidOperationException">Thrown when <paramref name="httpApplication"/> is not yet initialized (or if it somehow has been initialized twice as both Special and Normal).</exception>
