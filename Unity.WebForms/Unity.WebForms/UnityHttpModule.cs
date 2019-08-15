@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -25,22 +25,26 @@ namespace Unity.WebForms
 			this.rootServiceProvider = rootServiceProviderAccessor.RootServiceProvider ?? throw new ArgumentException( message: "The " + nameof(rootServiceProviderAccessor.RootServiceProvider) + " property returned null.", paramName: nameof(rootServiceProviderAccessor) );
 		}
 
-		/// <summary>Initializes an <see cref="IHttpModule"/> for a new <see cref="HttpApplication"/> instance. This method is invoked for each new <see cref="HttpApplication"/> instance created - ASP.NET will create multiple <see cref="HttpApplication"/> instances in the same AppDomain (but why?)</summary>
+		/// <summary>Initializes an <see cref="IHttpModule"/> for a new <see cref="HttpApplication"/> instance. This method is invoked for each new <see cref="HttpApplication"/> instance created - ASP.NET will create multiple <see cref="HttpApplication"/> instances in the same AppDomain.</summary>
 		/// <param name="httpApplication">An <see cref="HttpApplication"/> to associate with the root <see cref="IServiceProvider"/> which is used to create an <see cref="IServiceScope"/> for each request.</param>
 		public void Init( HttpApplication httpApplication )
 		{
-			// Note that IHttpModule.Init can be called multiple times as the ASP.NET runtime will pool HttpApplication instances in the same process:
-			// (Apparently ASP.NET creates a new HttpApplication instance for each request? Is that true? That seems... unnecessary, I thought they were long-lived and serviced multiple requests - so one HttpApplication per Request-Thread-pool thread?)
+			// Important notes:
+			//	* ASP.NET creates and manages a pool of HttpApplication instances:
+			//		* It creates multiple "special" instances which are used for the `Application_Start`, `Application_End`, and `Session_End` events. These are given a dummy HttpContext object.
+			//		* It creates multiple "normal" instances which are used in normal HTTP requests. These are given real HttpContext objects.
+			//			* It creates and manages enough "normal" instances so that each request-thread-pool thread can have its own exclusive instance (so no need to `lock` inside a non-static method in a HttpApplication subclass)
 
+			// https://github.com/Microsoft/referencesource/blob/master/System.Web/HttpApplicationFactory.cs
 			// https://stackoverflow.com/questions/1140915/httpmodule-init-method-is-called-several-times-why
-			// https://lowleveldesign.org/2011/07/20/global-asax-in-asp-net/
+			// https://lowleveldesign.org/2011/07/20/global-asax-in-asp-net/ (this article implies it *instantiates* a new HttpApplication instance for each request, but it actually only creates enough so each request thread has its own instance)
 
 			// These event hookups have to be done on every HttpApplication instance - otherwise the event-handlers will never be invoked.
 
 			httpApplication.BeginRequest += this.OnContextBeginRequest;
 			httpApplication.EndRequest   += this.OnContextEndRequest;
 
-			// TODO: Is it possible to detect if a HttpApplication instance is 'special' or not? Does it matter?
+			// TODO: Is it possible to detect if a HttpApplication instance is "special" or not? Does it matter?
 			// Are special instances created before or after PreStart and PostStart WebActivatorEx events?
 			
 			httpApplication.SetApplicationServiceProvider( this.rootServiceProvider );

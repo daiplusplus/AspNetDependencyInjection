@@ -3,66 +3,75 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 using System.Web;
 using Microsoft.Extensions.DependencyInjection;
 
 using Unity.WebForms.Configuration;
+using Unity.WebForms.Services;
 
 namespace Unity.WebForms.Internal
 {
-	public sealed class MediWebObjectActivatorServiceProvider : IServiceProvider
+	/// <summary></summary>
+	/// <remarks>While this class implements <see cref="IServiceProvider"/> it is not intended to be used as a DI service-provider for use with Microsoft.Extensions.DependencyInjection - it is only so it can be used with <see cref="System.Web.HttpRuntime.WebObjectActivator"/>.</remarks>
+	public sealed class MediWebObjectActivator : IServiceProvider
 	{
-		private static readonly NamespacePrefix _systemWebNamespacePrefix          = new NamespacePrefix( "System.Web" );
-		private static readonly NamespacePrefix _systemServiceModelNamespacePrefix = new NamespacePrefix( "System.ServiceModel" );
-
 		private readonly IServiceProvider rootServiceProvider;
-		private readonly IServiceProvider next;
-		private readonly Action<Exception,Type> onUnresolvedType;
-//		private readonly IServiceProvider applicationServiceProvider;
+		private readonly IServiceProvider fallback;
+		private readonly IAspNetDIExclusionService excluded;
 
-		private readonly ConcurrentDictionary<Type,ObjectFactory> typeFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
+		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
-		/// <summary>Instantiates a new instance of <see cref="MediWebObjectActivatorServiceProvider"/>. You do not need to normally use this constructor directly - instead consider using <see cref="WebFormsUnityContainerOwner"/>.</summary>
+		/// <summary>Instantiates a new instance of <see cref="MediWebObjectActivator"/>. You do not need to normally use this constructor directly - instead consider using <see cref="WebFormsUnityContainerOwner"/>.</summary>
 		/// <param name="rootServiceProvider">Required. The <see cref="IServiceProvider"/> container or service-provider to use for <see cref="HttpRuntime.WebObjectActivator"/>.</param>
-		/// <param name="next">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
-		/// <param name="onUnresolvedType">Optional. A callback invoked when the specified <see cref="Type"/> cannot be resolved. This is intended to be used for logging.</param>
-		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> is <c>null</c>.</exception>
-		public MediWebObjectActivatorServiceProvider( IServiceProvider rootServiceProvider, IServiceProvider next, Action<Exception,Type> onUnresolvedType )
+		/// <param name="fallback">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
+		/// <param name="excluded">Required. A service which indicates which types and namespaces should be excluded from DI and always constructed by <see cref="Activator"/>.</param>
+		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="excluded"/> is <c>null</c>.</exception>
+		public MediWebObjectActivator( IServiceProvider rootServiceProvider, IServiceProvider fallback, IAspNetDIExclusionService excluded )
 		{
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
-			this.next                = next;
+			this.fallback            = fallback;
+			this.excluded            = excluded ?? throw new ArgumentNullException(nameof(excluded));
 		}
 
 		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
+		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
 		public Object GetService( Type serviceType )
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			// Shortcut any `System.Web.*` types to use an equivalent code-path (unfortunately we can't simply return `null`):
-			if( _systemWebNamespacePrefix.Matches( serviceType.FullName ) || _systemServiceModelNamespacePrefix.Matches( serviceType.FullName ) )
+			// Shortcut any `System.Web.*` types to always use Activator:
+			if( this.excluded.IsExcluded( serviceType ) )
 			{
-				ObjectFactory objectFactory = this.typeFactories.GetOrAdd( key: serviceType, valueFactory: SystemWebObjectFactoryFactory );
-				return objectFactory( serviceProvider: null, arguments: null );
+				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: ActivatorObjectFactoryFactory );
+				return objectFactory( serviceProvider: null, arguments: null ); // Note that `serviceProvider: null` because it isn't needed when using Activator.
 			}
-
-			try
+			else
 			{
-				IServiceProvider serviceProvider = this.GetServiceProvider();
+				IServiceProvider serviceProvider = this.GetServiceProviderForCurrentHttpContext();
 
-				return this.GetService( serviceType, serviceProvider );
-			}
-			catch( Exception ex )
-			{
-				this.onUnresolvedType?.Invoke( ex, serviceType );
+				ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
 
-				throw; // TODO: Remove this try/catch as we don't need it anymore...
+				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.DefaultObjectFactoryFactory, factoryArgument: helper );
+
+				if( helper.Instance != null )
+				{
+					// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
+					return helper.Instance;
+				}
+				else
+				{
+					// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
+					return objectFactory( serviceProvider: serviceProvider, arguments: null );
+				}
 			}
 		}
 
-		private IServiceProvider GetServiceProvider()
+		private IServiceProvider GetServiceProviderForCurrentHttpContext()
 		{
+			// As WebObjectActivator will always be called from an ASP.NET Request-Thread-Pool-thread, HttpContext.Current *should* always be non-null.
 			HttpContext httpContext = HttpContext.Current;
+			// TODO: Given the above, consider throwing an exception if `HttpContext.Current == null`?
+
 			if( httpContext != null )
 			{
 				if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
@@ -84,103 +93,67 @@ namespace Unity.WebForms.Internal
 			}
 		}
 
-		private Object GetService( Type serviceType, IServiceProvider serviceProvider )
+		// IMPORTANT NOTE: This method does not necessarily *create* (well, resolve) service instances itself - it returns a delegate which in-turn performs the resolution process - but as an optimization it returns the resolved service, if available as part of the testing process.
+		private ObjectFactory DefaultObjectFactoryFactory( Type serviceType, ObjectFactoryHelper helper )
 		{
-			// Don't use `GetRequiredService(Type)` because that throws an exception if it fails.
-			// However ASP.NET will request LOTS of types using WebObjectActivator, including many of its own, like `HttpEncoder` not just those that are used as constructor parameters.
-			if( serviceProvider != null )
+			// This is a two-step operation:
+			// 1. The first pass tests that the object is available from the serviceProvider, and if so, returns an ObjectFactory that uses the serviceProvider (regardless of scope depth).
+			// 2. Otherwise, repeats the process for the fallback.
+			// 3. If nothing else works, then it returns an ObjectFactory for MEDI's ActivatorUtilities or Activator.
+			// Now, this COULD work by performing the test, then discarding the returned object, and then invoking the ObjectFactory anyway...
+			// but instead, we use the method argument to pass the returned object back to the caller to prevent needing to invoke the ObjectFactory twice whenever a new serviceType is requested for the first time.
+
+			// 1:
 			{
-				Object result = serviceProvider.GetService( serviceType );
-				if( result != null ) return result;
+				Object result = helper.ServiceProvider.GetService( serviceType ); // Btw, don't use `GetRequiredService(Type)` because that throws an exception if it fails.
+				if( result != null )
+				{
+					helper.Instance = result;
+					return new ObjectFactory( ( sp, args ) => sp.GetRequiredService( serviceType ) ); // this ObjectFactory will be used in future calls to GetService.
+				}
 			}
 
-			// Fallback 1: `next` (or `prev` depending on your perspective):
-			if( this.next != null )
+			// 2:
+			if( this.fallback != null )
 			{
-				Object result = this.next.GetService( serviceType );
-				if( result != null ) return result;
+				Object result = helper.ServiceProvider.GetService( serviceType ); // Btw, don't use `GetRequiredService(Type)` because that throws an exception if it fails.
+				if( result != null )
+				{
+					helper.Instance = result;
+					return new ObjectFactory( ( sp, args ) => this.fallback.GetRequiredService( serviceType ) ); // Observe that it always uses `this.fallback` and ignores the passed-in IServiceProvider.
+				}
 			}
 
-			// Fallback 2: MEDI's object factory-factory (ActivatorUtilities.CreateFactory). Though the ServiceProvider passed-in will be ignored.
+			// 3:
 			try
 			{
-				ObjectFactory objectFactory = this.typeFactories.GetOrAdd( key: serviceType, valueFactory: MediObjectFactoryFactory );
-				return objectFactory( serviceProvider: serviceProvider, arguments: null );
+				// ActivatorUtilities.CreateFactory only throws InvalidOperationException if it cannot find a suitable constructor.
+				// As the `ObjectFactory` itself isn't actually being invoked, we can be certain the exception is not being thrown from anywhere else.
+				// See `CreateFactory` and `FindApplicableConstructor` in https://github.com/aspnet/DependencyInjection/blob/1.0.0-rc1/src/Microsoft.Extensions.DependencyInjection.Abstractions/ActivatorUtilities.cs
+
+				return ActivatorUtilities.CreateFactory( instanceType: serviceType, argumentTypes: Array.Empty<Type>() );
 			}
-			catch( InvalidOperationException ex )
+			catch( InvalidOperationException )
 			{
-				// Fallback 3: Activator.CreateInstance.
-
-				// Replace any existing factory, because it causes InvalidOperationException.
-				ObjectFactory fallbackFactory = this.typeFactories[ key: serviceType ] = SystemWebObjectFactoryFactory( serviceType );
-				return fallbackFactory( serviceProvider, arguments: null );
+				// Fallback to Activator:
+				return ActivatorObjectFactoryFactory( serviceType );
 			}
 		}
 
-		private static ObjectFactory MediObjectFactoryFactory( Type serviceType )
+		private static ObjectFactory ActivatorObjectFactoryFactory( Type serviceType )
 		{
-			return ActivatorUtilities.CreateFactory( instanceType: serviceType, argumentTypes: Array.Empty<Type>() );
+			return new ObjectFactory( ( sp, args ) => ActivatorServiceProvider.Instance.GetService( serviceType: serviceType, args: args ) ); // Yay closures.
 		}
 
-		private static ObjectFactory SystemWebObjectFactoryFactory( Type serviceType )
+		private class ObjectFactoryHelper
 		{
-			ObjectFactoryHolder holder = new ObjectFactoryHolder( serviceType ); // ...or just use a closure?
-			return new ObjectFactory( holder.Create );
-		}
+			public readonly IServiceProvider ServiceProvider;
+			public          Object           Instance;
 
-		private class ObjectFactoryHolder
-		{
-			private readonly Type type;
-
-			public ObjectFactoryHolder( Type type )
+			public ObjectFactoryHelper(IServiceProvider serviceProvider)
 			{
-				this.type = type ?? throw new ArgumentNullException(nameof(type));
+				this.ServiceProvider = serviceProvider;
 			}
-
-			/// <summary><paramref name="sp"/> is ignored.</summary>
-			public Object Create( IServiceProvider sp, Object[] args )
-			{
-				return DefaultCreateInstance( type: this.type, args: args );
-			}
-		}
-
-		/// <summary>An <see cref="ObjectFactory"/>.</summary>
-		private static Object DefaultCreateInstance( Type type )
-		{
-			return DefaultCreateInstance( type, args: null );
-		}
-
-		private static Object DefaultCreateInstance( Type type, params Object[] args )
-		{
-			return ActivatorServiceProvider.Instance.GetService( serviceType: type, args: args );
-		}
-	}
-
-	/// <summary>Does not perform any caching or object lifetime management - everything is transient.</summary>
-	internal class ActivatorServiceProvider : IServiceProvider
-	{
-		public static ActivatorServiceProvider Instance { get; } = new ActivatorServiceProvider();
-
-		private ActivatorServiceProvider()
-		{
-		}
-
-		public Object GetService( Type serviceType )
-		{
-			return GetService( serviceType );
-		}
-
-		public Object GetService( Type serviceType, params Object[] args )
-		{
-			return Activator.CreateInstance
-			(
-				type                : serviceType,
-				bindingAttr         : BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.CreateInstance,
-				binder              : null,
-				args                : args,
-				culture             : null,
-				activationAttributes: null
-			);
 		}
 	}
 }
