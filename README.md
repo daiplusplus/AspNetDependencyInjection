@@ -1,7 +1,7 @@
 
 # AspNetDependencyInjection
 
-(Currently listed on NuGet.org as `Jehoel.AspNetDependencyInjection`)
+(Currently listed on NuGet.org as `Jehoel.AspNetDependencyInjection` and `Jehoel.AspNetDependencyInjection.Mvc`)
 
 **AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
 
@@ -11,17 +11,22 @@
 
 * This particular package's main objective is supporting ASP.NET Web Forms 4.7.2's new `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true _constructor_ dependency injection. Previously applications had to use "property injection" which many consider to be an anti-pattern.
 
-* This project is *not* intended for use with ASP.NET MVC, ASP.NET Web API, ASP.NET 5, nor ASP.NET Core. Those platforms already have established dependency-injection infrastructure ecosystems available to their users.
+* This project is *not* intended for use with ASP.NET Web API, ASP.NET 5, nor ASP.NET Core. Those platforms already have established dependency-injection infrastructure ecosystems available to their users.
+
+**AspNetDependencyInjection.Mvc** exposes `AspNetDependencyInjection` as an implementation of `System.Web.Mvc.IDependencyResolver` for use with ASP.NET MVC 5.x.
 
 ## Current Version
 * 1.4 - S. Kyle Korndoerfer's most recent version of `Unity.WebForms`, released in 2015. See [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms).
 * 2.0 - My `Unity.WebForms` project, updated in 2019 for ASP.NET 4.7.2 and WebObjectActivator). See [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 * 3.0 - After being extensively modified to use `Microsoft.Extensions.DependencyInjection` and renamed to `AspNetDependencyInjection` (as it now is unrelated to `Unity`.
+* 3.2 - Adding support for ASP.NET MVC.
 
 ## NuGet Gallery
 
 ```
 Install-Package Jehoel.AspNetDependencyInjection
+
+Install-Package Jehoel.AspNetDependencyInjection.Mvc
 ```
 
 ## Installation and Getting Started
