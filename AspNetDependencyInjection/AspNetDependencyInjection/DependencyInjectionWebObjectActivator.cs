@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Web;
 
@@ -13,7 +13,6 @@ namespace AspNetDependencyInjection.Internal
 		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 
 		private readonly IServiceProvider rootServiceProvider;
-		private readonly IServiceProvider fallback;
 		private readonly IDependencyInjectionExclusionService excluded;
 
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
@@ -21,14 +20,12 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
 		/// <param name="configuration">Required.</param>
 		/// <param name="rootServiceProvider">Required. The root <see cref="IServiceProvider"/> to use. The actual <see cref="IServiceProvider"/> used inside <see cref="GetService(Type)"/> depends on the current <see cref="HttpContext.Current"/>.</param>
-		/// <param name="fallback">Optional. A <see cref="IServiceProvider"/> to use as a fallback to resolve types.</param>
 		/// <param name="excluded">Required. A service which indicates which types and namespaces should be excluded from DI and always constructed by <see cref="Activator"/>.</param>
 		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="excluded"/> is <c>null</c>.</exception>
-		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IServiceProvider fallback, IDependencyInjectionExclusionService excluded )
+		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionExclusionService excluded )
 		{
 			this.config              = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
-			this.fallback            = fallback;
 			this.excluded            = excluded ?? throw new ArgumentNullException(nameof(excluded));
 		}
 
@@ -107,10 +104,9 @@ namespace AspNetDependencyInjection.Internal
 		// IMPORTANT NOTE: This method does not necessarily *create* (well, resolve) service instances itself - it returns a delegate which in-turn performs the resolution process - but as an optimization it returns the resolved service, if available as part of the testing process.
 		private ObjectFactory DefaultObjectFactoryFactory( Type serviceType, ObjectFactoryHelper helper )
 		{
-			// This is a two-step operation:
+			// This is a convoluted operation:
 			// 1. The first pass tests that the object is available from the serviceProvider, and if so, returns an ObjectFactory that uses the serviceProvider (regardless of scope depth).
-			// 2. Otherwise, repeats the process for the fallback.
-			// 3. If nothing else works, then it returns an ObjectFactory for MEDI's ActivatorUtilities or Activator.
+			// 2. If nothing else works, then it returns an ObjectFactory for MEDI's ActivatorUtilities or Activator.
 			// Now, this COULD work by performing the test, then discarding the returned object, and then invoking the ObjectFactory anyway...
 			// but instead, we use the method argument to pass the returned object back to the caller to prevent needing to invoke the ObjectFactory twice whenever a new serviceType is requested for the first time.
 
@@ -125,17 +121,6 @@ namespace AspNetDependencyInjection.Internal
 			}
 
 			// 2:
-			if( this.fallback != null )
-			{
-				Object result = helper.ServiceProvider.GetService( serviceType ); // Btw, don't use `GetRequiredService(Type)` because that throws an exception if it fails.
-				if( result != null )
-				{
-					helper.Instance = result;
-					return new ObjectFactory( ( sp, args ) => this.fallback.GetRequiredService( serviceType ) ); // Observe that it always uses `this.fallback` and ignores the passed-in IServiceProvider.
-				}
-			}
-
-			// 3:
 			try
 			{
 				// ActivatorUtilities.CreateFactory only throws InvalidOperationException if it cannot find a suitable constructor.

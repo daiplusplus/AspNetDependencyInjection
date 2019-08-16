@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
@@ -16,7 +16,6 @@ namespace AspNetDependencyInjection
 
 		private readonly IServiceCollection services;
 		private readonly ServiceProvider    rootServiceProvider;
-		private readonly IServiceProvider   previousWoa;
 
 		/// <summary>Exposes <see cref="ImmutableApplicationDependencyInjectionConfiguration"/>.</summary>
 		protected internal ImmutableApplicationDependencyInjectionConfiguration Configuration      { get; }
@@ -48,9 +47,20 @@ namespace AspNetDependencyInjection
 		/// <summary>Constructor for subclasses. When the constructor returns all static/global state will have been set (e.g. <see cref="HttpRuntime"/>, <see cref="HostingEnvironment"/> and dynamic modules added).</summary>
 		protected ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
+			// Validate:
+
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
+			}
+
+			{
+				// `HttpRuntime.WebObjectActivator == null` by default. I see no point to caching-and-restoring any existing WebObjectActivator given AspNetDependencyInjection is supposed to be *exclusive* and own an entire application's DI, so require that no other existing WebObjectActivator be set.
+				IServiceProvider existingWoa = HttpRuntime.WebObjectActivator;
+				if( existingWoa != null )
+				{
+					throw new InvalidOperationException( "Another " + nameof(HttpRuntime) + "." + nameof(HttpRuntime.WebObjectActivator) + " has been set. Its type is " + existingWoa.GetType().FullName + "." );
+				}
 			}
 
 			this.Configuration = configuration.ToImmutable();
@@ -64,8 +74,7 @@ namespace AspNetDependencyInjection
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-			this.previousWoa         = HttpRuntime.WebObjectActivator;
-			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
+			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
 
 			// And register:
 
@@ -107,7 +116,7 @@ namespace AspNetDependencyInjection
 
 				if( HttpRuntime.WebObjectActivator == this.WebObjectActivator )
 				{
-					HttpRuntime.WebObjectActivator = this.previousWoa;
+					HttpRuntime.WebObjectActivator = null;
 				}
 
 				this.rootServiceProvider.Dispose();
