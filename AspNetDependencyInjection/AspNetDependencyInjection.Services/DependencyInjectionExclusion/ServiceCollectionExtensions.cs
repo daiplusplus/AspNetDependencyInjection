@@ -11,16 +11,16 @@ namespace AspNetDependencyInjection
 	/// <summary>Extension methods for services bundled with <see cref="AspNetDependencyInjection"/>.</summary>
 	public static partial class ServiceCollectionExtensions
 	{
-		/// <summary>Registers <see cref="DefaultDependencyInjectionExclusionService"/> as a singleton implementation of <see cref="IDependencyInjectionExclusionService"/>.</summary>
+		/// <summary>Registers <see cref="DefaultDependencyInjectionFallbackService"/> as a singleton implementation of <see cref="IDependencyInjectionFallbackService"/>.</summary>
 		public static IServiceCollection AddDefaultAspNetExclusions( this IServiceCollection services, Boolean excludeAspNetNamespacesFromDI = true, IEnumerable<String> additionalExclusions = null )
 		{
 			return services
-				.AddSingleton<IDependencyInjectionExclusionService>( sp => new DefaultDependencyInjectionExclusionService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
+				.AddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
 		}
 
 		internal static void TryAddDefaultAspNetExclusions( this IServiceCollection services )
 		{
-			services.TryAddSingleton<IDependencyInjectionExclusionService>( sp => new DefaultDependencyInjectionExclusionService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
+			services.TryAddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
 		}
 	}
 }

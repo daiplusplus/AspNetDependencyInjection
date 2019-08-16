@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
@@ -41,6 +41,10 @@ namespace AspNetDependencyInjection
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
+			// Register necessary internal services:
+
+			services.TryAddDefaultAspNetExclusions();
+
 			return new ApplicationDependencyInjection( configuration, services );
 		}
 
@@ -65,16 +69,13 @@ namespace AspNetDependencyInjection
 
 			this.Configuration = configuration.ToImmutable();
 
-			// Register necessary internal services:
-
-			services.TryAddDefaultAspNetExclusions();
 			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
+			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, fallbackService: this.rootServiceProvider.GetRequiredService<IDependencyInjectionFallbackService>() );
 
 			// And register:
 

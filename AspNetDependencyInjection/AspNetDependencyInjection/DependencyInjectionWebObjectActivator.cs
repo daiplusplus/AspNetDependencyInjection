@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Web;
 
@@ -13,20 +13,20 @@ namespace AspNetDependencyInjection.Internal
 		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 
 		private readonly IServiceProvider rootServiceProvider;
-		private readonly IDependencyInjectionExclusionService excluded;
+		private readonly IDependencyInjectionFallbackService fallbackService;
 
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
 		/// <param name="configuration">Required.</param>
 		/// <param name="rootServiceProvider">Required. The root <see cref="IServiceProvider"/> to use. The actual <see cref="IServiceProvider"/> used inside <see cref="GetService(Type)"/> depends on the current <see cref="HttpContext.Current"/>.</param>
-		/// <param name="excluded">Required. A service which indicates which types and namespaces should be excluded from DI and always constructed by <see cref="Activator"/>.</param>
-		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="excluded"/> is <c>null</c>.</exception>
-		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionExclusionService excluded )
+		/// <param name="fallbackService">Required. A service which allows a custom <see cref="IServiceProvider"/> to always be used for certain types.</param>
+		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="fallbackService"/> is <c>null</c>.</exception>
+		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionFallbackService fallbackService )
 		{
 			this.config              = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
-			this.excluded            = excluded ?? throw new ArgumentNullException(nameof(excluded));
+			this.fallbackService     = fallbackService ?? throw new ArgumentNullException(nameof(fallbackService));
 		}
 
 		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
@@ -35,11 +35,9 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			// Shortcut any `System.Web.*` types to always use Activator:
-			if( this.excluded.IsExcluded( serviceType ) )
+			if( this.fallbackService.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
 			{
-				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: ActivatorObjectFactoryFactory );
-				return objectFactory( serviceProvider: null, arguments: null ); // Note that `serviceProvider: null` because it isn't needed when using Activator.
+				return fallbackServiceProvider.GetRequiredService( serviceType );
 			}
 			else
 			{

@@ -8,7 +8,7 @@ using AspNetDependencyInjection.Configuration;
 namespace AspNetDependencyInjection.Services
 {
 	/// <summary>Uses web.config to determine which types and namespaces should be excluded from DI.</summary>
-	public class DefaultDependencyInjectionExclusionService : IDependencyInjectionExclusionService
+	public class DefaultDependencyInjectionFallbackService : IDependencyInjectionFallbackService
 	{
 		private static IEnumerable<String> LoadIgnoredNamespacePrefixes()
 		{
@@ -28,8 +28,8 @@ namespace AspNetDependencyInjection.Services
 		private readonly IReadOnlyList<NamespacePrefix> ignoreNamespacePrefixes;
 		private readonly HashSet<String>                ignoreTypeNames;
 
-		/// <summary>Constructs a new instance of <see cref="DefaultDependencyInjectionExclusionService"/> and adds <paramref name="additionalExclusions"/> (if any) to the exclusion list.</summary>
-		public DefaultDependencyInjectionExclusionService( Boolean excludeAspNetNamespacesFromDI, IEnumerable<String> additionalExclusions )
+		/// <summary>Constructs a new instance of <see cref="DefaultDependencyInjectionFallbackService"/> and adds <paramref name="additionalExclusions"/> (if any) to the exclusion list.</summary>
+		public DefaultDependencyInjectionFallbackService( Boolean excludeAspNetNamespacesFromDI, IEnumerable<String> additionalExclusions )
 		{
 			String[] aspnetNamespaces = new[]
 			{
@@ -52,14 +52,23 @@ namespace AspNetDependencyInjection.Services
 				.ToHashSet();
 		}
 
-		/// <summary>See the documentation of <see cref="IDependencyInjectionExclusionService.IsExcluded(Type)"/>.</summary>
-		public Boolean IsExcluded( Type type )
+		/// <summary>See the documentation of <see cref="IDependencyInjectionFallbackService.TryGetServiceProvider(Type, out IServiceProvider)"/>.</summary>
+		public Boolean TryGetServiceProvider( Type type, out IServiceProvider serviceProvider )
 		{
 			if( type == null ) throw new ArgumentNullException(nameof(type));
 
 			String fn = type.FullName;
 
-			return this.ignoreTypeNames.Contains( fn ) || this.ignoreNamespacePrefixes.Any( np => np.Matches( fn ) );
+			if( this.ignoreTypeNames.Contains( fn ) || this.ignoreNamespacePrefixes.Any( np => np.Matches( fn ) ) )
+			{
+				serviceProvider = AspNetDependencyInjection.Internal.ActivatorServiceProvider.Instance;
+				return true;
+			}
+			else
+			{
+				serviceProvider = default;
+				return false;
+			}
 		}
 	}
 }
