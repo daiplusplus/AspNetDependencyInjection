@@ -9,6 +9,26 @@ namespace AspNetDependencyInjection
 {
 	public sealed class MvcApplicationDependencyInjection : ApplicationDependencyInjection
 	{
+		private const String _configureError = "Use " + nameof(ConfigureMvc) + " to set up dependency-injection for ASP.NET MVC.";
+
+		[System.ComponentModel.EditorBrowsable( state: System.ComponentModel.EditorBrowsableState.Never )]
+		[System.ComponentModel.Browsable( browsable: false )]
+		[Obsolete( _configureError )]
+		public new static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
+		{
+			throw new NotSupportedException( _configureError );
+		}
+
+		[System.ComponentModel.EditorBrowsable( state: System.ComponentModel.EditorBrowsableState.Never )]
+		[System.ComponentModel.Browsable( browsable: false )]
+		[Obsolete( _configureError )]
+		public new static ApplicationDependencyInjection Configure( ApplicationDependencyInjectionConfiguration configuration, Action<IServiceCollection> configureServices )
+		{
+			throw new NotSupportedException( _configureError );
+		}
+
+		//
+
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
 		public static MvcApplicationDependencyInjection ConfigureMvc( Action<IServiceCollection> configureServices )
 		{

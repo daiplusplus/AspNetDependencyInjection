@@ -41,7 +41,7 @@ namespace SampleWebApplication
 			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
 
 			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `MvcApplicationDependencyInjection`:
-			_di = MvcApplicationDependencyInjection.Configure( ConfigureServices );
+			_di = MvcApplicationDependencyInjection.ConfigureMvc( ConfigureServices );
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
