@@ -13,7 +13,7 @@ namespace AspNetDependencyInjection.Internal
 		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 
 		private readonly IServiceProvider rootServiceProvider;
-		private readonly IDependencyInjectionFallbackService fallbackService;
+		private readonly IDependencyInjectionOverrideService serviceProviderOverrides;
 
 		/// <summary>This dictionary contains <see cref="ObjectFactory"/> delegates that will always return a concrete implementation and never return <c>null</c>.</summary>
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
@@ -21,13 +21,13 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
 		/// <param name="configuration">Required.</param>
 		/// <param name="rootServiceProvider">Required. The root <see cref="IServiceProvider"/> to use. The actual <see cref="IServiceProvider"/> used inside <see cref="GetService(Type)"/> depends on the current <see cref="HttpContext.Current"/>.</param>
-		/// <param name="fallbackService">Required. A service which allows a custom <see cref="IServiceProvider"/> to always be used for certain types.</param>
-		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="fallbackService"/> is <c>null</c>.</exception>
-		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionFallbackService fallbackService )
+		/// <param name="serviceProviderOverrideService">Required. A service which allows a custom <see cref="IServiceProvider"/> to always be used for certain types.</param>
+		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="serviceProviderOverrideService"/> is <c>null</c>.</exception>
+		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionOverrideService serviceProviderOverrideService )
 		{
-			this.config              = configuration ?? throw new ArgumentNullException(nameof(configuration));
-			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
-			this.fallbackService     = fallbackService ?? throw new ArgumentNullException(nameof(fallbackService));
+			this.config                   = configuration ?? throw new ArgumentNullException(nameof(configuration));
+			this.rootServiceProvider      = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
+			this.serviceProviderOverrides = serviceProviderOverrideService ?? throw new ArgumentNullException(nameof(serviceProviderOverrideService));
 		}
 
 		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
@@ -36,7 +36,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			if( this.fallbackService.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
+			if( this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
 			{
 				return fallbackServiceProvider.GetRequiredService( serviceType );
 			}
@@ -69,13 +69,13 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
-		public Boolean TryGetService( Type serviceType, Boolean useFallback, out Object service )
+		public Boolean TryGetService( Type serviceType, Boolean useOverrides, out Object service )
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			if( useFallback && this.fallbackService.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
+			if( useOverrides && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider serviceProviderOverride ) )
 			{
-				service = fallbackServiceProvider.GetService( serviceType );
+				service = serviceProviderOverride.GetService( serviceType );
 				return service != null;
 			}
 			else

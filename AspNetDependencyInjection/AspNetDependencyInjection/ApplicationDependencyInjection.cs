@@ -75,7 +75,7 @@ namespace AspNetDependencyInjection
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, fallbackService: this.rootServiceProvider.GetRequiredService<IDependencyInjectionFallbackService>() );
+			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, serviceProviderOverrideService: this.rootServiceProvider.GetRequiredService<IDependencyInjectionOverrideService>() );
 
 			// And register:
 

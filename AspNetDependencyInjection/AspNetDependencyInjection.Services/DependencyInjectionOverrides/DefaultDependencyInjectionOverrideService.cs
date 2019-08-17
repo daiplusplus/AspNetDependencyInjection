@@ -8,7 +8,7 @@ using AspNetDependencyInjection.Configuration;
 namespace AspNetDependencyInjection.Services
 {
 	/// <summary>Uses web.config to determine which types and namespaces should be excluded from DI.</summary>
-	public class DefaultDependencyInjectionFallbackService : IDependencyInjectionFallbackService
+	public class DefaultDependencyInjectionOverrideService : IDependencyInjectionOverrideService
 	{
 		private static IEnumerable<String> LoadIgnoredNamespacePrefixes()
 		{
@@ -28,14 +28,14 @@ namespace AspNetDependencyInjection.Services
 		private readonly IReadOnlyList<NamespacePrefix> ignoreNamespacePrefixes;
 		private readonly HashSet<String>                ignoreTypeNames;
 
-		/// <summary>Constructs a new instance of <see cref="DefaultDependencyInjectionFallbackService"/> and adds <paramref name="additionalExclusions"/> (if any) to the exclusion list.</summary>
-		public DefaultDependencyInjectionFallbackService( Boolean excludeAspNetNamespacesFromDI, IEnumerable<String> additionalExclusions )
+		/// <summary>Constructs a new instance of <see cref="DefaultDependencyInjectionOverrideService"/> and adds <paramref name="additionalExclusions"/> (if any) to the exclusion list.</summary>
+		public DefaultDependencyInjectionOverrideService( Boolean excludeAspNetNamespacesFromDI, IEnumerable<String> additionalExclusions )
 		{
 			String[] aspnetNamespaces = new[]
 			{
 				"Microsoft.WebTools.BrowserLink.*", // VS debugging
 				"System.ServiceModel.*", // for WCF
-				"System.Web.*",
+				"System.Web.*", // Note this does include System.Web.Mvc - however the 
 				"WebActivatorEx.*",
 				// obviously don't exclude `Microsoft.*` because that would break Microsoft.Extensions.Logging
 			};
@@ -52,12 +52,12 @@ namespace AspNetDependencyInjection.Services
 				.ToHashSet();
 		}
 
-		/// <summary>See the documentation of <see cref="IDependencyInjectionFallbackService.TryGetServiceProvider(Type, out IServiceProvider)"/>.</summary>
-		public virtual Boolean TryGetServiceProvider( Type type, out IServiceProvider serviceProvider )
+		/// <summary>See the documentation of <see cref="IDependencyInjectionOverrideService.TryGetServiceProvider(Type, out IServiceProvider)"/>.</summary>
+		public virtual Boolean TryGetServiceProvider( Type serviceType, out IServiceProvider serviceProvider )
 		{
-			if( type == null ) throw new ArgumentNullException(nameof(type));
+			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
 
-			String fn = type.FullName;
+			String fn = serviceType.FullName;
 
 			if( this.ignoreTypeNames.Contains( fn ) || this.ignoreNamespacePrefixes.Any( np => np.Matches( fn ) ) )
 			{
