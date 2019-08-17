@@ -44,6 +44,8 @@ namespace AspNetDependencyInjection
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
+			services.TryAddAspNetMvcFallbackService( DependencyResolver.Current );
+
 			return new MvcApplicationDependencyInjection( configuration, services );
 		}
 
@@ -64,7 +66,7 @@ namespace AspNetDependencyInjection
 			if( !base.IsDisposed )
 			{
 				// Restore original IDR:
-				DependencyResolver.SetResolver( this.originalIdr );
+				DependencyResolver.SetResolver( this.originalIdr ); // originalIdr will not be null.
 			}
 
 			base.Dispose( disposing );

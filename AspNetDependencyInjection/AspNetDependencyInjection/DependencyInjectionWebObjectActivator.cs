@@ -15,6 +15,7 @@ namespace AspNetDependencyInjection.Internal
 		private readonly IServiceProvider rootServiceProvider;
 		private readonly IDependencyInjectionFallbackService fallbackService;
 
+		/// <summary>This dictionary contains <see cref="ObjectFactory"/> delegates that will always return a concrete implementation and never return <c>null</c>.</summary>
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
@@ -64,6 +65,34 @@ namespace AspNetDependencyInjection.Internal
 						// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
 						return objectFactory( serviceProvider: serviceProvider, arguments: null );
 					}
+				}
+			}
+		}
+
+		public Boolean TryGetService( Type serviceType, Boolean useFallback, out Object service )
+		{
+			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
+
+			if( useFallback && this.fallbackService.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
+			{
+				service = fallbackServiceProvider.GetService( serviceType );
+				return service != null;
+			}
+			else
+			{
+				IServiceProvider serviceProvider = this.GetServiceProviderForCurrentHttpContext();
+
+				// Optimization: Does the serviceType already exist? (i.e. it has an implementation that's been called before)?
+				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+				{
+					service = existingObjectFactory( serviceProvider, arguments: null );
+					return service != null; // TODO: Change this to an assertion that `service != null` because ObjectFactories in `this.objectFactories` must never return null.
+				}
+				else
+				{
+					// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
+					service = serviceProvider.GetService( serviceType );
+					return service != null;
 				}
 			}
 		}

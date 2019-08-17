@@ -30,4 +30,14 @@ namespace AspNetDependencyInjection.Internal
 			);
 		}
 	}
+
+	internal class NullServiceProvider : IServiceProvider
+	{
+		public static NullServiceProvider Instance { get; } = new NullServiceProvider();
+
+		public Object GetService(Type serviceType)
+		{
+			return null;
+		}
+	}
 }
