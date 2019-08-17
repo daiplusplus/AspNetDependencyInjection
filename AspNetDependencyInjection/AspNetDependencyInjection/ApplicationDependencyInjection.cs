@@ -87,7 +87,7 @@ namespace AspNetDependencyInjection
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PostApplicationStartMethodAttribute"/> or other method (after your original <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked) to register additional services or reconfigure existing services if you need to perform additional service registration after your Global.asax has initialized.</summary>
 		public void Reconfigure( Action<IServiceCollection> reconfigureServices )
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException( "The ability to reconfigure services is not yet implemented." );
 		}
 
 		/// <summary>Calls <see cref="Dispose()"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>

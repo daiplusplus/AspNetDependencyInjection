@@ -21,22 +21,22 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Instantiates a new instance of <see cref="DependencyInjectionWebObjectActivator"/>. You do not need to normally use this constructor directly - instead use <see cref="ApplicationDependencyInjection"/>.</summary>
 		/// <param name="configuration">Required.</param>
 		/// <param name="rootServiceProvider">Required. The root <see cref="IServiceProvider"/> to use. The actual <see cref="IServiceProvider"/> used inside <see cref="GetService(Type)"/> depends on the current <see cref="HttpContext.Current"/>.</param>
-		/// <param name="serviceProviderOverrideService">Required. A service which allows a custom <see cref="IServiceProvider"/> to always be used for certain types.</param>
-		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> or <paramref name="serviceProviderOverrideService"/> is <c>null</c>.</exception>
+		/// <param name="serviceProviderOverrideService">Optional. A service which allows a custom <see cref="IServiceProvider"/> to always be used for certain types.</param>
+		/// <exception cref="ArgumentNullException">When <paramref name="rootServiceProvider"/> is <c>null</c>.</exception>
 		public DependencyInjectionWebObjectActivator( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider, IDependencyInjectionOverrideService serviceProviderOverrideService )
 		{
 			this.config                   = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			this.rootServiceProvider      = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
-			this.serviceProviderOverrides = serviceProviderOverrideService ?? throw new ArgumentNullException(nameof(serviceProviderOverrideService));
+			this.serviceProviderOverrides = serviceProviderOverrideService;
 		}
 
-		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>.</summary>
+		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
 		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
 		public Object GetService( Type serviceType )
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			if( this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
+			if( this.serviceProviderOverrides != null && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
 			{
 				return fallbackServiceProvider.GetRequiredService( serviceType );
 			}
@@ -69,11 +69,12 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
+		/// <summary>Attempts to get the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>. This method returns <c>false</c> if resolution fails.</summary>
 		public Boolean TryGetService( Type serviceType, Boolean useOverrides, out Object service )
 		{
 			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
 
-			if( useOverrides && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider serviceProviderOverride ) )
+			if( useOverrides && this.serviceProviderOverrides != null && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider serviceProviderOverride ) )
 			{
 				service = serviceProviderOverride.GetService( serviceType );
 				return service != null;
