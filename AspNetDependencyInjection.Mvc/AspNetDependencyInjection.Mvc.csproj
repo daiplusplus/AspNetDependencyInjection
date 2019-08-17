@@ -68,7 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DependencyInjectionWebObjectActivatorDependencyResolver.cs" />
+    <Compile Include="WoaDependencyResolver.cs" />
     <Compile Include="MvcApplicationDependencyInjection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

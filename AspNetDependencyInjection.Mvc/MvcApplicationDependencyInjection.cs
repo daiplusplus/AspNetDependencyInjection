@@ -51,13 +51,13 @@ namespace AspNetDependencyInjection
 		}
 
 		private readonly IDependencyResolver                                     originalIdr;
-		private readonly DependencyInjectionWebObjectActivatorDependencyResolver idr;
+		private readonly WoaDependencyResolver idr;
 
 		private MvcApplicationDependencyInjection(ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services)
 			: base( configuration, services )
 		{
 			this.originalIdr = DependencyResolver.Current; // will never be null.
-			this.idr         = new DependencyInjectionWebObjectActivatorDependencyResolver( this.WebObjectActivator );
+			this.idr         = new WoaDependencyResolver( this.WebObjectActivator );
 
 			DependencyResolver.SetResolver( this.idr );
 		}

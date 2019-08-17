@@ -11,11 +11,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Implements <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/>></summary>
-	public class DependencyInjectionWebObjectActivatorDependencyResolver : IDependencyResolver // Surprisingly, IDependencyResolver does not implement IServiceProvider, weird.
+	public class WoaDependencyResolver : IDependencyResolver // Surprisingly, IDependencyResolver does not implement IServiceProvider, weird.
 	{
 		private readonly DependencyInjectionWebObjectActivator webObjectActivator;
 
-		public DependencyInjectionWebObjectActivatorDependencyResolver( DependencyInjectionWebObjectActivator webObjectActivator )
+		public WoaDependencyResolver( DependencyInjectionWebObjectActivator webObjectActivator )
 		{
 			this.webObjectActivator = webObjectActivator ?? throw new ArgumentNullException(nameof(webObjectActivator));
 		}
@@ -30,7 +30,7 @@ namespace AspNetDependencyInjection.Internal
 			// However, obviously we don't want to do that because *if* it does have an implementation it should be returned.
 			
 			// `useFallback: false` so Activator won't be used for types under `System.Web.Mvc`.
-			if( this.webObjectActivator.TryGetService( serviceType, useFallback: false, out Object service ) )
+			if( this.webObjectActivator.TryGetService( serviceType, useOverrides: false, out Object service ) )
 			{
 				return service;
 			}
