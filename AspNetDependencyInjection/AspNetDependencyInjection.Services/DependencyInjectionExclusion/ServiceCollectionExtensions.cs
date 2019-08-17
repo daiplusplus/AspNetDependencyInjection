@@ -18,7 +18,8 @@ namespace AspNetDependencyInjection
 				.AddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
 		}
 
-		internal static void TryAddDefaultAspNetFallbackService( this IServiceCollection services )
+		/// <summary>Registers <see cref="DefaultDependencyInjectionFallbackService"/> as a singleton implementation of <see cref="IDependencyInjectionFallbackService"/> if no existing implementation of <see cref="IDependencyInjectionFallbackService"/> is registered.</summary>
+		public static void TryAddDefaultAspNetFallbackService( this IServiceCollection services )
 		{
 			services
 				.TryAddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );

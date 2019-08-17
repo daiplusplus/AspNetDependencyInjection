@@ -68,9 +68,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DependencyResolver.cs" />
+    <Compile Include="DependencyInjectionWebObjectActivatorDependencyResolver.cs" />
     <Compile Include="MvcApplicationDependencyInjection.cs" />
-    <Compile Include="MvcDependencyInjectionFallbackService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

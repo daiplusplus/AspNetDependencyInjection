@@ -44,7 +44,8 @@ namespace AspNetDependencyInjection
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
-			services.TryAddAspNetMvcFallbackService( DependencyResolver.Current );
+			// Register necessary internal services:
+			services.TryAddDefaultAspNetFallbackService(); // For a while during development I did have an ASP.NET MVC-specific fallback/exclusion/overrides list, but it isn't necessary now I have a better feel for how IDependencyResolver is meant to behave differently to WebObjectActivator - so it's okay to use the same AspNetFallbackService.
 
 			return new MvcApplicationDependencyInjection( configuration, services );
 		}

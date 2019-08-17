@@ -29,17 +29,6 @@ namespace AspNetDependencyInjection.Internal
 			// If the requested type is an interface or is abstract, then it simply returns null.
 			// However, obviously we don't want to do that because *if* it does have an implementation it should be returned.
 			
-			/*
-			if( serviceType.IsInterface || serviceType.IsAbstract )
-			{
-				return null;
-			}
-			else
-			{
-				return this.webObjectActivator.GetService( serviceType );
-			}
-			*/
-			
 			// `useFallback: false` so Activator won't be used for types under `System.Web.Mvc`.
 			if( this.webObjectActivator.TryGetService( serviceType, useFallback: false, out Object service ) )
 			{
