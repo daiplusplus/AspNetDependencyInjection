@@ -12,15 +12,16 @@ namespace AspNetDependencyInjection
 	public static partial class ServiceCollectionExtensions
 	{
 		/// <summary>Registers <see cref="DefaultDependencyInjectionFallbackService"/> as a singleton implementation of <see cref="IDependencyInjectionFallbackService"/>.</summary>
-		public static IServiceCollection AddDefaultAspNetExclusions( this IServiceCollection services, Boolean excludeAspNetNamespacesFromDI = true, IEnumerable<String> additionalExclusions = null )
+		public static IServiceCollection AddDefaultAspNetFallbackService( this IServiceCollection services, Boolean excludeAspNetNamespacesFromDI = true, IEnumerable<String> additionalExclusions = null )
 		{
 			return services
 				.AddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
 		}
 
-		internal static void TryAddDefaultAspNetExclusions( this IServiceCollection services )
+		internal static void TryAddDefaultAspNetFallbackService( this IServiceCollection services )
 		{
-			services.TryAddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
+			services
+				.TryAddSingleton<IDependencyInjectionFallbackService>( sp => new DefaultDependencyInjectionFallbackService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
 		}
 	}
 }

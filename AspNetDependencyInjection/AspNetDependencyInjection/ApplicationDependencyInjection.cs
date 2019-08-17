@@ -42,8 +42,7 @@ namespace AspNetDependencyInjection
 			configureServices( services );
 
 			// Register necessary internal services:
-
-			services.TryAddDefaultAspNetExclusions();
+			services.TryAddDefaultAspNetFallbackService();
 
 			return new ApplicationDependencyInjection( configuration, services );
 		}
@@ -69,6 +68,7 @@ namespace AspNetDependencyInjection
 
 			this.Configuration = configuration.ToImmutable();
 
+			// Register necessary internal services:
 			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:

@@ -33,11 +33,11 @@ namespace AspNetDependencyInjection.Services
 		{
 			String[] aspnetNamespaces = new[]
 			{
+				"Microsoft.WebTools.BrowserLink.*", // VS debugging
 				"System.ServiceModel.*", // for WCF
 				"System.Web.*",
+				"WebActivatorEx.*",
 				// obviously don't exclude `Microsoft.*` because that would break Microsoft.Extensions.Logging
-//				"Microsoft.Web.Infrastructure.*",  // excluded because I don't think there are any types in that namespace?
-				"WebActivatorEx.*"
 			};
 
 			this.ignoreNamespacePrefixes = LoadIgnoredNamespacePrefixes()
@@ -53,7 +53,7 @@ namespace AspNetDependencyInjection.Services
 		}
 
 		/// <summary>See the documentation of <see cref="IDependencyInjectionFallbackService.TryGetServiceProvider(Type, out IServiceProvider)"/>.</summary>
-		public Boolean TryGetServiceProvider( Type type, out IServiceProvider serviceProvider )
+		public virtual Boolean TryGetServiceProvider( Type type, out IServiceProvider serviceProvider )
 		{
 			if( type == null ) throw new ArgumentNullException(nameof(type));
 
