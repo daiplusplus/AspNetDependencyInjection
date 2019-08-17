@@ -14,12 +14,8 @@ namespace AspNetDependencyInjection
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
-		private readonly IServiceCollection                    services;
-		private readonly ServiceProvider                       rootServiceProvider;
-		private readonly IServiceProvider                      previousWoa;
-		private readonly DependencyInjectionWebObjectActivator woa;
-
-		private Boolean isDisposed;
+		private readonly IServiceCollection services;
+		private readonly ServiceProvider    rootServiceProvider;
 
 		/// <summary>Exposes <see cref="ImmutableApplicationDependencyInjectionConfiguration"/>.</summary>
 		protected internal ImmutableApplicationDependencyInjectionConfiguration Configuration      { get; }
@@ -27,8 +23,8 @@ namespace AspNetDependencyInjection
 		/// <summary>Exposes <see cref="DependencyInjectionWebObjectActivator"/>.</summary>
 		protected internal DependencyInjectionWebObjectActivator                WebObjectActivator { get; }
 
-		/// <summary>Indicates if this <see cref="ApplicationDependencyInjection"/> instance has already been resolved.</summary>
-		protected          Boolean                                              IsDisposed => this.isDisposed;
+		/// <summary>Indicates if this <see cref="ApplicationDependencyInjection"/> instance has already been disposed.</summary>
+		protected internal Boolean                                              IsDisposed { get; private set; }
 
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
 		public static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
@@ -45,34 +41,45 @@ namespace AspNetDependencyInjection
 			ServiceCollection services = new ServiceCollection();
 			configureServices( services );
 
+			// Register necessary internal services:
+			services.TryAddDefaultAspNetFallbackService();
+
 			return new ApplicationDependencyInjection( configuration, services );
 		}
 
 		/// <summary>Constructor for subclasses. When the constructor returns all static/global state will have been set (e.g. <see cref="HttpRuntime"/>, <see cref="HostingEnvironment"/> and dynamic modules added).</summary>
 		protected ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
+			// Validate:
+
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
 			}
 
+			{
+				// `HttpRuntime.WebObjectActivator == null` by default. I see no point to caching-and-restoring any existing WebObjectActivator given AspNetDependencyInjection is supposed to be *exclusive* and own an entire application's DI, so require that no other existing WebObjectActivator be set.
+				IServiceProvider existingWoa = HttpRuntime.WebObjectActivator;
+				if( existingWoa != null )
+				{
+					throw new InvalidOperationException( "Another " + nameof(HttpRuntime) + "." + nameof(HttpRuntime.WebObjectActivator) + " has been set. Its type is " + existingWoa.GetType().FullName + "." );
+				}
+			}
+
 			this.Configuration = configuration.ToImmutable();
 
 			// Register necessary internal services:
-
-			services.TryAddDefaultAspNetExclusions();
 			services.AddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-			this.previousWoa         = HttpRuntime.WebObjectActivator;
-			this.woa                = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, this.previousWoa, excluded: this.rootServiceProvider.GetRequiredService<IDependencyInjectionExclusionService>() );
+			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, serviceProviderOverrideService: this.rootServiceProvider.GetRequiredService<IDependencyInjectionOverrideService>() );
 
 			// And register:
 
-			HttpRuntime.WebObjectActivator = this.woa;
+			HttpRuntime.WebObjectActivator = this.WebObjectActivator;
 			HostingEnvironment.RegisterObject( this );
 			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( HttpContextScopeHttpModule ) ); // TODO: Can we un-register the module? Would we ever want to?
 		}
@@ -80,7 +87,7 @@ namespace AspNetDependencyInjection
 		/// <summary>Call this method from a <see cref="WebActivatorEx.PostApplicationStartMethodAttribute"/> or other method (after your original <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked) to register additional services or reconfigure existing services if you need to perform additional service registration after your Global.asax has initialized.</summary>
 		public void Reconfigure( Action<IServiceCollection> reconfigureServices )
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException( "The ability to reconfigure services is not yet implemented." );
 		}
 
 		/// <summary>Calls <see cref="Dispose()"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>
@@ -102,15 +109,15 @@ namespace AspNetDependencyInjection
 		/// <param name="disposing">When <c>true</c>, the <see cref="Dispose()"/> method was called. When <c>false</c> the finalizer was invoked.</param>
 		protected virtual void Dispose( Boolean disposing )
 		{
-			if( this.isDisposed ) return;
+			if( this.IsDisposed ) return;
 
 			if( disposing )
 			{
 				HostingEnvironment.UnregisterObject(this);
 
-				if( HttpRuntime.WebObjectActivator == this.woa )
+				if( HttpRuntime.WebObjectActivator == this.WebObjectActivator )
 				{
-					HttpRuntime.WebObjectActivator = this.previousWoa;
+					HttpRuntime.WebObjectActivator = null;
 				}
 
 				this.rootServiceProvider.Dispose();
@@ -118,7 +125,7 @@ namespace AspNetDependencyInjection
 				_semaphore.Release();
 			}
 
-			this.isDisposed = true;
+			this.IsDisposed = true;
 		}
 	}
 }

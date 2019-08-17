@@ -41,7 +41,7 @@ namespace SampleWebApplication
 			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
 
 			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `MvcApplicationDependencyInjection`:
-			_di = MvcApplicationDependencyInjection.Configure( ConfigureServices );
+			_di = MvcApplicationDependencyInjection.ConfigureMvc( ConfigureServices );
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
@@ -65,7 +65,7 @@ namespace SampleWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
 
-			//_di.Reconfigure( ReconfigureServices );
+			//_di.Reconfigure( ReconfigureServices ); // NOTE: The ability to reconfigure services is not currently supported and this method throws a `NotImplementedException`.
 		}
 
 		private static void ReconfigureServices( IServiceCollection services )
@@ -155,6 +155,12 @@ Another advantage of this approach is that if you need to use a `DbContext` insi
 * In conclusion:
 	* If you're not using ASP.NET MVC, use `ApplicationDependencyInjection` so you don't need to reference `System.Web.Mvc.dll`.
 	* If you are using ASP.NET MVC, use `MvcApplicationDependencyInjection` so your `IDependencyResolver` is configured correctly.
+
+### How does the `PreStart` / `WebActivatorEx.PreApplicationStartMethod` method work with or interact with OWIN's Startup method?
+
+* `WebActivatorEx`'s `PreApplicationStartMethod` (the `PreStart` method in our sample above) runs before OWIN's Startup method.
+	* See this StackOverflow post: https://stackoverflow.com/questions/21462777/webactivatorex-vs-owinstartup
+* You can have the 
 
 ## Included services
 
