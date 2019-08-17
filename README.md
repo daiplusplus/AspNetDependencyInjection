@@ -19,7 +19,8 @@
 * 1.4 - S. Kyle Korndoerfer's most recent version of `Unity.WebForms`, released in 2015. See [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms).
 * 2.0 - My `Unity.WebForms` project, updated in 2019 for ASP.NET 4.7.2 and WebObjectActivator). See [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 * 3.0 - After being extensively modified to use `Microsoft.Extensions.DependencyInjection` and renamed to `AspNetDependencyInjection` (as it now is unrelated to `Unity`.
-* 3.2 - Adding support for ASP.NET MVC.
+* 3.2 - Adding support for ASP.NET MVC (which turned out to be broken).
+* 3.3 - Bugfixing ASP.NET MVC support.
 
 ## NuGet Gallery
 
