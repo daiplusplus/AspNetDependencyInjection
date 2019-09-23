@@ -1,12 +1,15 @@
-﻿using System;
+﻿
+using AspNetDependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using WebActivatorEx;
-using AspNetDependencyInjection;
+using SampleMvcWebApplication;
 
-[assembly: PreApplicationStartMethod ( typeof( global::SampleMvcWebApplication.SampleApplicationStart ), methodName: nameof( global::SampleMvcWebApplication.SampleApplicationStart.PreStart  ) )]
-//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
+using WebActivatorEx;
+
+[assembly: PreApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
+[assembly: ApplicationShutdownMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.ApplicationShutdown ) )]
 
 namespace SampleMvcWebApplication
 {
@@ -20,11 +23,13 @@ namespace SampleMvcWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, use `ApplicationDependencyInjection`:
-			//_di = ApplicationDependencyInjection.Configure( ConfigureServices );
+			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, remove the call to `.AddMvcDependencyResolver()`.
+			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `.AddMvcDependencyResolver()`:
 
-			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `MvcApplicationDependencyInjection`:
-			_di = MvcApplicationDependencyInjection.ConfigureMvc( ConfigureServices );
+			_di = new ApplicationDependencyInjectionBuilder()
+				.ConfigureServices( ConfigureServices )
+				.AddMvcDependencyResolver()
+				.Build();
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
@@ -41,13 +46,11 @@ namespace SampleMvcWebApplication
 		internal static void PostStart()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
-
-			//_di.Reconfigure( ReconfigureServices );
 		}
 
-		private static void ReconfigureServices( IServiceCollection services )
+		internal static void ApplicationShutdown()
 		{
-			
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(ApplicationShutdown) + "() called." );
 		}
 	}
 }
