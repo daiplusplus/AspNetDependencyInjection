@@ -33,7 +33,7 @@ namespace AspNetDependencyInjection.Internal
 			// However, obviously we don't want to do that because *if* it does have an implementation it should be returned.
 			
 			// `useOverrides: false` so Activator won't be used for types under `System.Web.Mvc`.
-			if( this.di.TryGetService( this.GetServiceProvider, serviceType, useOverrides: false, out Object service ) )
+			if( this.di.ObjectFactoryCache.TryGetService( this.GetServiceProvider, serviceType, useOverrides: false, out Object service ) )
 			{
 				return service;
 			}
@@ -45,15 +45,10 @@ namespace AspNetDependencyInjection.Internal
 
 		public IEnumerable<Object> GetServices(Type serviceType)
 		{
-			Object resolved = this.GetService( serviceType );
-			if( resolved != null )
-			{
-				return new Object[] { resolved }; // Isn't there a value-type for single enumerables instead of allocating a new array?
-			}
-			else
-			{
-				return Enumerable.Empty<Object>();
-			}
+			// This implementation from `Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions`:
+			Type closedGenericType = typeof(IEnumerable<>).MakeGenericType( serviceType );
+
+			return (IEnumerable<Object>)this.GetService( serviceType );
 		}
 
 		private IServiceProvider GetServiceProvider()
