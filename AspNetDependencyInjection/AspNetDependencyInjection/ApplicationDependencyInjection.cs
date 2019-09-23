@@ -51,7 +51,7 @@ namespace AspNetDependencyInjection
 			this.Configuration = configuration.ToImmutable();
 
 			// Register necessary internal services:
-			services.TryAddDefaultAspNetFallbackService();
+			services.TryAddDefaultDependencyInjectionOverrideService();
 			services.TryAddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:
@@ -64,7 +64,8 @@ namespace AspNetDependencyInjection
 			//
 
 			HostingEnvironment.RegisterObject( this );
-			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( HttpContextScopeHttpModule ) ); // TODO: Can we un-register the module? Would we ever want to?
+			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( HttpContextScopeHttpModule ) );
+			// NOTE: It is not possible to un-register a HttpModule. That's nothing to do with `Microsoft.Web.Infrastructure` - the actual module registry in `System.Web.dll` can only be added to, not removed from.
 		}
 
 		/// <summary>Invokes all of the factory delegates, passing <c>this</c> as the parameter. Then passes the clients into <see cref="UseClients(IEnumerable{IDependencyInjectionClient})"/>.</summary>
@@ -235,7 +236,9 @@ namespace AspNetDependencyInjection
 				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
 				{
 					service = existingObjectFactory( serviceProvider, arguments: null );
-					return service != null; // TODO: Change this to an assertion that `service != null` because ObjectFactories in `this.objectFactories` must never return null.
+					if( service == null ) throw new InvalidOperationException( nameof(ObjectFactory) + " returned null. ObjectFactory instances must only be added if they can create or retrieve a valid service instance." );
+
+					return true;
 				}
 				else
 				{

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AspNetDependencyInjection
 {
 	/// <summary>In order to use <see cref="HttpApplication"/>-lifetime <see cref="IServiceScope"/> (see <see cref="ApplicationDependencyInjectionConfiguration.UseHttpApplicationScopes"/>) this interface must be implemented by your application's <c>Global.asax</c> <see cref="HttpApplication"/> class.</summary>
-	/// <remarks>Thi is because <see cref="HttpApplication"/> does not expose any way for external code to store per-instance state, namely the <see cref="IServiceScope"/>. Note that the <see cref="HttpApplication.Application"/> state collection is actually shared by all <see cref="HttpApplication"/> instances and cannot be used to identify specific <see cref="HttpApplication"/> instances.</remarks>
+	/// <remarks>This is because <see cref="HttpApplication"/> does not expose any way for external code to store per-instance state, namely the <see cref="IServiceScope"/>. Note that the <see cref="HttpApplication.Application"/> state collection (<see cref="HttpApplication.Application"/>) is actually shared by all <see cref="HttpApplication"/> instances and cannot be used to identify specific <see cref="HttpApplication"/> instances.</remarks>
 	public interface IScopedHttpApplication
 	{
 		// We can't simply abuse `HttpApplication.Site` as a hack-way to get per-instance storage.
@@ -163,7 +163,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			if( fieldInfo == null ) throw new ArgumentNullException(nameof(fieldInfo));
 
-			String methodName = fieldInfo.ReflectedType.FullName + ".get_" + fieldInfo.Name; // TODO: Does the method name matter?
+			String methodName = fieldInfo.ReflectedType.FullName + ".get_" + fieldInfo.Name;
 
 			DynamicMethod method = new DynamicMethod( methodName, returnType: typeof(TField), parameterTypes: new[] { typeof(TObject) }, restrictedSkipVisibility: true );
 			ILGenerator gen = method.GetILGenerator();
