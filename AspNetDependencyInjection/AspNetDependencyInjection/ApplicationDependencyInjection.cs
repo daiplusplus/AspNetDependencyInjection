@@ -72,29 +72,49 @@ namespace AspNetDependencyInjection
 
 			// Register necessary internal services:
 			services.TryAddDefaultAspNetFallbackService();
+			services.TryAddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
 
 			// Initialize fields:
 
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
-			this.WebObjectActivator  = new DependencyInjectionWebObjectActivator( this.Configuration, this.rootServiceProvider, serviceProviderOverrideService: this.rootServiceProvider.GetRequiredService<IDependencyInjectionOverrideService>() );
 
-			// And register:
+			this.serviceProviderOverrides = this.rootServiceProvider.GetRequiredService<IDependencyInjectionOverrideService>();
 
-			HttpRuntime.WebObjectActivator = this.WebObjectActivator;
+			//
+
 			HostingEnvironment.RegisterObject( this );
 			global::Microsoft.Web.Infrastructure.DynamicModuleHelper.DynamicModuleUtility.RegisterModule( typeof( HttpContextScopeHttpModule ) ); // TODO: Can we un-register the module? Would we ever want to?
 		}
 
-		/// <summary>Call this method from a <see cref="WebActivatorEx.PostApplicationStartMethodAttribute"/> or other method (after your original <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked) to register additional services or reconfigure existing services if you need to perform additional service registration after your Global.asax has initialized.</summary>
-		public void Reconfigure( Action<IServiceCollection> reconfigureServices )
+		/// <summary>Invokes all of the factory delegates, passing <c>this</c> as the parameter. Then passes the clients into <see cref="UseClients(IEnumerable{IDependencyInjectionClient})"/>.</summary>
+		protected internal virtual void CreateClients( IEnumerable<Func<ApplicationDependencyInjection,IDependencyInjectionClient>> clientFactories )
 		{
-			throw new NotImplementedException( "The ability to reconfigure services is not yet implemented." );
+			if( clientFactories == null ) throw new ArgumentNullException(nameof(clientFactories));
+
+			//
+
+			IEnumerable<IDependencyInjectionClient> clients = clientFactories
+				.Select( cf => cf( this ) );
+
+			this.UseClients( clients );
 		}
+
+		/// <summary>Copies all of the non-null <see cref="IDependencyInjectionClient"/> instances from <paramref name="clients"/> into the private clients list. The clients will be disposed inside <see cref="Dispose(bool)"/>.</summary>
+		protected internal virtual void UseClients( IEnumerable<IDependencyInjectionClient> clients )
+		{
+			if( clients == null ) throw new ArgumentNullException(nameof(clients));
+
+			//
+
+			this.clients.AddRange( clients.Where( c => c != null ) );
+		}
+
+#region Lifetime
 
 		/// <summary>Calls <see cref="Dispose()"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>
 		/// <param name="immediate">This parameter is unused.</param>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes" )]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Justification = "The method calls Dispose, which is exposed to child types." )]
 		void IRegisteredObject.Stop(Boolean immediate)
 		{
 			this.Dispose();
@@ -117,9 +137,13 @@ namespace AspNetDependencyInjection
 			{
 				HostingEnvironment.UnregisterObject(this);
 
-				if( HttpRuntime.WebObjectActivator == this.WebObjectActivator )
+				IEnumerable<IDependencyInjectionClient> clientsList = this.clients;
+				if( clientsList != null )
 				{
-					HttpRuntime.WebObjectActivator = null;
+					foreach( IDependencyInjectionClient client in clientsList )
+					{
+						client.Dispose();
+					}
 				}
 
 				this.rootServiceProvider.Dispose();
@@ -129,6 +153,8 @@ namespace AspNetDependencyInjection
 
 			this.IsDisposed = true;
 		}
+
+#endregion
 
 		/// <summary>See the documentation for <see cref="GetServiceProviderForCurrentHttpContext(HttpContextBase)"/>. The <paramref name="httpContext"/> can have a null reference, in which case the root-service provider will be returned.</summary>
 		public IServiceProvider GetServiceProviderForCurrentHttpContext( HttpContext httpContext )
