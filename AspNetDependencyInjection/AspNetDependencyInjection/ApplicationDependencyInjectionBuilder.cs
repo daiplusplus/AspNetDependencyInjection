@@ -15,12 +15,12 @@ namespace AspNetDependencyInjection
 
 		private readonly List<Action<IServiceCollection>> configureServices = new List<Action<IServiceCollection>>();
 		
-		private readonly List<Func<ApplicationDependencyInjection,IDependencyInjectionClient>> clientFactories = new List<Func<ApplicationDependencyInjection,IDependencyInjectionClient>>();
+		private readonly List<Func<ApplicationDependencyInjection,IServiceProvider,IDependencyInjectionClient>> clientFactories = new List<Func<ApplicationDependencyInjection,IServiceProvider,IDependencyInjectionClient>>();
 
 		/// <summary>Creates a new <see cref="ApplicationDependencyInjectionBuilder"/> and adds a factory for <see cref="DependencyInjectionWebObjectActivator"/> to the internal client factories list.</summary>
 		public ApplicationDependencyInjectionBuilder()
 		{
-			this.clientFactories.Add( di => new DependencyInjectionWebObjectActivator( di ) );
+			this.clientFactories.Add( ( di, rootSP ) => new DependencyInjectionWebObjectActivator( di ) );
 		}
 
 		#region Fluent builders
@@ -38,6 +38,17 @@ namespace AspNetDependencyInjection
 
 		/// <summary>Adds the specified <see cref="IDependencyInjectionClient"/> factories to the internal collection. <paramref name="clientFactories"/> MAY be null or empty.</summary>
 		public virtual ApplicationDependencyInjectionBuilder AddClient( params Func<ApplicationDependencyInjection,IDependencyInjectionClient>[] clientFactories )
+		{
+			if( clientFactories != null )
+			{
+				this.clientFactories.AddRange( clientFactories.Where( cf => cf != null ).Select( cf => new Func<ApplicationDependencyInjection,IServiceProvider,IDependencyInjectionClient>( (di, rootSP) => cf( di ) ) ) );
+			}
+			
+			return this;
+		}
+
+		/// <summary>Adds the specified <see cref="IDependencyInjectionClient"/> factories to the internal collection. <paramref name="clientFactories"/> MAY be null or empty.</summary>
+		public virtual ApplicationDependencyInjectionBuilder AddClient( params Func<ApplicationDependencyInjection,IServiceProvider,IDependencyInjectionClient>[] clientFactories )
 		{
 			if( clientFactories != null )
 			{

@@ -22,7 +22,7 @@ namespace AspNetDependencyInjection.Internal
 		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
 		public Object GetService( Type serviceType )
 		{
-			return this.di.GetRequiredService( this.GetServiceProviderForCurrentHttpContext, serviceType, useOverrides: true );
+			return this.di.ObjectFactoryCache.GetRequiredService( this.GetServiceProviderForCurrentHttpContext, serviceType, useOverrides: true );
 		}
 
 		private IServiceProvider GetServiceProviderForCurrentHttpContext()

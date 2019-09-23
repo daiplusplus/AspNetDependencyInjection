@@ -21,10 +21,6 @@ namespace AspNetDependencyInjection
 		private readonly IServiceCollection                  services;
 		private readonly ServiceProvider                     rootServiceProvider;
 		private readonly List<IDependencyInjectionClient>    clients = new List<IDependencyInjectionClient>();
-		private readonly IDependencyInjectionOverrideService serviceProviderOverrides;
-
-		/// <summary>This dictionary contains <see cref="ObjectFactory"/> delegates that will always return a concrete implementation and never return <c>null</c>.</summary>
-		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
 		/// <summary>Exposes <see cref="ImmutableApplicationDependencyInjectionConfiguration"/>.</summary>
 		public ImmutableApplicationDependencyInjectionConfiguration Configuration { get; }
@@ -59,7 +55,7 @@ namespace AspNetDependencyInjection
 			this.services            = services ?? throw new ArgumentNullException(nameof(services));
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
 
-			this.serviceProviderOverrides = this.rootServiceProvider.GetRequiredService<IDependencyInjectionOverrideService>();
+			this.ObjectFactoryCache = this.rootServiceProvider.GetRequiredService<ObjectFactoryCache>();
 
 			//
 
@@ -69,14 +65,14 @@ namespace AspNetDependencyInjection
 		}
 
 		/// <summary>Invokes all of the factory delegates, passing <c>this</c> as the parameter. Then passes the clients into <see cref="UseClients(IEnumerable{IDependencyInjectionClient})"/>.</summary>
-		protected internal virtual void CreateClients( IEnumerable<Func<ApplicationDependencyInjection,IDependencyInjectionClient>> clientFactories )
+		protected internal virtual void CreateClients( IEnumerable<Func<ApplicationDependencyInjection,IServiceProvider,IDependencyInjectionClient>> clientFactories )
 		{
 			if( clientFactories == null ) throw new ArgumentNullException(nameof(clientFactories));
 
 			//
 
 			IEnumerable<IDependencyInjectionClient> clients = clientFactories
-				.Select( cf => cf( this ) );
+				.Select( cf => cf( this, this.rootServiceProvider ) );
 
 			this.UseClients( clients );
 		}
@@ -90,6 +86,21 @@ namespace AspNetDependencyInjection
 
 			this.clients.AddRange( clients.Where( c => c != null ) );
 		}
+
+		/// <summary>Gets the root <see cref="IServiceProvider"/> instance. Throws <see cref="ObjectDisposedException"/> if this <see cref="ApplicationDependencyInjection"/> instance is already disposed. This property is not intended to be used to resolve services directly, but is intended for use by <see cref="IDependencyInjectionClient"/> classes so they can set-up custom scopes and resolvers.</summary>
+		// NOTE: Alternate to exposing this as a property, it could be passed-in as a second parameter to the `IDependencyInjectionClient` factory methods. Hmmm.
+		internal IServiceProvider RootServiceProvider
+		{
+			get
+			{
+				if( this.IsDisposed ) throw new ObjectDisposedException( objectName: this.GetType().FullName );
+
+				return this.rootServiceProvider;
+			}
+		}
+
+		/// <summary>Returns an instance of <see cref="ObjectFactoryCache"/> which caches service factories.</summary>
+		public ObjectFactoryCache ObjectFactoryCache { get; }
 
 #region Lifetime
 
@@ -170,136 +181,5 @@ namespace AspNetDependencyInjection
 				return this.rootServiceProvider;
 			}
 		}
-
-		#region ObjectFactories-based service resolution
-
-		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method will be called by ASP.NET's infrastructure that makes use of <see cref="HttpRuntime.WebObjectActivator"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
-		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
-		public Object GetRequiredService( Func<IServiceProvider> getServiceProvider, Type serviceType, Boolean useOverrides )
-		{
-			if( getServiceProvider == null ) throw new ArgumentNullException( nameof(getServiceProvider) );
-			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
-
-			//
-
-			if( useOverrides && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider fallbackServiceProvider ) )
-			{
-				return fallbackServiceProvider.GetRequiredService( serviceType );
-			}
-			else
-			{
-				IServiceProvider serviceProvider = getServiceProvider();
-
-				// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
-				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
-				{
-					return existingObjectFactory( serviceProvider, arguments: null );
-				}
-				else
-				{
-					ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
-
-					ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
-
-					if( helper.Instance != null )
-					{
-						// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
-						return helper.Instance;
-					}
-					else
-					{
-						// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
-						return objectFactory( serviceProvider: serviceProvider, arguments: null );
-					}
-				}
-			}
-		}
-
-		/// <summary>Attempts to get the service object of the specified type from the current <see cref="HttpContext"/>. This method returns <c>false</c> if resolution fails (and the value of <paramref name="service"/> is undefined).</summary>
-		public Boolean TryGetService( Func<IServiceProvider> getServiceProvider, Type serviceType, Boolean useOverrides, out Object service )
-		{
-			if( getServiceProvider == null ) throw new ArgumentNullException( nameof(getServiceProvider) );
-			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
-
-			//
-
-			if( useOverrides && this.serviceProviderOverrides.TryGetServiceProvider( serviceType, out IServiceProvider serviceProviderOverride ) )
-			{
-				service = serviceProviderOverride.GetService( serviceType );
-				return service != null;
-			}
-			else
-			{
-				IServiceProvider serviceProvider = getServiceProvider();
-
-				// Optimization: Does the serviceType already exist? (i.e. it has an implementation that's been called before)?
-				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
-				{
-					service = existingObjectFactory( serviceProvider, arguments: null );
-					if( service == null ) throw new InvalidOperationException( nameof(ObjectFactory) + " returned null. ObjectFactory instances must only be added if they can create or retrieve a valid service instance." );
-
-					return true;
-				}
-				else
-				{
-					// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
-					service = serviceProvider.GetService( serviceType );
-					return service != null;
-				}
-			}
-		}
-
-		// IMPORTANT NOTE: This method does not necessarily *create* (well, resolve) service instances itself - it returns a delegate which in-turn performs the resolution process - but as an optimization it returns the resolved service, if available as part of the testing process.
-		private ObjectFactory RequiredObjectFactoryFactory( Type serviceType, ObjectFactoryHelper helper )
-		{
-			// This is a convoluted operation:
-			// 1. The first pass tests that the object is available from the serviceProvider, and if so, returns an ObjectFactory that uses the serviceProvider (regardless of scope depth).
-			// 2. If nothing else works, then it returns an ObjectFactory for MEDI's ActivatorUtilities or Activator.
-			// Now, this COULD work by performing the test, then discarding the returned object, and then invoking the ObjectFactory anyway...
-			// but instead, we use the method argument to pass the returned object back to the caller to prevent needing to invoke the ObjectFactory twice whenever a new serviceType is requested for the first time.
-
-			// 1:
-			{
-				Object result = helper.ServiceProvider.GetService( serviceType ); // Btw, don't use `GetRequiredService(Type)` because that throws an exception if it fails.
-				if( result != null )
-				{
-					helper.Instance = result;
-					return new ObjectFactory( ( sp, args ) => sp.GetRequiredService( serviceType ) ); // this ObjectFactory will be used in future calls to GetService.
-				}
-			}
-
-			// 2:
-			try
-			{
-				// ActivatorUtilities.CreateFactory only throws InvalidOperationException if it cannot find a suitable constructor.
-				// As the `ObjectFactory` itself isn't actually being invoked, we can be certain the exception is not being thrown from anywhere else.
-				// See `CreateFactory` and `FindApplicableConstructor` in https://github.com/aspnet/DependencyInjection/blob/1.0.0-rc1/src/Microsoft.Extensions.DependencyInjection.Abstractions/ActivatorUtilities.cs
-
-				return ActivatorUtilities.CreateFactory( instanceType: serviceType, argumentTypes: Array.Empty<Type>() );
-			}
-			catch( InvalidOperationException )
-			{
-				// Fallback to Activator:
-				return ActivatorObjectFactoryFactory( serviceType );
-			}
-		}
-
-		private static ObjectFactory ActivatorObjectFactoryFactory( Type serviceType )
-		{
-			return new ObjectFactory( ( sp, args ) => ActivatorServiceProvider.Instance.GetService( serviceType: serviceType, args: args ) ); // Yay closures.
-		}
-
-		private class ObjectFactoryHelper
-		{
-			public readonly IServiceProvider ServiceProvider;
-			public          Object           Instance;
-
-			public ObjectFactoryHelper(IServiceProvider serviceProvider)
-			{
-				this.ServiceProvider = serviceProvider;
-			}
-		}
-
-		#endregion
 	}
 }
