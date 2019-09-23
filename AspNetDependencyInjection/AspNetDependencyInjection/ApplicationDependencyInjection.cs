@@ -1,11 +1,15 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using AspNetDependencyInjection.Internal;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace AspNetDependencyInjection
 {
@@ -23,49 +27,25 @@ namespace AspNetDependencyInjection
 		private readonly ConcurrentDictionary<Type,ObjectFactory> objectFactories = new ConcurrentDictionary<Type,ObjectFactory>(); // `ObjectFactory` is a delegate, btw.
 
 		/// <summary>Exposes <see cref="ImmutableApplicationDependencyInjectionConfiguration"/>.</summary>
-		protected internal ImmutableApplicationDependencyInjectionConfiguration Configuration      { get; }
+		public ImmutableApplicationDependencyInjectionConfiguration Configuration { get; }
 
 		/// <summary>Indicates if this <see cref="ApplicationDependencyInjection"/> instance has already been disposed.</summary>
-		protected internal Boolean                                              IsDisposed { get; private set; }
+		/// <remarks>This property is not public because consumers using <see cref="ApplicationDependencyInjection"/> (or a subclass) correctly do not *need* to know about this property.</remarks>
+		protected internal Boolean IsDisposed { get; private set; }
 
-		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
-		public static ApplicationDependencyInjection Configure( Action<IServiceCollection> configureServices )
-		{
-			return Configure( new ApplicationDependencyInjectionConfiguration(), configureServices );
-		}
-
-		/// <summary>Call this method from a <see cref="WebActivatorEx.PreApplicationStartMethodAttribute"/>-marked method to instantiate a new <see cref="ApplicationDependencyInjection"/> and to configure services in the root service provider.</summary>
-		public static ApplicationDependencyInjection Configure( ApplicationDependencyInjectionConfiguration configuration, Action<IServiceCollection> configureServices )
-		{
-			if( configuration     == null ) throw new ArgumentNullException(nameof(configuration));
-			if( configureServices == null ) throw new ArgumentNullException(nameof(configureServices));
-
-			ServiceCollection services = new ServiceCollection();
-			configureServices( services );
-
-			// Register necessary internal services:
-			services.TryAddDefaultAspNetFallbackService();
-
-			return new ApplicationDependencyInjection( configuration, services );
-		}
-
-		/// <summary>Constructor for subclasses. When the constructor returns all static/global state will have been set (e.g. <see cref="HttpRuntime"/>, <see cref="HostingEnvironment"/> and dynamic modules added).</summary>
-		protected ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
+		/// <summary>Constructor. Does not call any virtual methods. Calls <see cref="ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(IServiceCollection)"/> after using <c>services.TryAdd</c> to add a minimal set of required services.</summary>
+		protected internal ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
 			// Validate:
+
+			if( configuration == null ) throw new ArgumentNullException(nameof(configuration));
+			if( services == null ) throw new ArgumentNullException(nameof(services));
+
+			//
 
 			if( !_semaphore.Wait( millisecondsTimeout: 0 ) )
 			{
 				throw new InvalidOperationException( "Another " + nameof(ApplicationDependencyInjection) + " has already been created in this AppDomain without being disposed first (or the previous dispose attempt failed)." );
-			}
-
-			{
-				// `HttpRuntime.WebObjectActivator == null` by default. I see no point to caching-and-restoring any existing WebObjectActivator given AspNetDependencyInjection is supposed to be *exclusive* and own an entire application's DI, so require that no other existing WebObjectActivator be set.
-				IServiceProvider existingWoa = HttpRuntime.WebObjectActivator;
-				if( existingWoa != null )
-				{
-					throw new InvalidOperationException( "Another " + nameof(HttpRuntime) + "." + nameof(HttpRuntime.WebObjectActivator) + " has been set. Its type is " + existingWoa.GetType().FullName + "." );
-				}
 			}
 
 			this.Configuration = configuration.ToImmutable();
@@ -124,7 +104,7 @@ namespace AspNetDependencyInjection
 		public void Dispose()
 		{
 			this.Dispose( disposing: true );
-			GC.SuppressFinalize( this );
+			GC.SuppressFinalize( this ); // NOTE: It isn't necessary to call `SuppressFinalize` if the class doesn't have a finalizer.
 		}
 
 		/// <summary>See <see cref="IDisposable.Dispose"/>.</summary>
