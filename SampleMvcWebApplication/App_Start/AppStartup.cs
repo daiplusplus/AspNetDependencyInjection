@@ -93,8 +93,7 @@ namespace SampleMvcWebApplication
 			IDependencyResolver dr = GlobalHost.DependencyResolver;
 			if( dr is AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver dr2 )
 			{
-				
-				GlobalHost.DependencyResolver.Register( typeof(IUserIdProvider), () => dr2.GetRootRequiredService<IUserIdProvider>() );
+				//GlobalHost.DependencyResolver.Register( typeof(IUserIdProvider), () => dr2.GetRootRequiredService<IUserIdProvider>() );
 
 				HubConfiguration hubConfig = new HubConfiguration()
 				{

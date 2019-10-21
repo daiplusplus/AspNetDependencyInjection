@@ -56,6 +56,15 @@ namespace SampleMvcWebApplication
 	public class SampleUserIdProvider : IUserIdProvider
 	{
 		const String cookieName = "ASP.NET_SessionId";
+		
+		private readonly IWebConfiguration webConfig;
+
+		public SampleUserIdProvider( IWebConfiguration injected )
+		{
+			this.webConfig = injected ?? throw new ArgumentNullException( nameof( injected ) );
+
+			System.Diagnostics.Debug.WriteLine( nameof(SampleUserIdProvider) + " created." );
+		}
 
 		public String GetUserId( IRequest request )
 		{
