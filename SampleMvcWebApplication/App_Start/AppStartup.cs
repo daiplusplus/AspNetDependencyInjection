@@ -1,6 +1,8 @@
 ﻿
+using System;
 using AspNetDependencyInjection;
 using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Extensions.DependencyInjection;
 using Owin;
 using SampleMvcWebApplication;
@@ -15,6 +17,10 @@ using WebActivatorEx;
 
 namespace SampleMvcWebApplication
 {
+//	using ADIDependencyResolver = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRDependencyResolver;
+//	using ADIHubActivator       = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRHubActivator;
+//	using ADIHubDispatcher      = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRHubDispatcher;
+
 	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
 	internal static class SampleApplicationStart
 	{
@@ -31,6 +37,8 @@ namespace SampleMvcWebApplication
 			_di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( ConfigureServices )
 				.AddMvcDependencyResolver()
+//				.AddSignalRDependencyResolver()
+				.AddClient( (di, rootSP) => new AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver( di, rootSP ) )
 				.Build();
 		}
 
@@ -54,11 +62,52 @@ namespace SampleMvcWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(OwinStartup) + "() called." );
 
-			HubConfiguration hubConfig = new HubConfiguration()
-			{
-			};
+#if ATTEMPT_1
+			// https://github.com/simpleinjector/SimpleInjector/issues/232
 
-			appBuilder.MapSignalR( hubConfig );
+			IDependencyResolver dr = GlobalHost.DependencyResolver;
+			if( dr is ADIDependencyResolver dr2 )
+			{
+			
+				HubConfiguration hubConfig = new HubConfiguration()
+				{
+					Resolver = GlobalHost.DependencyResolver
+				};
+
+				ADIHubDispatcher hubDispatcher = dr2.CreateHubDispatcher( hubConfig );
+
+				hubConfig.Resolver.Register( typeof(ADIHubDispatcher), () => hubDispatcher );
+
+				appBuilder.MapSignalR<ADIHubDispatcher>( "/signalr", hubConfig );
+			}
+			else
+			{
+				throw new InvalidOperationException( nameof(ADIDependencyResolver) + " is not set-up." );
+			}
+
+#else // ATTEMPT_2
+
+			IDependencyResolver dr = GlobalHost.DependencyResolver;
+			if( dr is AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver dr2 )
+			{
+
+				// Using only HubActivator:
+			
+				GlobalHost.DependencyResolver.Register( typeof(IHubActivator), () => dr2.HubActivator );
+
+				HubConfiguration hubConfig = new HubConfiguration()
+				{
+					EnableDetailedErrors = true
+				};
+
+				appBuilder.MapSignalR( "/signalr", hubConfig );
+			}
+			else
+			{
+				throw new InvalidOperationException( nameof(AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver) + " is not set-up." );
+			}
+#endif
+			
 		}
 
 		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>

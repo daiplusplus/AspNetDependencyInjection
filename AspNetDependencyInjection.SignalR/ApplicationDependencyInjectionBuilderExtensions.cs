@@ -11,7 +11,7 @@ namespace AspNetDependencyInjection
 			if( builder == null ) throw new ArgumentNullException(nameof(builder));
 
 			return builder
-				.AddClient( ( di, rootSP ) => new DependencyInjectionSignalRDependencyResolver( di, rootSP ) );
+				.AddClient( ( di, rootSP ) => new ScopedDependencyInjectionSignalRDependencyResolver( di, rootSP ) );
 		}
 	}
 }

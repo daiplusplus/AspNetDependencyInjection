@@ -52,27 +52,39 @@ namespace AspNetDependencyInjection
 				IServiceProvider serviceProvider = getServiceProvider();
 				if( serviceProvider == null ) throw new InvalidOperationException( nameof(getServiceProvider) + " returned null." );
 
-				// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
-				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+				return this.GetRequiredService( serviceProvider, serviceType );
+			}
+		}
+
+		/// <summary>Gets the service object of the specified type from <paramref name="serviceProvider"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
+		public Object GetRequiredService( IServiceProvider serviceProvider, Type serviceType )
+		{
+			if( serviceProvider == null ) throw new ArgumentNullException(nameof(serviceProvider));
+			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+			
+			//
+
+
+			// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
+			if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+			{
+				return existingObjectFactory( serviceProvider, arguments: null );
+			}
+			else
+			{
+				ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
+
+				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
+
+				if( helper.Instance != null )
 				{
-					return existingObjectFactory( serviceProvider, arguments: null );
+					// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
+					return helper.Instance;
 				}
 				else
 				{
-					ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
-
-					ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
-
-					if( helper.Instance != null )
-					{
-						// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
-						return helper.Instance;
-					}
-					else
-					{
-						// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
-						return objectFactory( serviceProvider: serviceProvider, arguments: null );
-					}
+					// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
+					return objectFactory( serviceProvider: serviceProvider, arguments: null );
 				}
 			}
 		}

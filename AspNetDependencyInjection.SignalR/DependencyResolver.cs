@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Implements SignalR's <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/>></summary>
-	public sealed class DependencyInjectionSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
+	public sealed class ScopedDependencyInjectionSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceProvider               rootServiceProvider;
@@ -18,7 +18,7 @@ namespace AspNetDependencyInjection.Internal
 //		private readonly DependencyInjectionSignalRHubActivator  hubActivator;
 //		private readonly DependencyInjectionSignalRHubDispatcher hubDispatcher;
 
-		internal DependencyInjectionSignalRDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
+		internal ScopedDependencyInjectionSignalRDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
 			: base()
 		{
 			this.di                  = di                  ?? throw new ArgumentNullException( nameof(di) );
@@ -30,10 +30,10 @@ namespace AspNetDependencyInjection.Internal
 //			this.Register( typeof(IHubActivator), () => this.hubActivator );
 
 //			this.originalResolver = GlobalHost.DependencyResolver; // don't use the static getter because it has a Lazy<T> initializer.
-			GlobalHost.DependencyResolver = this;
+//			GlobalHost.DependencyResolver = this;
 		}
 
-//		public IServiceProvider                        RootServiceProvider => this.rootServiceProvider; // HACK
+		public IServiceProvider                        RootServiceProvider => this.rootServiceProvider; // HACK
 //		public DependencyInjectionSignalRHubActivator  HubActivator        => this.hubActivator;
 //		public DependencyInjectionSignalRHubDispatcher HubDispatcher       => this.hubDispatcher;
 
