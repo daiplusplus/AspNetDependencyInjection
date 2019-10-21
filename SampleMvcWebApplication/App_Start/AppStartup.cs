@@ -49,6 +49,9 @@ namespace SampleMvcWebApplication
 				// Useful services built-in to AspNetDependencyInjection:
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
+//				.AddSingleton<AspNetDependencyInjection.Internal.UnscopedDependencyInjectionSignalRHubActivator>()
+//				.AddSingleton<IHubActivator, AspNetDependencyInjection.Internal.UnscopedDependencyInjectionSignalRHubActivator>()
+				.AddTransient<IUserIdProvider,SampleUserIdProvider>()
 			;
 		}
 
@@ -90,10 +93,8 @@ namespace SampleMvcWebApplication
 			IDependencyResolver dr = GlobalHost.DependencyResolver;
 			if( dr is AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver dr2 )
 			{
-
-				// Using only HubActivator:
-			
-				GlobalHost.DependencyResolver.Register( typeof(IHubActivator), () => dr2.HubActivator );
+				
+				GlobalHost.DependencyResolver.Register( typeof(IUserIdProvider), () => dr2.GetRootRequiredService<IUserIdProvider>() );
 
 				HubConfiguration hubConfig = new HubConfiguration()
 				{

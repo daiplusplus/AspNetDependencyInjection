@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace AspNetDependencyInjection.Internal
 {
-	public class UnscopedAspNetDiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
+	public class UnscopedAspNetDiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, /*IHubActivator,*/ IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceProvider               rootServiceProvider;
@@ -16,11 +17,28 @@ namespace AspNetDependencyInjection.Internal
 
 			//
 
-			this.HubActivator = new UnscopedDependencyInjectionSignalRHubActivator( this.di, this.rootServiceProvider );
+			this.HubActivator = new UnscopedDependencyInjectionSignalRHubActivator( this );
 
 			GlobalHost.DependencyResolver = this;
+
+			GlobalHost.DependencyResolver.Register( typeof(IHubActivator), () => this.HubActivator );
 		}
 
-		public UnscopedDependencyInjectionSignalRHubActivator HubActivator { get; }
+		internal ObjectFactoryCache ObjectFactoryCache => this.di.ObjectFactoryCache;
+
+		internal IServiceProvider RootServiceProvider => this.rootServiceProvider;
+
+		public IHubActivator HubActivator { get; }
+
+		public T GetRootRequiredService<T>()
+		{
+			return (T)this.ObjectFactoryCache.GetRequiredRootService( typeof(T), useOverrides: false );
+		}
+
+//		public IHub Create( HubDescriptor descriptor )
+//		{
+//			Object instantiated = this.ObjectFactoryCache.GetRequiredService( this.RootServiceProvider, descriptor.HubType );
+//			return (IHub)instantiated;
+//		}
 	}
 }

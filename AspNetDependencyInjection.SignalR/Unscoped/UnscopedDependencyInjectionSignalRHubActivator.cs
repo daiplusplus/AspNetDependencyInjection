@@ -5,19 +5,20 @@ namespace AspNetDependencyInjection.Internal
 {
 	public class UnscopedDependencyInjectionSignalRHubActivator : IHubActivator
 	{
-		private readonly ApplicationDependencyInjection di;
-		private readonly IServiceProvider               rootServiceProvider;
+		private readonly UnscopedAspNetDiSignalRDependencyResolver dr;
 
-		public UnscopedDependencyInjectionSignalRHubActivator( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
+		public UnscopedDependencyInjectionSignalRHubActivator( UnscopedAspNetDiSignalRDependencyResolver dr )
 		{
-			this.di                  = di                  ?? throw new ArgumentNullException( nameof( di ) );
-			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof( rootServiceProvider ) );
+			this.dr = dr ?? throw new ArgumentNullException( nameof( dr ) );
 		}
 
 		public IHub Create( HubDescriptor descriptor )
 		{
-			Object instantiated = this.di.ObjectFactoryCache.GetRequiredService( this.rootServiceProvider, descriptor.HubType );
+			Object instantiated = this.dr.ObjectFactoryCache.GetRequiredService( this.dr.RootServiceProvider, descriptor.HubType );
 			return (IHub)instantiated;
+
+//			Object instantiated = this.di.ObjectFactoryCache.GetRequiredService( this.rootServiceProvider, descriptor.HubType );
+//			return (IHub)instantiated;
 		}
 	}
 }
