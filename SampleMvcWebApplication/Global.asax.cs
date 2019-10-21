@@ -11,6 +11,8 @@ namespace SampleMvcWebApplication
 	{
 		protected void Application_Start()
 		{
+			SampleApplicationStart.GlobalAsaxApplicationStart( this );
+
 			AreaRegistration.RegisterAllAreas();
 			FilterConfig.RegisterGlobalFilters( GlobalFilters.Filters );
 			RouteConfig.RegisterRoutes( RouteTable.Routes );

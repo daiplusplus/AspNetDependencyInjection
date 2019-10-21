@@ -1,8 +1,8 @@
 ﻿
 using AspNetDependencyInjection;
-
+using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-
+using Owin;
 using SampleMvcWebApplication;
 
 using WebActivatorEx;
@@ -10,6 +10,8 @@ using WebActivatorEx;
 [assembly: PreApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
 [assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
 [assembly: ApplicationShutdownMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.ApplicationShutdown ) )]
+
+[assembly: Microsoft.Owin.OwinStartup( typeof(SampleApplicationStart), methodName: nameof(SampleApplicationStart.OwinStartup) )]
 
 namespace SampleMvcWebApplication
 {
@@ -40,6 +42,23 @@ namespace SampleMvcWebApplication
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
 			;
+		}
+
+		public static void GlobalAsaxApplicationStart( System.Web.HttpApplication httpApplication )
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(GlobalAsaxApplicationStart) + "() called: " + httpApplication.GetType().FullName );
+		}
+
+		/// <summary>This method must be public for <see cref="Microsoft.Owin.OwinStartupAttribute"/> to recognize it.</summary>
+		public static void OwinStartup( IAppBuilder appBuilder )
+		{
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(OwinStartup) + "() called." );
+
+			HubConfiguration hubConfig = new HubConfiguration()
+			{
+			};
+
+			appBuilder.MapSignalR( hubConfig );
 		}
 
 		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
