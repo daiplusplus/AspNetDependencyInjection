@@ -100,7 +100,18 @@ namespace SampleMvcWebApplication
 					EnableDetailedErrors = true
 				};
 
-				appBuilder.MapSignalR( "/signalr", hubConfig );
+//				AspNetDependencyInjection.Internal.UnscopedHubDispatcher hd = new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig );
+//				dr2.Register( typeof(AspNetDependencyInjection.Internal.UnscopedHubDispatcher), () => hd );
+
+//				dr2.Register( typeof(HubDispatcher), () => hd ); // TODO: What happens if you register a factory for HubDispatcher but don't use the MapSignalR<T> overload?
+				// `HubDispatcherMiddleware` creates HubDispatcher as transient, maybe we should do the same?
+
+				dr2.Register( typeof(HubDispatcher)                                           , () => new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig ) );
+				dr2.Register( typeof(AspNetDependencyInjection.Internal.UnscopedHubDispatcher), () => new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig ) );
+
+//				appBuilder.MapSignalR<AspNetDependencyInjection.Internal.UnscopedHubDispatcher>( "/signalr", hubConfig );
+				appBuilder.MapSignalR( "/signalr", hubConfig ); // <-- this overload without `<TPersistentConnection>` will cause SignalR to use a private `new HubDispatcher` inside `HubDispatcherMiddleware` rather than use the DependencyResolver to create HubDispatchers.
+				appBuilder.MapSignalR<AspNetDependencyInjection.Internal.UnscopedHubDispatcher>( "/signalr", hubConfig ); // <-- this actually seems to work now, I think the important thing is that HubDispatcher must be transient or scoped and not singleton.
 			}
 			else
 			{
