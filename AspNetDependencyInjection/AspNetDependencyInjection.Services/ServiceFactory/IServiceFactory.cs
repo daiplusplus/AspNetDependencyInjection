@@ -14,13 +14,14 @@ namespace AspNetDependencyInjection
 
 	public static partial class ServiceCollectionExtensions
 	{
-		/// <summary>Convenience method that registers <typeparamref name="TServiceFactory"/> as a Singleton service and registers <typeparamref name="TService"/> as a Scoped service that uses <typeparamref name="TServiceFactory"/> as a factory.</summary>
+		/// <summary>Convenience method that registers <typeparamref name="TServiceFactory"/> twice: first as <c>AddSingleton&lt;TServiceFactory&gt;</c> and again as <c>AddSingleton&lt;IServiceFactory&lt;TService&gt;,TServiceFactory&gt;</c>, then and registers <typeparamref name="TService"/> as a Scoped service that uses <typeparamref name="TServiceFactory"/> as a factory.</summary>
 		public static IServiceCollection AddScopedWithFactory<TService,TServiceFactory>( this IServiceCollection services )
 			where TService        : class
 			where TServiceFactory : class, IServiceFactory<TService>
 		{
 			return services
 				.AddSingleton<TServiceFactory>()
+				.AddSingleton<IServiceFactory<TService>,TServiceFactory>()
 				.AddScoped<TService>( implementationFactory: sp => sp.GetRequiredService<TServiceFactory>().CreateInstance() );
 		}
 	}
