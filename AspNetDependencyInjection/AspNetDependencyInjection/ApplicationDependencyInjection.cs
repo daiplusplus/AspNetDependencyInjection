@@ -49,6 +49,7 @@ namespace AspNetDependencyInjection
 			// Register necessary internal services:
 			services.TryAddDefaultDependencyInjectionOverrideService();
 			services.TryAddSingleton<IServiceProviderAccessor>( sp => new AspNetDependencyInjection.Services.DefaultServiceProviderAccessor( this.Configuration, sp ) );
+			services.TryAddSingleton<ObjectFactoryCache>();
 
 			// Initialize fields:
 
