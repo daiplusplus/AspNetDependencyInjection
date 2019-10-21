@@ -62,7 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationDependencyInjectionBuilderExtensions.cs" />
-    <Compile Include="DependencyInjectionSignalRDependencyResolver.cs" />
+    <Compile Include="DependencyResolver.cs" />
+    <Compile Include="HubActivator.cs" />
+    <Compile Include="HubDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
