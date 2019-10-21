@@ -30,7 +30,7 @@ namespace AspNetDependencyInjection.Internal
 
 				try
 				{
-					await base.OnConnected( request, connectionId );
+					await base.OnConnected( request, connectionId ).ConfigureAwait(false);
 				}
 				finally
 				{
@@ -47,7 +47,7 @@ namespace AspNetDependencyInjection.Internal
 
 				try
 				{
-					await base.OnReceived( request, connectionId, data );
+					await base.OnReceived( request, connectionId, data ).ConfigureAwait(false);
 				}
 				finally
 				{
@@ -64,7 +64,7 @@ namespace AspNetDependencyInjection.Internal
 
 				try
 				{
-					await base.OnDisconnected( request, connectionId, stopCalled );
+					await base.OnDisconnected( request, connectionId, stopCalled ).ConfigureAwait(false);
 				}
 				finally
 				{
@@ -81,7 +81,7 @@ namespace AspNetDependencyInjection.Internal
 
 				try
 				{
-					await base.OnReconnected( request, connectionId );
+					await base.OnReconnected( request, connectionId ).ConfigureAwait(false);
 				}
 				finally
 				{
