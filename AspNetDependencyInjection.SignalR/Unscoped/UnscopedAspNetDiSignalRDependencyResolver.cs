@@ -4,7 +4,7 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace AspNetDependencyInjection.Internal
 {
-	public class UnscopedAspNetDiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, /*IHubActivator,*/ IDependencyInjectionClient
+	public class UnscopedAspNetDiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceProvider               rootServiceProvider;
@@ -34,11 +34,5 @@ namespace AspNetDependencyInjection.Internal
 		{
 			return (T)this.ObjectFactoryCache.GetRequiredRootService( typeof(T), useOverrides: false );
 		}
-
-//		public IHub Create( HubDescriptor descriptor )
-//		{
-//			Object instantiated = this.ObjectFactoryCache.GetRequiredService( this.RootServiceProvider, descriptor.HubType );
-//			return (IHub)instantiated;
-//		}
 	}
 }

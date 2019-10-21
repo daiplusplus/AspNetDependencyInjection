@@ -16,9 +16,6 @@ namespace AspNetDependencyInjection.Internal
 		{
 			Object instantiated = this.dr.ObjectFactoryCache.GetRequiredService( this.dr.RootServiceProvider, descriptor.HubType );
 			return (IHub)instantiated;
-
-//			Object instantiated = this.di.ObjectFactoryCache.GetRequiredService( this.rootServiceProvider, descriptor.HubType );
-//			return (IHub)instantiated;
 		}
 	}
 }
