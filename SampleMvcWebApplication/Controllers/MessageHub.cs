@@ -20,26 +20,24 @@ namespace SampleMvcWebApplication.Controllers
 
 	public class MessagesHub : Hub<IMessagesHubClient>//, IMessagesHubServer
 	{
-//		private readonly IWebConfiguration injectedConfig;
+		private readonly IWebConfiguration injectedConfig;
 
-		public MessagesHub()// IWebConfiguration injected )
+		public MessagesHub( IWebConfiguration injected )
 		{
 			System.Diagnostics.Debug.WriteLine( "MessagesHub created." );
-//			this.injectedConfig = injected ?? throw new ArgumentNullException(nameof(injected));
+			this.injectedConfig = injected ?? throw new ArgumentNullException(nameof(injected));
 		}
 
 		public override Task OnConnected()
 		{
-			
-
 			return base.OnConnected();
 		}
 
-//		public static readonly String NewChatMessageName = "newChatMessage";
-
 		public void NewChatMessage( String name, String text )
 		{
-			this.Clients.All.addChatMessageToPage( name, text );
+			String newText = text + this.injectedConfig.RequireAppSetting("messagesHubSuffix");
+
+			this.Clients.All.addChatMessageToPage( name, newText );
 		}
 
 		public void Started()
