@@ -24,6 +24,7 @@ namespace SampleMvcWebApplication.Controllers
 
 		public MessagesHub()// IWebConfiguration injected )
 		{
+			System.Diagnostics.Debug.WriteLine( "MessagesHub created." );
 //			this.injectedConfig = injected ?? throw new ArgumentNullException(nameof(injected));
 		}
 

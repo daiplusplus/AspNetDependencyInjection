@@ -169,6 +169,10 @@
       <Project>{1b4be5d4-f919-44e9-b570-151eee5698da}</Project>
       <Name>AspNetDependencyInjection.Mvc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AspNetDependencyInjection.SignalR\AspNetDependencyInjection.SignalR.csproj">
+      <Project>{7cb50365-9558-4cd9-98d1-7e33bdaae15b}</Project>
+      <Name>AspNetDependencyInjection.SignalR</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
       <Project>{7e9e872b-41be-4b55-9519-d2ff3f92eb4e}</Project>
       <Name>AspNetDependencyInjection</Name>

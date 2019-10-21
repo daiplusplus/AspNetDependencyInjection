@@ -66,20 +66,31 @@ function setUp() {
 
 	try
 	{
-		p.hubProxy = $.connection.messagesHub;
+		if( $.connection ) {
+			if( $.connection.messagesHub ) {
 
-		// Define client "on-received" methods:
-		p.hubProxy.client.addChatMessageToPage = onMessageReceived;
+				p.hubProxy = $.connection.messagesHub;
 
-		// Start:
-		$.connection.hub.start().done( hubStartDone );
+				// Define client "on-received" methods:
+				p.hubProxy.client.addChatMessageToPage = onMessageReceived;
 
-		console.log("Sample SignalR: Starting...");
+				// Start:
+				$.connection.hub.start().done( hubStartDone );
+
+				console.log("Sample SignalR: Starting...");
+
+			}
+			else {
+				console.error( 'messagesHub not defined on SignalR generated object.' );
+			}
+		}
+		else {
+			console.error( 'SignalR generated object not set.' );
+		}
 	}
 	catch( e )
 	{
-		console.error("Couldn't start SignalR.");
-		console.error( e );
+		console.error( "Couldn't start SignalR: %o. ", e );
 	}
 }
 
