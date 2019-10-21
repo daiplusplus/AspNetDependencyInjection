@@ -1,31 +1,188 @@
-﻿@{
+﻿@using SampleMvcWebApplication.Controllers
+@{
     ViewBag.Title = "Home Page";
+
+	String sendMessageAction = this.Url.Action( actionName: nameof(HomeController.SendMessage), controllerName: HomeController.Name );
+}
+@section head {
+
+	<script src="~/scripts/jquery.signalR-2.4.1.js" defer="defer"></script>
+	<script src="~/signalr/hubs" defer="defer"></script>
+
+	<style type="text/css">
+
+#sendMethod label {
+	display: block;
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+	</style>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+	<script type="text/javascript">
+'use strict';
+
+var pageState = {
+
+	/**
+	 * @@type {HTMLInputElement} */
+	sendPostRadio: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	sendAjaxRadio: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	sendSigRRadio: null,
+
+	/**
+	 * @@type {HTMLOListElement} */
+	messagesOL: null,
+
+	/**
+	 * @@type {HTMLInputElement} */
+	composeName: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	composeMessage: null,
+
+
+	hubProxy: null
+};
+
+function setUp() {
+
+	console.log( 'setUp() called.' );
+
+	var p = pageState;
+
+	p.sendPostRadio = document.getElementById( 'sendPost' );
+	p.sendAjaxRadio = document.getElementById( 'sendAjax' );
+	p.sendSigRRadio = document.getElementById( 'sendSigR' );
+	
+	p.composeName    = document.getElementById( 'composeName' );
+	p.composeMessage = document.getElementById( 'composeMessage' );
+	
+	p.messagesOL    = document.getElementById( 'messages' );
+
+	//
+
+	try
+	{
+		p.hubProxy = $.connection.messagesHub;
+
+		// Define client "on-received" methods:
+		p.hubProxy.client.addChatMessageToPage = onMessageReceived;
+
+		// Start:
+		$.connection.hub.start().done( hubStartDone );
+
+		console.log("Sample SignalR: Starting...");
+	}
+	catch( e )
+	{
+		console.error("Couldn't start SignalR.");
+		console.error( e );
+	}
+}
+
+function hubStartDone() {
+
+	var p = pageState;
+	p.hubProxy.server.started();
+
+	console.log("Sample SignalR: Started.");
+}
+
+window.addEventListener( 'DOMContentLoaded', setUp );
+
+/**
+ * 
+ * @@param {Event} event
+ */
+function onSubmit( event ) {
+
+	var p = pageState;
+
+	var messageName = p.composeName.value;
+	var messageText = p.composeMessage.value;
+
+	if( p.sendPostRadio.checked ) {
+		
+		// Let browser submit POST normally.
+		return true;
+	}
+	else if( p.sendAjaxRadio.checked ) {
+
+		// Intercept!
+		event.preventDefault();
+
+		var requestBody = "Name=" + encodeURIComponent( messageName ) + "&Text=" + encodeURIComponent( messageName );
+
+		var xhr = new XMLHttpRequest();
+		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xhr.open( 'POST', '@( sendMessageAction )' );
+		xhr.send( requestBody );
+
+		return false;
+	}
+	else if( p.sendSigRRadio.checked ) {
+
+		// Intercept!
+		event.preventDefault();
+
+		//
+
+		p.hubProxy.server.newChatMessage( messageName, messageText );
+
+		return false;
+	}
+}
+
+function onMessageReceived( name, message ) {
+
+	var p = pageState;
+
+	console.log( "receivedMessage( %s )", message );
+
+	var li = document.createElement('li');
+	li.textContent = name + " -" + message;
+
+	p.messagesOL.appendChild( li );
+}
+
+	</script>
+
+}
+
+<h1>ASP.NET MVC and ASP.NET SignalR Dependency Injection Sample</h1>
+
+<ol id="messages">
+
+</ol>
+
+<form id="composeForm" action="@sendMessageAction" method="post" onsubmit="onSubmit(event)">
+
+	<fieldset>
+		<legend>Send message</legend>
+
+		<div class="field">
+			<label for="composeName">Your name</label>
+			<input type="text" id="composeName" />
+		</div>
+
+		<div class="field">
+			<label for="composeMessage">Your message</label>
+			<input type="text" id="composeMessage" />
+		</div>
+
+		<div class="field" id="sendMethod">
+			<label><input type="radio" id="sendPost" name="sendMethod" value="post"                     >Send message using Controller via document POST</label>
+			<label><input type="radio" id="sendAjax" name="sendMethod" value="ajax"                     >Send message using Controller via AJAX</label>
+			<label><input type="radio" id="sendSigR" name="sendMethod" value="signalr" checked="checked">Send message using SignalR </label>
+		</div>
+
+		<div>
+			<button type="submit">Send message</button>
+		</div>
+
+	</fieldset>
+
+</form>
