@@ -79,5 +79,8 @@
       <Name>AspNetDependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Notes on Dependency Injection in SignalR.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
