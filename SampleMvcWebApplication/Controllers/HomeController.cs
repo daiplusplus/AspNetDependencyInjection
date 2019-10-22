@@ -32,7 +32,16 @@ namespace SampleMvcWebApplication.Controllers
 		}
 
 		[HttpPost]
-		public ActionResult SendMessage( MvcSendMessageDto model )
+		public ActionResult SendMessage302( MvcSendMessageDto model )
+		{
+			IHubContext<IMessagesHubClient> hubContext = GlobalHost.ConnectionManager.GetHubContext<MessagesHub,IMessagesHubClient>();
+			hubContext.Clients.All.addChatMessageToPage( model.Name, model.Text );
+
+			return new RedirectResult( url: "/", permanent: false );
+		}
+
+		[HttpPost]
+		public ActionResult SendMessage204( MvcSendMessageDto model )
 		{
 			IHubContext<IMessagesHubClient> hubContext = GlobalHost.ConnectionManager.GetHubContext<MessagesHub,IMessagesHubClient>();
 			hubContext.Clients.All.addChatMessageToPage( model.Name, model.Text );

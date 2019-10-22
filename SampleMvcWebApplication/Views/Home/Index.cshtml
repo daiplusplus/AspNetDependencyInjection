@@ -1,8 +1,17 @@
 ﻿@using SampleMvcWebApplication.Controllers
 @{
-    ViewBag.Title = "Home Page";
+	ViewBag.Title = "Home Page";
 
-	String sendMessageAction = this.Url.Action( actionName: nameof(HomeController.SendMessage), controllerName: HomeController.Name );
+	String sendMessage204Action = this.Url.Action( actionName: nameof(HomeController.SendMessage204), controllerName: HomeController.Name );
+	String sendMessage302Action = this.Url.Action( actionName: nameof(HomeController.SendMessage302), controllerName: HomeController.Name );
+
+	String signalRTransport = this.Request.QueryString["transport"];
+	String signalRStartArgs = "";
+	if( !String.IsNullOrWhiteSpace( signalRTransport ) )
+	{
+		signalRTransport = Json.Encode( signalRTransport );
+		signalRStartArgs = "{ transport: " + signalRTransport + " } ";
+	}
 }
 @section head {
 
@@ -24,7 +33,11 @@ var pageState = {
 
 	/**
 	 * @@type {HTMLInputElement} */
-	sendPostRadio: null,
+	sendPost204Radio: null,
+
+	/**
+	 * @@type {HTMLInputElement} */
+	sendPost302Radio: null,
 	/**
 	 * @@type {HTMLInputElement} */
 	sendAjaxRadio: null,
@@ -35,6 +48,10 @@ var pageState = {
 	/**
 	 * @@type {HTMLOListElement} */
 	messagesOL: null,
+
+	/**
+	 * @@type {HTMLFormElement} */
+	composeForm: null,
 
 	/**
 	 * @@type {HTMLInputElement} */
@@ -53,14 +70,16 @@ function setUp() {
 
 	var p = pageState;
 
-	p.sendPostRadio = document.getElementById( 'sendPost' );
-	p.sendAjaxRadio = document.getElementById( 'sendAjax' );
-	p.sendSigRRadio = document.getElementById( 'sendSigR' );
+	p.sendPost204Radio = document.getElementById( 'sendP204' );
+	p.sendPost302Radio = document.getElementById( 'sendP302' );
+	p.sendAjaxRadio    = document.getElementById( 'sendAjax' );
+	p.sendSigRRadio    = document.getElementById( 'sendSigR' );
 	
-	p.composeName    = document.getElementById( 'composeName' );
-	p.composeMessage = document.getElementById( 'composeMessage' );
+	p.composeForm      = document.getElementById( 'composeForm' );
+	p.composeName      = document.getElementById( 'composeName' );
+	p.composeMessage   = document.getElementById( 'composeMessage' );
 	
-	p.messagesOL    = document.getElementById( 'messages' );
+	p.messagesOL       = document.getElementById( 'messages' );
 
 	//
 
@@ -75,7 +94,7 @@ function setUp() {
 				p.hubProxy.client.addChatMessageToPage = onMessageReceived;
 
 				// Start:
-				$.connection.hub.start().done( hubStartDone );
+				$.connection.hub.start( @Html.Raw( signalRStartArgs ) ).done( hubStartDone );
 
 				console.log("Sample SignalR: Starting...");
 
@@ -115,9 +134,22 @@ function onSubmit( event ) {
 	var messageName = p.composeName.value;
 	var messageText = p.composeMessage.value;
 
-	if( p.sendPostRadio.checked ) {
+	if( p.sendPost204Radio.checked || p.sendPost302Radio.checked ) {
 		
-		// Let browser submit POST normally.
+		if( p.sendPost204Radio.checked ) {
+			p.composeForm.action = '@( sendMessage204Action )';
+		} else {
+			p.composeForm.action = '@( sendMessage302Action )';
+		}
+
+		// Let browser submit POST normally - but disable the radio buttons so they don't send their `name="sendMethod"` data. UPDATE: No, keep this enabled otherwise they're still disabled after doing a HTTP 204 submit.
+		if( p.sendPost302Radio.checked ) {
+			var sendMethodRadios = document.querySelectorAll('input[name=sendMethod]');
+			for( var i = 0; i < sendMethodRadios.length; i++ ) {
+				sendMethodRadios[i].disabled = true;
+			}
+		}
+
 		return true;
 	}
 	else if( p.sendAjaxRadio.checked ) {
@@ -125,11 +157,11 @@ function onSubmit( event ) {
 		// Intercept!
 		event.preventDefault();
 
-		var requestBody = "Name=" + encodeURIComponent( messageName ) + "&Text=" + encodeURIComponent( messageName );
+		var requestBody = "Name=" + encodeURIComponent( messageName ) + "&Text=" + encodeURIComponent( messageText );
 
 		var xhr = new XMLHttpRequest();
+		xhr.open( 'POST', '@( sendMessage204Action )' );
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-		xhr.open( 'POST', '@( sendMessageAction )' );
 		xhr.send( requestBody );
 
 		return false;
@@ -165,27 +197,36 @@ function onMessageReceived( name, message ) {
 
 <h1>ASP.NET MVC and ASP.NET SignalR Dependency Injection Sample</h1>
 
+<p>Force transport:</p>
+<ul>
+	<li><a href="?transport=longPolling">longPolling</a></li>
+	<li><a href="?transport=webSockets">webSockets</a></li>
+	<li><a href="?transport=serverSentEvents">serverSentEvents</a> (not supported by Internet Explorer)</li>
+	<li><a href="?transport=foreverFrame">foreverFrame</a> (Internet Explorer only)</li>
+</ul>
+
 <ol id="messages">
 
 </ol>
 
-<form id="composeForm" action="@sendMessageAction" method="post" onsubmit="onSubmit(event)">
+<form id="composeForm" action="@sendMessage302Action" method="post" onsubmit="onSubmit(event)">
 
 	<fieldset>
 		<legend>Send message</legend>
 
 		<div class="field">
 			<label for="composeName">Your name</label>
-			<input type="text" id="composeName" />
+			<input type="text" id="composeName" name="Name" />
 		</div>
 
 		<div class="field">
 			<label for="composeMessage">Your message</label>
-			<input type="text" id="composeMessage" />
+			<input type="text" id="composeMessage" name="Text" />
 		</div>
 
 		<div class="field" id="sendMethod">
-			<label><input type="radio" id="sendPost" name="sendMethod" value="post"                     >Send message using Controller via document POST</label>
+			<label><input type="radio" id="sendP204" name="sendMethod" value="post204"                  >Send message using Controller via document POST (204 response)</label>
+			<label><input type="radio" id="sendP302" name="sendMethod" value="post302"                  >Send message using Controller via document POST (302 response)</label>
 			<label><input type="radio" id="sendAjax" name="sendMethod" value="ajax"                     >Send message using Controller via AJAX</label>
 			<label><input type="radio" id="sendSigR" name="sendMethod" value="signalr" checked="checked">Send message using SignalR </label>
 		</div>
