@@ -360,3 +360,5 @@ MigrationBackup/
 
 nuget/AspNetDependencyInjection/**
 nuget/AspNetDependencyInjection.Mvc/**
+nuget/AspNetDependencyInjection.SignalR/**
+nuget/AspNetDependencyInjection.WebApi/**

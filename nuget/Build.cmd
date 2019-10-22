@@ -12,8 +12,22 @@ nuget pack AspNetDependencyInjection.nuspec -OutputDirectory ..\..\Unity.WebForm
 
 REM adjust the dependency version:
 
+REM ASP.NET MVC:
+
 rxrepl.exe --file AspNetDependencyInjection.Mvc.nuspec --alter --search "<dependency id=""Jehoel.AspNetDependencyInjection""\s+version=""([^""]+)"" />" --replace "<dependency id=""Jehoel.AspNetDependencyInjection"" version=""%packageVersion%"" />" --no-backup
 
 nuget pack AspNetDependencyInjection.Mvc.nuspec -OutputDirectory ..\..\Unity.WebForms_local\nuget-output -BasePath AspNetDependencyInjection.Mvc -symbols -Version %packageVersion%
+
+REM ASP.NET SignalR:
+
+rxrepl.exe --file AspNetDependencyInjection.SignalR.nuspec --alter --search "<dependency id=""Jehoel.AspNetDependencyInjection""\s+version=""([^""]+)"" />" --replace "<dependency id=""Jehoel.AspNetDependencyInjection"" version=""%packageVersion%"" />" --no-backup
+
+nuget pack AspNetDependencyInjection.SignalR.nuspec -OutputDirectory ..\..\Unity.WebForms_local\nuget-output -BasePath AspNetDependencyInjection.SignalR -symbols -Version %packageVersion%
+
+REM ASP.NET Web API:
+
+rxrepl.exe --file AspNetDependencyInjection.WebApi.nuspec --alter --search "<dependency id=""Jehoel.AspNetDependencyInjection""\s+version=""([^""]+)"" />" --replace "<dependency id=""Jehoel.AspNetDependencyInjection"" version=""%packageVersion%"" />" --no-backup
+
+nuget pack AspNetDependencyInjection.WebApi.nuspec -OutputDirectory ..\..\Unity.WebForms_local\nuget-output -BasePath AspNetDependencyInjection.WebApi -symbols -Version %packageVersion%
 
 REM TODO: Automatically publish to nuget.org using `nuget.exe push` - but how do I update the package README like how the web upload interface does?

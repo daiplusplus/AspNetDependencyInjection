@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Debug\AspNetDependencyInjection.Mvc.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Release\AspNetDependencyInjection.Mvc.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -89,8 +91,8 @@
       mkdir $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472
 
       copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\$(TargetFileName)
-      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.pdb $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.pdb
-      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.xml $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.xml
+      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.Mvc.pdb $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.pdb
+      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.Mvc.xml $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.xml
 
       )
     </PostBuildEvent>

@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Debug\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Release\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -65,4 +67,17 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+	<PropertyGroup>
+		<PostBuildEvent>
+			if "$(ConfigurationName)" == "Release" (
+
+			mkdir $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472
+
+			copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\$(TargetFileName)
+			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.WebApi.pdb $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\AspNetDependencyInjection.WebApi.pdb
+			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.WebApi.xml $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\AspNetDependencyInjection.WebApi.xml
+
+			)
+		</PostBuildEvent>
+	</PropertyGroup>
 </Project>

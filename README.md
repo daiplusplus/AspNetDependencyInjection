@@ -21,6 +21,7 @@
 * 3.0 - After being extensively modified to use `Microsoft.Extensions.DependencyInjection` and renamed to `AspNetDependencyInjection` (as it now is unrelated to `Unity`.
 * 3.2 - Adding support for ASP.NET MVC (which turned out to be broken).
 * 3.3 - Bugfixing ASP.NET MVC support.
+* 4.0 - Major refactoring and API redesign. Adding support for SignalR (both scoped and unscoped) and ASP.NET Web API.
 
 ## NuGet Gallery
 

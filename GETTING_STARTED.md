@@ -19,11 +19,15 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using SampleWebApplication;
 
-using WebActivatorEx;
+using Owin;
+using Microsoft.Owin;
 using AspNetDependencyInjection;
+using WebActivatorEx;
 
 [assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
 //[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
+
+[assembly: OwinStartup( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.OwinStartup ) )]
 
 namespace SampleWebApplication
 {
@@ -44,7 +48,8 @@ namespace SampleWebApplication
 				.ConfigureServices( ConfigureServices )
 				//.AddMvcDependencyResolver() // Uncomment this out if you're using ASP.NET MVC.
 				//.AddWebApiDependencyResolver() // Uncomment this out if you're using ASP.NET Web API.
-				//.AddSignalRDependencyResolver() // Uncomment this out if you're using ASP.NET SignalR.
+				//.AddScopedSignalRDependencyResolver() // Uncomment this out if you're using ASP.NET SignalR (and want to use services scoped to request or operation lifetime). NOTE: You cannot have both `AddScopedSignalRDependencyResolver` and `AddUnscopedSignalRDependencyResolver` at the same time. You must also configure SignalR below.
+				//.AddUnscopedSignalRDependencyResolver() // Uncomment this out if you're using ASP.NET SignalR (and only need Singleton or Transient lifetime services).
 				.Build();
 		}
 
@@ -70,10 +75,31 @@ namespace SampleWebApplication
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
 		}
 
-		private static void ReconfigureServices( IServiceCollection services )
+		/// <summary>This method must be public for <see cref="Microsoft.Owin.OwinStartupAttribute"/> to recognize it.</summary>
+		public static void OwinStartup( IAppBuilder appBuilder )
 		{
-			
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(OwinStartup) + "() called." );
+
+			HubConfiguration hubConfig = new HubConfiguration()
+			{
+				EnableDetailedErrors = true
+			};
+
+#if USE_SCOPED_SIGNALR_RESOLVER
+			IDependencyResolver dr = GlobalHost.DependencyResolver;
+			if( dr is AspNetDependencyInjection.Internal.ScopedAndiSignalRDependencyResolver dr2 )
+			{
+				dr2.ConfigureSignalR( appBuilder, path: "/signalr", hubConfiguration: hubConfig );
+			}
+			else
+			{
+				throw new InvalidOperationException( nameof(AspNetDependencyInjection.Internal.UnscopedAndiSignalRDependencyResolver) + " is not set-up." );
+			}
+#else
+			appBuilder.MapSignalR( path: "/signalr", configuration: hubConfig );
+#endif
 		}
+
 	}
 }
 ```

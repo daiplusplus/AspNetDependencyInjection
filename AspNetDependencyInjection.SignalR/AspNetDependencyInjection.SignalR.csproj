@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Debug\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+	  <DocumentationFile>bin\Release\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -84,4 +86,17 @@
     <Content Include="Notes on Dependency Injection in SignalR.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+	<PropertyGroup>
+		<PostBuildEvent>
+			if "$(ConfigurationName)" == "Release" (
+
+			mkdir $(SolutionDir)nuget\AspNetDependencyInjection.SignalR\lib\net472
+
+			copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection.SignalR\lib\net472\$(TargetFileName)
+			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.SignalR.pdb $(SolutionDir)nuget\AspNetDependencyInjection.SignalR\lib\net472\AspNetDependencyInjection.SignalR.pdb
+			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.SignalR.xml $(SolutionDir)nuget\AspNetDependencyInjection.SignalR\lib\net472\AspNetDependencyInjection.SignalR.xml
+
+			)
+		</PostBuildEvent>
+	</PropertyGroup>
 </Project>
