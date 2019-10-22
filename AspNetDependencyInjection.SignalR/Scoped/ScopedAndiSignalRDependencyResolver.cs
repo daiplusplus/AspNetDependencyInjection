@@ -9,13 +9,14 @@ using Owin;
 
 namespace AspNetDependencyInjection.Internal
 {
-	/// <summary>Implements SignalR's <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/>></summary>
+	/// <summary>Implements SignalR's <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/> and using request and operation scoped lifetimes.</summary>
 	public sealed class ScopedAndiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceProvider               rootServiceProvider;
 
-		internal ScopedAndiSignalRDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
+		/// <summary>Constructor. Consuming applications should not create their own instances of <see cref="ScopedAndiSignalRDependencyResolver"/>.</summary>
+		public ScopedAndiSignalRDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
 			: base() // <-- this results in virtual calls from DefaultDependencyResolver's constructor to `Register` - eww.
 		{
 			this.di                  = di                  ?? throw new ArgumentNullException( nameof(di) );
@@ -40,6 +41,8 @@ namespace AspNetDependencyInjection.Internal
 		private HubConfiguration hubConfiguration;
 
 		/// <summary>Handles calling <see cref="OwinExtensions.MapSignalR{TConnection}(IAppBuilder, string, ConnectionConfiguration)"/> on behalf of the consuming application inside its OwinStartup method.</summary>
+		/// <param name="appBuilder">The <see cref="IAppBuilder"/> passed into the <see cref="Microsoft.Owin.OwinStartupAttribute"/>-specified startup method.</param>
+		/// <param name="path">The URL path that the SignalR Owin middleware will handle. The default value is <c>&quot;/signalr&quot;</c>.</param>
 		/// <param name="hubConfiguration">Can be null.</param>
 		public void ConfigureSignalR( IAppBuilder appBuilder, String path = "/signalr", HubConfiguration hubConfiguration = null )
 		{
@@ -76,8 +79,10 @@ namespace AspNetDependencyInjection.Internal
 			appBuilder.MapSignalR<ScopedAndiSignalRHubDispatcher>( path, this.hubConfiguration );
 		}
 
+		/// <summary>Gets the singleton <see cref="IHubActivator"/> instance that SignalR will use to construct each <see cref="IHub"/> object instance.</summary>
 		public IHubActivator HubActivator { get; }
 
+		/// <summary>Creates a new transient <see cref="HubDispatcher"/> subclass that handles request and operation scopes for object lifetime.</summary>
 		public ScopedAndiSignalRHubDispatcher CreateHubDispatcher()
 		{
 			if( this.hubConfiguration == null ) throw new InvalidOperationException( "SignalR has not been configured using this " + nameof(ScopedAndiSignalRDependencyResolver) + " instance." );
@@ -87,6 +92,7 @@ namespace AspNetDependencyInjection.Internal
 
 		#endregion
 
+		/// <summary>Attempts to resolve <paramref name="serviceType"/> from the current request or operation scope (if present), otherwise the root <see cref="IServiceProvider"/> is used. If the requested type cannot be resolved then this method returns <c>null</c>. This overload will always check <see cref="DefaultDependencyResolver"/> if the scope or configured root <see cref="IServiceProvider"/> cannot resolve the type.</summary>
 		public override Object GetService( Type serviceType )
 		{
 			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
@@ -100,6 +106,7 @@ namespace AspNetDependencyInjection.Internal
 			return this.GetService( serviceType, fallbackToDefaultDependencyResolver: true );
 		}
 
+		/// <summary>Attempts to resolve <paramref name="serviceType"/> from the current request or operation scope (if present), otherwise the root <see cref="IServiceProvider"/> is used. If the requested type cannot be resolved then this method returns <c>null</c>. This overload can optionally always check <see cref="DefaultDependencyResolver"/> if the scope or configured root <see cref="IServiceProvider"/> cannot resolve the type.</summary>
 		public Object GetService( Type serviceType, Boolean fallbackToDefaultDependencyResolver )
 		{
 			if( ScopedAndiSignalRHubDispatcher.TryGetScope( out IServiceScope scope ) )
@@ -124,7 +131,9 @@ namespace AspNetDependencyInjection.Internal
 		}
 
 		// This would be named `RequireService` except `type` can refer to non-registered services that must still be instantiated (e.g. Hub class instances).
-		public Object CreateInstanceUsingScope( Type type, Boolean fallbackToDefaultDependencyResolver )
+
+		/// <summary>This method expects to be called within a SignalR request or operation scope (otherwise it throws <see cref="InvalidOperationException"/>. It uses that <see cref="IServiceScope"/> to require an object created by <see cref="AspNetDependencyInjection.ApplicationDependencyInjection"/>'s <see cref="ApplicationDependencyInjection.ObjectFactoryCache"/> (so this method will construct objects that are not registered, in addition to registered services, just like <see cref="AspNetDependencyInjection.Internal.DependencyInjectionWebObjectActivator"/>).</summary>
+		public Object CreateInstanceUsingScope( Type type )
 		{
 			IServiceScope scope = ScopedAndiSignalRHubDispatcher.RequireScope();
 

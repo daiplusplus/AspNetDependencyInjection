@@ -20,8 +20,9 @@ namespace AspNetDependencyInjection.Internal
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceProvider               rootServiceProvider;
 
+		/// <summary>Constructor.</summary>
         public ScopedAndiSignalRHubDispatcher( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider, HubConfiguration configuration ) 
-            : base(configuration)
+            : base( configuration )
         {
             this.di                  = di                  ?? throw new ArgumentNullException( nameof(di) );
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof(rootServiceProvider) );
@@ -30,6 +31,7 @@ namespace AspNetDependencyInjection.Internal
 		// Originally I thought `ProcessRequest` was invoked for every operation/request and its lifespan was that of the request (while it executes OnConnected, OnReceived, OnDisconnected, and OnReconnected) - but it turns out I was wrong.
 		// It depends on the Transport - e.g. longPolling will run `OnReceived` inside `ProcessRequest`, but with WebSockets `OnReceived` is not (but `OnConnected` is).
 
+		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is always created. If another scope is already active then an <see cref="InvalidOperationException"/> is thrown (this should never happen).</summary>
 		public override async Task ProcessRequest( HostContext context )
 		{
 			if( _asyncLocalScope.Value != null ) throw new InvalidOperationException( "Expected empty request scope." );
@@ -50,6 +52,7 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
+		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
 		protected override async Task OnConnected( IRequest request, String connectionId )
         {
 			if( _asyncLocalScope.Value == null )
@@ -75,6 +78,7 @@ namespace AspNetDependencyInjection.Internal
 			}
         }
 
+		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
         protected override async Task OnReceived(IRequest request, String connectionId, String data)
         {
 			if( _asyncLocalScope.Value == null )
@@ -100,6 +104,7 @@ namespace AspNetDependencyInjection.Internal
 			}
         }
 
+		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
         protected override async Task OnDisconnected(IRequest request, String connectionId, Boolean stopCalled)
         {
 			if( _asyncLocalScope.Value == null )
@@ -125,6 +130,7 @@ namespace AspNetDependencyInjection.Internal
 			}
         }
 
+		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
         protected override async Task OnReconnected(IRequest request, String connectionId)
         {
 			if( _asyncLocalScope.Value == null )

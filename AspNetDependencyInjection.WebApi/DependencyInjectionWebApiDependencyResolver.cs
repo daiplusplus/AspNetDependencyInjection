@@ -24,6 +24,7 @@ namespace AspNetDependencyInjection.Internal
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof( rootServiceProvider ) );
 		}
 
+		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
 		public Object GetService(Type serviceType)
 		{
 			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
@@ -41,17 +42,21 @@ namespace AspNetDependencyInjection.Internal
 			return this.di.ObjectFactoryCache.TryGetRootService( serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
 		}
 
+		/// <summary>Calls <see cref="GetService(Type)"/> by converting <paramref name="serviceType"/> to <see cref="IEnumerable{T}"/>.</summary>
 		public IEnumerable<Object> GetServices(Type serviceType)
 		{
 			return serviceType.ToIEnumerableOf( this.GetService );
 		}
 
+		/// <summary>NOOP.</summary>
 		public void Dispose()
 		{
 			// NOOP
 		}
 
 		// Hmm, does Web API not have nested-scopes? Why is it only the root `IDependencyResolver` has `BeginScope()` instead of `IDependencyScope`?
+		
+		/// <summary>Creates and returns a new instance of <see cref="DependencyInjectionWebApiScope"/> that is an immediate child of the root <see cref="IServiceProvider"/>.</summary>
 		public IDependencyScope BeginScope()
 		{
 			IServiceScope scope = this.rootServiceProvider.CreateScope();
@@ -60,22 +65,26 @@ namespace AspNetDependencyInjection.Internal
 		}
 	}
 
+	/// <summary>Represents the lifetime of services in ASP.NET Web API.</summary>
 	public sealed class DependencyInjectionWebApiScope : IDependencyScope
 	{
 		private readonly ApplicationDependencyInjection di;
 		private readonly IServiceScope scope;
 
+		/// <summary>Constructor. All parameters are required.</summary>
 		public DependencyInjectionWebApiScope( ApplicationDependencyInjection di, IServiceScope scope )
 		{
 			this.di    = di    ?? throw new ArgumentNullException( nameof( di ) );
 			this.scope = scope ?? throw new ArgumentNullException( nameof( scope ) );
 		}
 
+		/// <summary>Disposes of the scope.</summary>
 		public void Dispose()
 		{
 			this.scope.Dispose();
 		}
 
+		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
 		public Object GetService( Type serviceType )
 		{
 			if( typeof(IHttpController).IsAssignableFrom( serviceType ) )
@@ -86,6 +95,7 @@ namespace AspNetDependencyInjection.Internal
 			return this.di.ObjectFactoryCache.TryGetService( this.GetServiceProvider, serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
 		}
 
+		/// <summary>Calls <see cref="GetService(Type)"/> by converting <paramref name="serviceType"/> to <see cref="IEnumerable{T}"/>.</summary>
 		public IEnumerable<Object> GetServices( Type serviceType )
 		{
 			return serviceType.ToIEnumerableOf( this.GetService );

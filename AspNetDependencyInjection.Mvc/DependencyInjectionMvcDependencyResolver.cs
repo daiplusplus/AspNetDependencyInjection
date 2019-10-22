@@ -43,6 +43,7 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
+		/// <summary>Converts <paramref name="serviceType"/> into an <see cref="IEnumerable{T}"/> and passes it into <see cref="GetService(Type)"/>.</summary>
 		public IEnumerable<Object> GetServices(Type serviceType)
 		{
 			// This implementation from `Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions`:
@@ -57,6 +58,7 @@ namespace AspNetDependencyInjection.Internal
 			return this.di.GetServiceProviderForCurrentHttpContext( httpContext );
 		}
 
+		/// <summary>Resets the ASP.NET MVC <see cref="DependencyResolver.Current"/>, but only if this <see cref="DependencyInjectionMvcDependencyResolver"/> instance is still the current resolver.</summary>
 		public void Dispose()
 		{
 			if( DependencyResolver.Current == this )

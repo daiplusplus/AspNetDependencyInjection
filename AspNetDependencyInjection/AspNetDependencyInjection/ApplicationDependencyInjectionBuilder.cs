@@ -82,7 +82,7 @@ namespace AspNetDependencyInjection
 		// The other solution is that `ApplicationDependencyInjection` still owns the `IDependencyInjectionClient` instances, but the outer-object that creates them is this (ApplicationDependencyInjectionBuilder).
 		// This is acceptable because `ApplicationDependencyInjection` never exposes an intermediate-state `ApplicationDependencyInjection` instance to consumers - it all happens inside `Build`.
 
-		/// <summary>Calls <see cref="CreateAndConfigureServiceCollection"/>, then <see cref="Create(ApplicationDependencyInjectionConfiguration,IServiceCollection)"/>, then <see cref="ApplicationDependencyInjection.CreateClients(IEnumerable{Func{ApplicationDependencyInjection,IDependencyInjectionClient}})"/></summary>
+		/// <summary>Calls <see cref="CreateAndConfigureServiceCollection"/>, then <see cref="Create(ApplicationDependencyInjectionConfiguration,IServiceCollection)"/>, then <see cref="ApplicationDependencyInjection.CreateClients(IEnumerable{Func{ApplicationDependencyInjection, IServiceProvider, IDependencyInjectionClient}})"/></summary>
 		public virtual ApplicationDependencyInjection Build()
 		{
 			ApplicationDependencyInjectionConfiguration configuration = this.configuration ?? new ApplicationDependencyInjectionConfiguration();

@@ -4,8 +4,7 @@ using AspNetDependencyInjection.Internal;
 
 namespace AspNetDependencyInjection
 {
-	// Notes on SignalR dependency injection:
-
+	/// <summary>Extension methods for <see cref="ApplicationDependencyInjectionBuilder"/>.</summary>
 	public static class ApplicationDependencyInjectionBuilderExtensions
 	{
 		/// <summary>Use this method to add AspNetDependencyInjection support to SignalR. It uses a custom <see cref="Microsoft.AspNet.SignalR.Hubs.HubDispatcher"/> to manage scope lifetime of <see cref="Microsoft.AspNet.SignalR.Hubs.IHub"/> objects. You should prefer this method instead of <see cref="AddUnscopedSignalRDependencyResolver(ApplicationDependencyInjectionBuilder)"/> unless you're certain you don't want scoped lifetimes in SignalR or if you experience issues with scoped lifetimes in SignalR.</summary>

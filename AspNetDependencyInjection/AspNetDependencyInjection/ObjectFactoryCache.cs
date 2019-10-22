@@ -89,6 +89,7 @@ namespace AspNetDependencyInjection
 			}
 		}
 
+		/// <summary>Generic version of <see cref="GetRequiredService(IServiceProvider, Type)"/>.</summary>
 		public T GetRequiredService<T>( IServiceProvider serviceProvider )
 		{
 			return (T)this.GetRequiredService( serviceProvider, typeof(T) );
@@ -152,6 +153,7 @@ namespace AspNetDependencyInjection
 			}
 		}
 
+		/// <summary>Generic version of <see cref="TryGetService{T}(IServiceProvider, out T)"/>.</summary>
 		public Boolean TryGetService<T>( IServiceProvider serviceProvider, out T service )
 		{
 			if( this.TryGetService( serviceProvider, typeof(T), out Object serviceObj ) )
