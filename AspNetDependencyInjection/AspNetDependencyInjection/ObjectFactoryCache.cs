@@ -52,35 +52,58 @@ namespace AspNetDependencyInjection
 				IServiceProvider serviceProvider = getServiceProvider();
 				if( serviceProvider == null ) throw new InvalidOperationException( nameof(getServiceProvider) + " returned null." );
 
-				// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
-				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+				return this.GetRequiredService( serviceProvider, serviceType );
+			}
+		}
+
+		/// <summary>Gets the service object of the specified type from <paramref name="serviceProvider"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
+		public Object GetRequiredService( IServiceProvider serviceProvider, Type serviceType )
+		{
+			if( serviceProvider == null ) throw new ArgumentNullException(nameof(serviceProvider));
+			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+			
+			//
+
+
+			// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
+			if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+			{
+				return existingObjectFactory( serviceProvider, arguments: null );
+			}
+			else
+			{
+				ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
+
+				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
+
+				if( helper.Instance != null )
 				{
-					return existingObjectFactory( serviceProvider, arguments: null );
+					// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
+					return helper.Instance;
 				}
 				else
 				{
-					ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
-
-					ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
-
-					if( helper.Instance != null )
-					{
-						// A new service was requested for the first time, which necessarily meant creating it as part of the ObjectFactory-building process, so return it to avoid invoking the ObjectFactory twice:
-						return helper.Instance;
-					}
-					else
-					{
-						// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
-						return objectFactory( serviceProvider: serviceProvider, arguments: null );
-					}
+					// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
+					return objectFactory( serviceProvider: serviceProvider, arguments: null );
 				}
 			}
+		}
+
+		public T GetRequiredService<T>( IServiceProvider serviceProvider )
+		{
+			return (T)this.GetRequiredService( serviceProvider, typeof(T) );
 		}
 
 		/// <summary>Gets the service object of the specified type from <see cref="ApplicationDependencyInjection.RootServiceProvider"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
 		public Boolean TryGetRootService( Type serviceType, Boolean useOverrides, out Object service )
 		{
 			return this.TryGetService( this.GetRootServiceProvider, serviceType, useOverrides: useOverrides, service: out service );
+		}
+
+		/// <summary>Gets the service object of the specified type from <see cref="ApplicationDependencyInjection.RootServiceProvider"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
+		public Boolean TryGetRootService( Type serviceType, out Object service )
+		{
+			return this.TryGetService( this.GetRootServiceProvider(), serviceType, service: out service );
 		}
 
 		/// <summary>Attempts to get the service object of the specified type from the current <paramref name="getServiceProvider"/> result. This method returns <c>false</c> if resolution fails (and the value of <paramref name="service"/> is undefined).</summary>
@@ -101,20 +124,45 @@ namespace AspNetDependencyInjection
 				IServiceProvider serviceProvider = getServiceProvider();
 				if( serviceProvider == null ) throw new InvalidOperationException( nameof(getServiceProvider) + " returned null." );
 
-				// Optimization: Does the serviceType already exist? (i.e. it has an implementation that's been called before)?
-				if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
-				{
-					service = existingObjectFactory( serviceProvider, arguments: null );
-					if( service == null ) throw new InvalidOperationException( nameof(ObjectFactory) + " returned null. ObjectFactory instances must only be added if they can create or retrieve a valid service instance." );
+				return this.TryGetService( serviceProvider, serviceType, out service );
+			}
+		}
 
-					return true;
-				}
-				else
-				{
-					// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
-					service = serviceProvider.GetService( serviceType );
-					return service != null;
-				}
+		/// <summary>Attempts to get the service object of the specified type from the current <paramref name="serviceProvider"/> result. This method returns <c>false</c> if resolution fails (and the value of <paramref name="service"/> is undefined).</summary>
+		public Boolean TryGetService( IServiceProvider serviceProvider, Type serviceType, out Object service )
+		{
+			if( serviceProvider == null ) throw new ArgumentNullException( nameof(serviceProvider) );
+			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
+
+			//
+
+			// Optimization: Does the serviceType already exist? (i.e. it has an implementation that's been called before)?
+			if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+			{
+				service = existingObjectFactory( serviceProvider, arguments: null );
+				if( service == null ) throw new InvalidOperationException( nameof(ObjectFactory) + " returned null. ObjectFactory instances must only be added if they can create or retrieve a valid service instance." );
+
+				return true;
+			}
+			else
+			{
+				// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
+				service = serviceProvider.GetService( serviceType );
+				return service != null;
+			}
+		}
+
+		public Boolean TryGetService<T>( IServiceProvider serviceProvider, out T service )
+		{
+			if( this.TryGetService( serviceProvider, typeof(T), out Object serviceObj ) )
+			{
+				service = (T)serviceObj;
+				return true;
+			}
+			else
+			{
+				service = default;
+				return false;
 			}
 		}
 

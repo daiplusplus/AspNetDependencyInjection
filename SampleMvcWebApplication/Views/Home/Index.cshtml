@@ -1,31 +1,240 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@using SampleMvcWebApplication.Controllers
+@{
+	ViewBag.Title = "Home Page";
+
+	String sendMessage204Action = this.Url.Action( actionName: nameof(HomeController.SendMessage204), controllerName: HomeController.Name );
+	String sendMessage302Action = this.Url.Action( actionName: nameof(HomeController.SendMessage302), controllerName: HomeController.Name );
+
+	String signalRTransport = this.Request.QueryString["transport"];
+	String signalRStartArgs = "";
+	if( !String.IsNullOrWhiteSpace( signalRTransport ) )
+	{
+		signalRTransport = Json.Encode( signalRTransport );
+		signalRStartArgs = "{ transport: " + signalRTransport + " } ";
+	}
+}
+@section head {
+
+	<script src="~/scripts/jquery.signalR-2.4.1.js" defer="defer"></script>
+	<script src="~/signalr/hubs" defer="defer"></script>
+
+	<style type="text/css">
+
+#sendMethod label {
+	display: block;
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+	</style>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+	<script type="text/javascript">
+'use strict';
+
+var pageState = {
+
+	/**
+	 * @@type {HTMLInputElement} */
+	sendPost204Radio: null,
+
+	/**
+	 * @@type {HTMLInputElement} */
+	sendPost302Radio: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	sendAjaxRadio: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	sendSigRRadio: null,
+
+	/**
+	 * @@type {HTMLOListElement} */
+	messagesOL: null,
+
+	/**
+	 * @@type {HTMLFormElement} */
+	composeForm: null,
+
+	/**
+	 * @@type {HTMLInputElement} */
+	composeName: null,
+	/**
+	 * @@type {HTMLInputElement} */
+	composeMessage: null,
+
+
+	hubProxy: null
+};
+
+function setUp() {
+
+	console.log( 'setUp() called.' );
+
+	var p = pageState;
+
+	p.sendPost204Radio = document.getElementById( 'sendP204' );
+	p.sendPost302Radio = document.getElementById( 'sendP302' );
+	p.sendAjaxRadio    = document.getElementById( 'sendAjax' );
+	p.sendSigRRadio    = document.getElementById( 'sendSigR' );
+	
+	p.composeForm      = document.getElementById( 'composeForm' );
+	p.composeName      = document.getElementById( 'composeName' );
+	p.composeMessage   = document.getElementById( 'composeMessage' );
+	
+	p.messagesOL       = document.getElementById( 'messages' );
+
+	//
+
+	try
+	{
+		if( $.connection ) {
+			if( $.connection.messagesHub ) {
+
+				p.hubProxy = $.connection.messagesHub;
+
+				// Define client "on-received" methods:
+				p.hubProxy.client.addChatMessageToPage = onMessageReceived;
+
+				// Start:
+				$.connection.hub.start( @Html.Raw( signalRStartArgs ) ).done( hubStartDone );
+
+				console.log("Sample SignalR: Starting...");
+
+			}
+			else {
+				console.error( 'messagesHub not defined on SignalR generated object.' );
+			}
+		}
+		else {
+			console.error( 'SignalR generated object not set.' );
+		}
+	}
+	catch( e )
+	{
+		console.error( "Couldn't start SignalR: %o. ", e );
+	}
+}
+
+function hubStartDone() {
+
+	var p = pageState;
+	p.hubProxy.server.started();
+
+	console.log("Sample SignalR: Started.");
+}
+
+window.addEventListener( 'DOMContentLoaded', setUp );
+
+/**
+ * 
+ * @@param {Event} event
+ */
+function onSubmit( event ) {
+
+	var p = pageState;
+
+	var messageName = p.composeName.value;
+	var messageText = p.composeMessage.value;
+
+	if( p.sendPost204Radio.checked || p.sendPost302Radio.checked ) {
+		
+		if( p.sendPost204Radio.checked ) {
+			p.composeForm.action = '@( sendMessage204Action )';
+		} else {
+			p.composeForm.action = '@( sendMessage302Action )';
+		}
+
+		// Let browser submit POST normally - but disable the radio buttons so they don't send their `name="sendMethod"` data. UPDATE: No, keep this enabled otherwise they're still disabled after doing a HTTP 204 submit.
+		if( p.sendPost302Radio.checked ) {
+			var sendMethodRadios = document.querySelectorAll('input[name=sendMethod]');
+			for( var i = 0; i < sendMethodRadios.length; i++ ) {
+				sendMethodRadios[i].disabled = true;
+			}
+		}
+
+		return true;
+	}
+	else if( p.sendAjaxRadio.checked ) {
+
+		// Intercept!
+		event.preventDefault();
+
+		var requestBody = "Name=" + encodeURIComponent( messageName ) + "&Text=" + encodeURIComponent( messageText );
+
+		var xhr = new XMLHttpRequest();
+		xhr.open( 'POST', '@( sendMessage204Action )' );
+		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xhr.send( requestBody );
+
+		return false;
+	}
+	else if( p.sendSigRRadio.checked ) {
+
+		// Intercept!
+		event.preventDefault();
+
+		//
+
+		p.hubProxy.server.newChatMessage( messageName, messageText );
+
+		return false;
+	}
+}
+
+function onMessageReceived( name, message ) {
+
+	var p = pageState;
+
+	console.log( "receivedMessage( %s )", message );
+
+	var li = document.createElement('li');
+	li.textContent = name + " -" + message;
+
+	p.messagesOL.appendChild( li );
+}
+
+	</script>
+
+}
+
+<h1>ASP.NET MVC and ASP.NET SignalR Dependency Injection Sample</h1>
+
+<p>Force transport:</p>
+<ul>
+	<li><a href="?transport=longPolling">longPolling</a></li>
+	<li><a href="?transport=webSockets">webSockets</a></li>
+	<li><a href="?transport=serverSentEvents">serverSentEvents</a> (not supported by Internet Explorer)</li>
+	<li><a href="?transport=foreverFrame">foreverFrame</a> (Internet Explorer only)</li>
+</ul>
+
+<ol id="messages">
+
+</ol>
+
+<form id="composeForm" action="@sendMessage302Action" method="post" onsubmit="onSubmit(event)">
+
+	<fieldset>
+		<legend>Send message</legend>
+
+		<div class="field">
+			<label for="composeName">Your name</label>
+			<input type="text" id="composeName" name="Name" />
+		</div>
+
+		<div class="field">
+			<label for="composeMessage">Your message</label>
+			<input type="text" id="composeMessage" name="Text" />
+		</div>
+
+		<div class="field" id="sendMethod">
+			<label><input type="radio" id="sendP204" name="sendMethod" value="post204"                  >Send message using Controller via document POST (204 response)</label>
+			<label><input type="radio" id="sendP302" name="sendMethod" value="post302"                  >Send message using Controller via document POST (302 response)</label>
+			<label><input type="radio" id="sendAjax" name="sendMethod" value="ajax"                     >Send message using Controller via AJAX</label>
+			<label><input type="radio" id="sendSigR" name="sendMethod" value="signalr" checked="checked">Send message using SignalR </label>
+		</div>
+
+		<div>
+			<button type="submit">Send message</button>
+		</div>
+
+	</fieldset>
+
+</form>
