@@ -10,6 +10,7 @@ using Owin;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Implements SignalR's <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/> and using request and operation scoped lifetimes.</summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification = "This is a false-positive, see https://stackoverflow.com/questions/8925925/code-analysis-ca1063-fires-when-deriving-from-idisposable-and-providing-implemen" )]
 	public sealed class ScopedAndiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
-		<id>Jehoel.AspNetDependencyInjection.Mvc</id>
+		<id>Jehoel.AspNetDependencyInjection.SignalR</id>
 		
 		<!--
 		When using NuGet/Nuspec as part of an MSBuild process or when using `nuget pack MyProject.csproj` (so the *.nuspec file is not the primary source of truth) then `$placeholder$` values are copied from the parent .csproj.
