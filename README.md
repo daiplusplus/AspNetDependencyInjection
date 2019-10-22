@@ -18,8 +18,6 @@
 	* ASP.NET Web API - Using `System.Web.Http.Dependencies.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.WebApi` NuGet package.
 	* WCF is not currently targeted by a published NuGet package, but a WCF example is included in this repository.
 
-* This project is *not* intended for use with ASP.NET Web API, ASP.NET 5, nor ASP.NET Core. Those platforms already have established dependency-injection infrastructure ecosystems available to their users.
-
 **AspNetDependencyInjection.Mvc** exposes `AspNetDependencyInjection` as an implementation of `System.Web.Mvc.IDependencyResolver` for use with ASP.NET MVC 5.x.
 
 ## Current Version
