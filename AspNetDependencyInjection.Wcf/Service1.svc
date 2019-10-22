@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Service="AspNetDependencyInjection.Wcf.Service1" Factory="AspNetDependencyInjection.Wcf.AndiWebServiceHostFactory"  %>

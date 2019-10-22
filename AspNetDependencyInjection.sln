@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.SignalR", "AspNetDependencyInjection.SignalR\AspNetDependencyInjection.SignalR.csproj", "{7CB50365-9558-4CD9-98D1-7E33BDAAE15B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.Wcf", "AspNetDependencyInjection.Wcf\AspNetDependencyInjection.Wcf.csproj", "{F1B12590-1707-4CB3-BA70-F6AE906E475D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{7CB50365-9558-4CD9-98D1-7E33BDAAE15B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CB50365-9558-4CD9-98D1-7E33BDAAE15B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CB50365-9558-4CD9-98D1-7E33BDAAE15B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
