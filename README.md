@@ -1,7 +1,7 @@
 
 # AspNetDependencyInjection
 
-(Currently listed on NuGet.org as `Jehoel.AspNetDependencyInjection` and `Jehoel.AspNetDependencyInjection.Mvc`)
+(Currently listed on NuGet.org as `Jehoel.AspNetDependencyInjection`, `Jehoel.AspNetDependencyInjection.Mvc`, `Jehoel.AspNetDependencyInjection.SignalR`, and `Jehoel.AspNetDependencyInjection.WebApi`)
 
 **AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
 
@@ -10,6 +10,13 @@
 		* ...which cites [DevTrends Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/) and [DevTrends Unity.WCF](http://nuget.org/packages/Unity.Wcf/) as original works.
 
 * This particular package's main objective is supporting ASP.NET Web Forms 4.7.2's new `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true _constructor_ dependency injection. Previously applications had to use "property injection" which many consider to be an anti-pattern.
+
+* This project now targets:
+	* ASP.NET WebForms - By supporting `System.Web.HttpRuntime.WebObjectActivator`.
+	* ASP.NET MVC - Using MVC's `System.Web.Mvc.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.Mvc` NuGet package.
+	* ASP.NET SignalR - By subclassing `Microsoft.AspNet.SignalR.DefaultDependencyResolver`. Has optional support for `IServiceScope`. Use the `Jehoel.AspNetDependencyInjection.SignalR` NuGet package.
+	* ASP.NET Web API - Using `System.Web.Http.Dependencies.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.WebApi` NuGet package.
+	* WCF is not currently targeted by a published NuGet package, but a WCF example is included in this repository.
 
 * This project is *not* intended for use with ASP.NET Web API, ASP.NET 5, nor ASP.NET Core. Those platforms already have established dependency-injection infrastructure ecosystems available to their users.
 
@@ -29,6 +36,10 @@
 Install-Package Jehoel.AspNetDependencyInjection
 
 Install-Package Jehoel.AspNetDependencyInjection.Mvc
+
+Install-Package Jehoel.AspNetDependencyInjection.SignalR
+
+Install-Package Jehoel.AspNetDependencyInjection.WebApi
 ```
 
 ## Installation and Getting Started
