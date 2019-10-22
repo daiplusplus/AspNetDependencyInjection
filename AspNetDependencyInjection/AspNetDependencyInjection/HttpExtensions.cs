@@ -66,12 +66,13 @@ namespace AspNetDependencyInjection.Internal
 
 		#region HttpApplication - ServiceScope
 
-		// HttpApplication does not directly expose any public (or `protected`) instance state.
+		// PROBLEM: HttpApplication does not directly expose any public (or `protected`) instance state.
 		// * We cannot use `HttpApplicationState` with a fixed key because it's shared by all instances of `HttpApplication`.
 		// * We cannot use `HttpApplicationState` with a variable key because `HttpApplication` does not expose any kind of instance-identifier (and don't think about using GetHashCode() as the basis for a per-instance key).
 		// * We cannot use `HttpContext` because that's only for a single request/response lifecycle.
 		// * We do seem to be able to abuse HttpApplication's only real expando mutable state field: a `Hashtable` used to store Handler Factories - provided we use a key value that will never be used.
 		// * Or we can require consumers to implement `IScopedHttpApplication` and store the IServiceScope themselves.
+		// SOLUTION: I've implemented both of the two possible solutions: `IScopedHttpApplication` and abusing HandlerFactories.
 
 		/// <summary>Attempts to get the per-HttpApplication <see cref="IServiceScope"/>. Returns <c>false</c> if the child <see cref="IServiceScope"/> does not exist (and in which case the <paramref name="serviceScope"/> parameter value is undefined). Returns <c>true</c> if it was found (and will be returned via <paramref name="serviceScope"/>).</summary>
 		public static Boolean TryGetHttpApplicationServiceScope( this HttpApplication httpApplication, out IServiceScope serviceScope )

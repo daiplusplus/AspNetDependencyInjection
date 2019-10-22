@@ -6,10 +6,10 @@ namespace AspNetDependencyInjection.Services
 	public class DefaultServiceProviderAccessor : IServiceProviderAccessor
 	{
 		/// <summary>Constructs a new instance of <see cref="DefaultServiceProviderAccessor"/>.</summary>
-		public DefaultServiceProviderAccessor( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider serviceProvider )
+		public DefaultServiceProviderAccessor( ImmutableApplicationDependencyInjectionConfiguration configuration, IServiceProvider rootServiceProvider )
 		{
 			this.Configuration       = configuration ?? throw new ArgumentNullException(nameof(configuration));
-			this.RootServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			this.RootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException(nameof(rootServiceProvider));
 		}
 
 		/// <summary>Exposes <see cref="ApplicationDependencyInjection"/>'s <see cref="ApplicationDependencyInjection.Configuration"/>.</summary>

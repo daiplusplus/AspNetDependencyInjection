@@ -17,7 +17,7 @@ namespace AspNetDependencyInjection.Services
 		public HttpContextBase HttpContext { get; }
 	}
 
-	// TODO: When would *anyone* ever want to use `ThreadLocalStorageHttpContextAccessor`?
+	// NOTE: When would *anyone* ever want to use `ThreadLocalStorageHttpContextAccessor`? That's why this is disabled.
 	// If those types need some form of compatibility with the thread-unsafe `HttpContext.Current` then they can use it directly.
 
 	#if ANY_GOOD_REASONS_FOR_THIS

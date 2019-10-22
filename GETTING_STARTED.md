@@ -37,11 +37,15 @@ namespace SampleWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, use `ApplicationDependencyInjection`:
-			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
+			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, remove the call to `.AddMvcDependencyResolver()`.
+			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `.AddMvcDependencyResolver()`:
 
-			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `MvcApplicationDependencyInjection`:
-			_di = MvcApplicationDependencyInjection.ConfigureMvc( ConfigureServices );
+			_di = new ApplicationDependencyInjectionBuilder()
+				.ConfigureServices( ConfigureServices )
+				//.AddMvcDependencyResolver() // Uncomment this out if you're using ASP.NET MVC.
+				//.AddWebApiDependencyResolver() // Uncomment this out if you're using ASP.NET Web API.
+				//.AddSignalRDependencyResolver() // Uncomment this out if you're using ASP.NET SignalR.
+				.Build();
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
@@ -64,8 +68,6 @@ namespace SampleWebApplication
 		internal static void PostStart()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
-
-			//_di.Reconfigure( ReconfigureServices ); // NOTE: The ability to reconfigure services is not currently supported and this method throws a `NotImplementedException`.
 		}
 
 		private static void ReconfigureServices( IServiceCollection services )
@@ -91,6 +93,8 @@ Yes! Provided that your HttpModule or HttpHandler is instantiated after the Depe
 ### What if you need to access the `HttpContext` (`HttpContextBase`) associated with the current request in a request-scoped service?
 
 This project adds a built-in service: `AspNetDependencyInjection.IHttpContextAccessor`. You can add this service by using `.AddDefaultHttpContextAccessor()` in your `ConfigureServices` method.
+
+The implementation of `IHttpContextAccessor` does not use `HttpContext.Current`, but uses an internal strong reference to the HttpContextWrapper created for the `IServiceScope` in the `HttpContextScopeHttpModule`.
 
 ### What if I need access to values in web.config like `<appSettings>`?
 
@@ -146,25 +150,14 @@ If you need to choose your connection-string at runtime based on an `<appSetting
 
 Another advantage of this approach is that if you need to use a `DbContext` inside a non-page-lifetime component of your web-application you can take add `MyDbContextFactory` to your constructor parameters and get a short-lived `DbContext` that way without needing to create a new `IServiceScope`, though you would be responsible for disposing of the `DbContext`.
 
-### What's the difference between `ApplicationDependencyInjection` and `MvcApplicationDependencyInjection`?
-
-* `MvcApplicationDependencyInjection` is a subclass of `ApplicationDependencyInjection`.
-* `MvcApplicationDependencyInjection` is in its own separate assembly that has references to `System.Web.Mvc`, whereas `ApplicationDependencyInjection` does not.
-* `MvcApplicationDependencyInjection` performs the same set-up as `ApplicationDependencyInjection` but also sets-up the ASP.NET MVC-specific `System.Web.Mvc.IDependencyResolver`.
-
-* In conclusion:
-	* If you're not using ASP.NET MVC, use `ApplicationDependencyInjection` so you don't need to reference `System.Web.Mvc.dll`.
-	* If you are using ASP.NET MVC, use `MvcApplicationDependencyInjection` so your `IDependencyResolver` is configured correctly.
-
 ### How does the `PreStart` / `WebActivatorEx.PreApplicationStartMethod` method work with or interact with OWIN's Startup method?
 
 * `WebActivatorEx`'s `PreApplicationStartMethod` (the `PreStart` method in our sample above) runs before OWIN's Startup method.
 	* See this StackOverflow post: https://stackoverflow.com/questions/21462777/webactivatorex-vs-owinstartup
-* You can have the 
 
 ## Included services
 
-All included services are exposed as interfaces so you can replace them with your own implementation for testing purposes or for different production scenarios.
+All included services are exposed as interfaces so you can replace them with your own implementation for testing purposes or for different production scenarios. They are listed below:
 
 ### `AspNetDependencyInjection.IHttpContextAccessor`
 

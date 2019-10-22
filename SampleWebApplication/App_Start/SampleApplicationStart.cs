@@ -1,13 +1,15 @@
-using System;
+
+using AspNetDependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
+
 using SampleWebApplication;
 
 using WebActivatorEx;
-using AspNetDependencyInjection;
 
-[assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
-//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
+[assembly: PreApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
+[assembly: ApplicationShutdownMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.ApplicationShutdown ) )]
 
 namespace SampleWebApplication
 {
@@ -21,7 +23,12 @@ namespace SampleWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			_di = ApplicationDependencyInjection.Configure( ConfigureServices );
+			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, remove the call to `.AddMvcDependencyResolver()`.
+			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `.AddMvcDependencyResolver()`:
+
+			_di = new ApplicationDependencyInjectionBuilder()
+				.ConfigureServices( ConfigureServices )
+				.Build();
 		}
 
 		private static void ConfigureServices( IServiceCollection services )
@@ -40,13 +47,11 @@ namespace SampleWebApplication
 		internal static void PostStart()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PostStart) + "() called." );
-
-			//_di.Reconfigure( ReconfigureServices );
 		}
 
-		private static void ReconfigureServices( IServiceCollection services )
+		internal static void ApplicationShutdown()
 		{
-			
+			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(ApplicationShutdown) + "() called." );
 		}
 	}
 }

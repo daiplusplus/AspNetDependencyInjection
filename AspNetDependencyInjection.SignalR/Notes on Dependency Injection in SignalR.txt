@@ -1,0 +1,122 @@
+﻿## Notes on dependency injection in SignalR (non-ASP.NET Core!)
+
+* IMPORTANT NOTE: In SignalR, Hub objects are very short-lived and exist only to process a single event or message.
+	* So if a WebSocket client sends even a single 1-character message, SignalR will create a new Hub object instance, call its `ProcessRequest` method, then dispose of it - just for that single 1-character message.
+		* So if you have a terrible client that sends loads of 1-character messages, each of those messages will result in a new hub object being created and being destroyed ("please, think of the hubs!")
+
+* SignalR has a limited form of built-in DI:
+	
+	* SignalR's `DependencyResolver` is not a true DI system: it's more like a Service Locator (ew).
+		* There is a huge design issue with DefaultDependencyResolver: its constructor calls a virtual method (`Register`) and it registers a whole slew of internal types internally. Be careful when overriding `Register`.
+	* SignalR seems to use the term "activator" instead of "factory" of reasons unknown.
+	
+	* `IHubActivator` is SignalR's main way of allowing applications built on top of it to allow custom construction of IHub/Hub objects.
+		* However it doesn't expose request and lifetime information, making it suitable only for transient and singleton-lifetime'd constructor injectables.
+
+## Standing on the shoulders of giants (i.e., other SignalR DI systems)
+
+* Most of what I figured out was from this thread from the `simpleinjector` people (where the maintainers said they don't want a built-in SignalR integration, despite their support for WCF):
+	* https://github.com/simpleinjector/SimpleInjector/issues/141 - "SignalR service injection" - November 2015.
+	* https://github.com/simpleinjector/SimpleInjector/issues/232 - "SignalR integration" - May 2016, resurrected in June 2018.
+	* https://github.com/simpleinjector/SimpleInjector/issues/533 - "Issue with SignalR--scopes appear to get confused" - April 2018.
+	* https://github.com/simpleinjector/SimpleInjector/issues/630 - "SimpleInjector SignalR Core integration throws SimpleInjector.ActivationException on LongPolling" - November 2018.
+		* TODO: I have not tested AspNetDependencyInjection.SignalR in Long-Polling scenarios, only WebSockets and SSE.
+
+* Autofac supports SignalR, but does not support scoped lifetimes - and I came across their implementation after I was almost done getting my HubDispatcher working:
+	https://autofaccn.readthedocs.io/en/latest/integration/signalr.html (snapshot: https://github.com/autofac/Documentation/blob/37c91b2a0e7367dc7711d6eacd56a6118e1f9084/docs/integration/signalr.rst )
+	> "Given there is no support for per-request dependencies, all dependencies resolved for SignalR hubs come from the root container.""
+
+* There are articles about using Unity Continer with SignalR, but they're older articles and don't seem to support scoping (child containers in Unity's parlance):
+	* https://kevgriffin.com/using-unity-for-dependency-injection-with-signalr/ - January 2013.
+	* https://cockneycoder.wordpress.com/2013/10/19/signalr-with-an-ioc-container/ - October 2013.
+	* https://stackoverflow.com/questions/20929159/using-unity-ioc-to-register-and-resolve-signalr-hubs - January 2014.
+
+## Important take-aways:
+
+* HubDispatcher instances last only as long as the request/connection - they are not long-life'd singletons!
+	* This is not mentioned in SignalR's documentation, so I ran into weird issues when I was using a single HubDispatcher instance, whoops!
+* SignalR does NOT use its own DependencyResolver in many places where you think it should- 
+* When subclassing SignalR's built-in types or implementing its interfaces, check with the source-code of SignalR's DefaultDependnecyResolver to see how it registers them.
+	* Most of them seem to be registered wrapped in `Lazy<T>` which means they're effectively singletons.
+
+# A refresher on the different types of `IServiceProvider` etc:
+	* The `IServiceProvider` documentation does not describe how it behaves when passed a Type that:
+		* Is registered.
+		* Is not registered, but can be constructed from registered types.
+		* Is not registered, but cannot be constructed at all (e.g. private constructor).
+		* Is not registered, but its constructor has non-registered parameter types, but all of those can be resolved (i.e. all transitive dependencies are resolvable).
+		
+	* Implementations generally fall into these four types:
+		1. ONLY return registered types. Will throw when asked to construct a non-registered type, even when all parameter types are registered.
+		2. ONLY return registered types. Will return null when asked to construct a non-registered type, even when all parameter types are registered.
+		3. Returns registered types and always attempts to construct a non-registered type, but returns null if it's unable to.
+		4. Returns registered types and always attempts to construct a non-registered type, but throws if it's unable to.
+
+	* WebObjectActivator is type 4.
+	* UnityContainer is type 3.
+	* Microsoft.Extensions.DependencyInjection is type 2... I think.
+	* SignalR's `DefaultDependencyResolver` is type 2.
+	* SignalR's `DefaultHubActivator` is type 4 (it uses `DefaultDependencyResolver` for registered types1)
+
+	* At some point I want to create separate interfaces for each, so consuming code (and implementations!) knows what it should be doing:
+		e.g.
+
+		// Methods on this interface only return types that are explicitly registered.
+		interface IRegisteredServiceProvider
+		{
+			// Throws:
+			T RequireService<T>();
+			Object RequireService( Type serviceType );
+
+			// No-throw:
+			Boolean TryGetService<T>( out T service );
+			Boolean TryGetService( out Object service );
+		}
+
+		interface IObjectFactory
+		{
+			// Throws:
+			T GetOrCreate<T>();
+			Object GetOrCreate( Type objectType );
+
+			// No-throw:
+			Boolean TryGetOrCreate<T>( out T instance );
+			Boolean TryGetOrCreate( out Object instance );
+		}
+
+## Lifetimes of SignalR's DefaultDependencyResolver built-ins:
+
+																													
+	Interface               Implementation                Lazy        Lifetime
+	-----------------------------------------------------------------------
+	IConfigurationManager   DefaultConfigurationManager   No          Singleton
+	IUserIdProvider         PrincipalUserIdProvider       No          Singleton
+	IMemoryPool             MemoryPool                    No          Singleton
+
+	IHubActivator           DefaultHubActivator           Yes         Singleton
+	IHubPipeline            HubPipeline                   Yes         Singleton
+	IHubPipelineInvoker     HubPipeline                   Yes         Singleton (same underlying object as IHubPipeline)
+	IHubManager             DefaultHubManager             Yes         Singleton
+	(All others)                                          Yes         Singleton
+
+	IMPORTANT NOTES:
+		* IUserIdProvider is singleton, so I don't recommend using a different lifetime when overriding it.
+		* Notice that HubDispatcher is *not* registered nor resovled from IDependencyResolver (unless you specify `TConnection` in `MapSignalR<TConnection>(...)`).
+		* HubDispatcher is effectively transient. See notes below.
+
+## HubDispatcher:
+	* HubDispatcher is NOT resolved by SignalR (there is no `IHubDispatcher` interface either).
+	* HubDispatcher is instantiated directly by, and only by, `HubDispatcherMiddleware`.
+		* A new instance of HubDispatcher is created for every invocation of `HubDispatchMiddleware.Invoke` (i.e. for every request/message/event), so it is transient.
+	* HubDispatcherMiddleware is only used when `appBuilder.MapSignalR(...)` is used WITHOUT a type parameter (i.e. not `appBuilder.MapSignalR<TConnection>(...)`)
+	* When a type parameter argument is used with `appBuilder.MapSignalR<TConnection>`, then SignalR uses `PersistentConnectionMiddleware` instead of `HubDispatcherMiddleware`.
+		* However, both classes (`HubDispatcherMiddleware` and `PersistentConnectionMiddleware` behave identically - I don't know why `HubDispatcherMiddleware` exists)
+			* The TConnection type is instantiated by `PersistentConnectionFactory.CreateInstance` which in-turn calls SignalR's `IDependencyResolver`.
+
+
+## SignalR's relationships:
+
+	HubDispatcher uses IDependencyResolver to resolve IHubManager.
+	DefaultHubManager uses IDependencyResolver to resolve IHubActivator
+	DefaultHubActivator uses IDependnecyResolver and falls-back to Activator.CreateInstance
+
