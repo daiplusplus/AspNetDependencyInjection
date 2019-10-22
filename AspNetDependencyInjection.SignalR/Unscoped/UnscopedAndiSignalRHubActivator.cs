@@ -3,11 +3,11 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace AspNetDependencyInjection.Internal
 {
-	public class UnscopedDependencyInjectionSignalRHubActivator : IHubActivator
+	public class UnscopedAndiSignalRHubActivator : IHubActivator
 	{
-		private readonly UnscopedAspNetDiSignalRDependencyResolver dr;
+		private readonly UnscopedAndiSignalRDependencyResolver dr;
 
-		public UnscopedDependencyInjectionSignalRHubActivator( UnscopedAspNetDiSignalRDependencyResolver dr )
+		public UnscopedAndiSignalRHubActivator( UnscopedAndiSignalRDependencyResolver dr )
 		{
 			this.dr = dr ?? throw new ArgumentNullException( nameof( dr ) );
 		}

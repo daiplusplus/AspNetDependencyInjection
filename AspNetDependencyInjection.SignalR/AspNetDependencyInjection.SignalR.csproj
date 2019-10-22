@@ -63,12 +63,11 @@
   <ItemGroup>
     <Compile Include="ApplicationDependencyInjectionBuilderExtensions.cs" />
     <Compile Include="Scoped\ScopedDependencyResolver.cs" />
-    <Compile Include="Unscoped\UnscopedDependencyInjectionSignalRHubActivator.cs" />
+    <Compile Include="Unscoped\UnscopedAndiSignalRHubActivator.cs" />
     <Compile Include="Scoped\HubDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scoped\ScopedDependencyInjectionSignalRHubActivator.cs" />
-    <Compile Include="Unscoped\UnscopedAspNetDiSignalRDependencyResolver.cs" />
-    <Compile Include="Unscoped\UnscopedHubDispatcher.cs" />
+    <Compile Include="Unscoped\UnscopedAndiSignalRDependencyResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

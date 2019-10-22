@@ -1,26 +1,25 @@
-﻿
-using System;
-using AspNetDependencyInjection;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.Extensions.DependencyInjection;
-using Owin;
-using SampleMvcWebApplication;
+﻿#define USE_SCOPED_SIGNALR_RESOLVER
 
+using System;
+
+using Microsoft.AspNet.SignalR;
+using Microsoft.Extensions.DependencyInjection;
+
+using Owin;
+using Microsoft.Owin;
+using AspNetDependencyInjection;
 using WebActivatorEx;
 
-[assembly: PreApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
-[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
-[assembly: ApplicationShutdownMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.ApplicationShutdown ) )]
+using SampleMvcWebApplication;
 
-[assembly: Microsoft.Owin.OwinStartup( typeof(SampleApplicationStart), methodName: nameof(SampleApplicationStart.OwinStartup) )]
+[assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
+[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
+[assembly: ApplicationShutdownMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.ApplicationShutdown ) )]
+
+[assembly: OwinStartup( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.OwinStartup ) )]
 
 namespace SampleMvcWebApplication
 {
-//	using ADIDependencyResolver = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRDependencyResolver;
-//	using ADIHubActivator       = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRHubActivator;
-//	using ADIHubDispatcher      = global::AspNetDependencyInjection.Internal.DependencyInjectionSignalRHubDispatcher;
-
 	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
 	internal static class SampleApplicationStart
 	{
@@ -37,8 +36,11 @@ namespace SampleMvcWebApplication
 			_di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( ConfigureServices )
 				.AddMvcDependencyResolver()
-//				.AddSignalRDependencyResolver()
-				.AddClient( (di, rootSP) => new AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver( di, rootSP ) )
+#if USE_SCOPED_SIGNALR_RESOLVER
+				.AddScopedSignalRDependencyResolver()
+#else
+				.AddUnscopedSignalRDependencyResolver()
+#endif
 				.Build();
 		}
 
@@ -49,9 +51,7 @@ namespace SampleMvcWebApplication
 				// Useful services built-in to AspNetDependencyInjection:
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
-//				.AddSingleton<AspNetDependencyInjection.Internal.UnscopedDependencyInjectionSignalRHubActivator>()
-//				.AddSingleton<IHubActivator, AspNetDependencyInjection.Internal.UnscopedDependencyInjectionSignalRHubActivator>()
-				.AddTransient<IUserIdProvider,SampleUserIdProvider>()
+				.AddSingleton<IUserIdProvider,SampleUserIdProvider>() // `IUserIdProvider` is a SignalR built-in service. SignalR's `PrincipalUserIdProvider` (the default implementation) is registered as a singleton. I'm unsure how well a transient or scoped registration would work.
 			;
 		}
 
@@ -65,60 +65,24 @@ namespace SampleMvcWebApplication
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(OwinStartup) + "() called." );
 
-#if ATTEMPT_1
-			// https://github.com/simpleinjector/SimpleInjector/issues/232
-
-			IDependencyResolver dr = GlobalHost.DependencyResolver;
-			if( dr is ADIDependencyResolver dr2 )
+			HubConfiguration hubConfig = new HubConfiguration()
 			{
-			
-				HubConfiguration hubConfig = new HubConfiguration()
-				{
-					Resolver = GlobalHost.DependencyResolver
-				};
+				EnableDetailedErrors = true
+			};
 
-				ADIHubDispatcher hubDispatcher = dr2.CreateHubDispatcher( hubConfig );
-
-				hubConfig.Resolver.Register( typeof(ADIHubDispatcher), () => hubDispatcher );
-
-				appBuilder.MapSignalR<ADIHubDispatcher>( "/signalr", hubConfig );
+#if USE_SCOPED_SIGNALR_RESOLVER
+			IDependencyResolver dr = GlobalHost.DependencyResolver;
+			if( dr is AspNetDependencyInjection.Internal.ScopedAndiSignalRDependencyResolver dr2 )
+			{
+				dr2.ConfigureSignalR( appBuilder, path: "/signalr", hubConfiguration: hubConfig );
 			}
 			else
 			{
-				throw new InvalidOperationException( nameof(ADIDependencyResolver) + " is not set-up." );
+				throw new InvalidOperationException( nameof(AspNetDependencyInjection.Internal.UnscopedAndiSignalRDependencyResolver) + " is not set-up." );
 			}
-
-#else // ATTEMPT_2
-
-			IDependencyResolver dr = GlobalHost.DependencyResolver;
-			if( dr is AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver dr2 )
-			{
-				//GlobalHost.DependencyResolver.Register( typeof(IUserIdProvider), () => dr2.GetRootRequiredService<IUserIdProvider>() );
-
-				HubConfiguration hubConfig = new HubConfiguration()
-				{
-					EnableDetailedErrors = true
-				};
-
-//				AspNetDependencyInjection.Internal.UnscopedHubDispatcher hd = new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig );
-//				dr2.Register( typeof(AspNetDependencyInjection.Internal.UnscopedHubDispatcher), () => hd );
-
-//				dr2.Register( typeof(HubDispatcher), () => hd ); // TODO: What happens if you register a factory for HubDispatcher but don't use the MapSignalR<T> overload?
-				// `HubDispatcherMiddleware` creates HubDispatcher as transient, maybe we should do the same?
-
-				dr2.Register( typeof(HubDispatcher)                                           , () => new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig ) );
-				dr2.Register( typeof(AspNetDependencyInjection.Internal.UnscopedHubDispatcher), () => new AspNetDependencyInjection.Internal.UnscopedHubDispatcher( dr2, hubConfig ) );
-
-//				appBuilder.MapSignalR<AspNetDependencyInjection.Internal.UnscopedHubDispatcher>( "/signalr", hubConfig );
-				appBuilder.MapSignalR( "/signalr", hubConfig ); // <-- this overload without `<TPersistentConnection>` will cause SignalR to use a private `new HubDispatcher` inside `HubDispatcherMiddleware` rather than use the DependencyResolver to create HubDispatchers.
-				appBuilder.MapSignalR<AspNetDependencyInjection.Internal.UnscopedHubDispatcher>( "/signalr", hubConfig ); // <-- this actually seems to work now, I think the important thing is that HubDispatcher must be transient or scoped and not singleton.
-			}
-			else
-			{
-				throw new InvalidOperationException( nameof(AspNetDependencyInjection.Internal.UnscopedAspNetDiSignalRDependencyResolver) + " is not set-up." );
-			}
+#else
+			appBuilder.MapSignalR( path: "/signalr", configuration: hubConfig );
 #endif
-			
 		}
 
 		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
