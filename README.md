@@ -10,11 +10,17 @@ Currently listed on NuGet.org as:
 * [`Jehoel.AspNetDependencyInjection.SignalR`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.SignalR/)
 * [`Jehoel.AspNetDependencyInjection.WebApi`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.WebApi/)
 
+## Background
+
+* I'm working on a large ASP.NET WebForms application written almost a decade ago that needs to be moved to ASP.NET Core - I felt the best approach to transition is to work on a page-by-page basis: first updating each page to render directly instead of using WebControls (no more `if( this.IsPostBack )`!), then updating it to use constructor injected dependencies - which means that each `Page` behaves almost identically to an ASP.NET Core `Controller` which makes the transition far easier.
+
 * This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity`, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 	* ...which itself is a derivative and fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms)
 		* ...which cites [DevTrends Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/) and [DevTrends Unity.WCF](http://nuget.org/packages/Unity.Wcf/) as original works.
 
 * This particular package's main objective is supporting ASP.NET Web Forms 4.7.2's new `WebObjectActivator` which means that `Page`, `UserControl` and other types can use true _constructor_ dependency injection. Previously applications had to use "property injection" which many consider to be an anti-pattern.
+
+## Supported ASP.NET platforms
 
 * This project now targets:
 	* ASP.NET WebForms - By supporting `System.Web.HttpRuntime.WebObjectActivator`.
