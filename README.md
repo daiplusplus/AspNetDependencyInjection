@@ -6,7 +6,7 @@ Currently listed on NuGet.org as:
 * [`Jehoel.AspNetDependencyInjection`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection/)
 * [`Jehoel.AspNetDependencyInjection.Mvc`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.Mvc/)
 * [`Jehoel.AspNetDependencyInjection.SignalR`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.SignalR/)
-* [`Jehoel.AspNetDependencyInjection.WebApi`)(https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.WebApi/)
+* [`Jehoel.AspNetDependencyInjection.WebApi`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.WebApi/)
 
 **AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
 
