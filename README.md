@@ -1,14 +1,14 @@
 
 # AspNetDependencyInjection
 
+**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
+
 Currently listed on NuGet.org as:
 
 * [`Jehoel.AspNetDependencyInjection`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection/)
 * [`Jehoel.AspNetDependencyInjection.Mvc`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.Mvc/)
 * [`Jehoel.AspNetDependencyInjection.SignalR`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.SignalR/)
 * [`Jehoel.AspNetDependencyInjection.WebApi`](https://www.nuget.org/packages/Jehoel.AspNetDependencyInjection.WebApi/)
-
-**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
 
 * This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity`, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 	* ...which itself is a derivative and fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms)
@@ -22,8 +22,6 @@ Currently listed on NuGet.org as:
 	* ASP.NET SignalR - By subclassing `Microsoft.AspNet.SignalR.DefaultDependencyResolver`. Has optional support for `IServiceScope`. Use the `Jehoel.AspNetDependencyInjection.SignalR` NuGet package.
 	* ASP.NET Web API - Using `System.Web.Http.Dependencies.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.WebApi` NuGet package.
 	* WCF is not currently targeted by a published NuGet package, but a WCF example is included in this repository.
-
-**AspNetDependencyInjection.Mvc** exposes `AspNetDependencyInjection` as an implementation of `System.Web.Mvc.IDependencyResolver` for use with ASP.NET MVC 5.x.
 
 ## Current Version
 * 1.4 - S. Kyle Korndoerfer's most recent version of `Unity.WebForms`, released in 2015. See [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms).
