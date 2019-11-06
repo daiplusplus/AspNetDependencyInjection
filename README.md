@@ -1,7 +1,7 @@
 
 # AspNetDependencyInjection
 
-**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to compose application services.
+**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to inject dependencies directly into `System.Web.UI.Page`, `UserControl`, and `MasterPage` constructors (and more!) all thanks to `WebObjectActivator`.
 
 Currently listed on NuGet.org as:
 
