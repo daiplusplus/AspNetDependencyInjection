@@ -164,7 +164,7 @@ namespace AspNetDependencyInjection.Internal
 					value = true;
 					return true;
 				}
-				else if( _boolTrueValues.Contains( text ) )
+				else if( _booFalseValues.Contains( text ) )
 				{
 					value = false;
 					return true;
