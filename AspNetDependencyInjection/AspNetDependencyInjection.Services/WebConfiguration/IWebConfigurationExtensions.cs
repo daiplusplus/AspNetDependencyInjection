@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 
 namespace AspNetDependencyInjection
 {
@@ -72,7 +74,7 @@ namespace AspNetDependencyInjection
 
 			if( webConfiguration.AppSettings.TryGetValue( connectionStringAppSettingName, out String connectionStringName ) )
 			{
-				if( String.IsNullOrWhiteSpace(connectionStringName) )
+				if( String.IsNullOrWhiteSpace( connectionStringName ) )
 				{
 					throw new InvalidOperationException( "The <appSettings> entry \"" + connectionStringAppSettingName + "\" is empty." );
 				}
@@ -84,6 +86,94 @@ namespace AspNetDependencyInjection
 			else
 			{
 				throw new InvalidOperationException( "The <appSettings> entry \"" + connectionStringAppSettingName + "\" does not exist." );
+			}
+		}
+
+		/// <summary>Attempts to parse the &lt;appSettings&gt; value with the name <paramref name="name"/> as a <see cref="Boolean"/> value by using <see cref="Internal.BooleanUtility.TryParse(string, out bool)"/>. If the value is not defined or cannot be parsed then an <see cref="InvalidOperationException"/> is thrown.</summary>
+		public static Boolean RequireBooleanAppSetting( this IWebConfiguration webConfiguration, String name )
+		{
+			if( webConfiguration == null ) throw new ArgumentNullException(nameof(webConfiguration));
+
+			if( webConfiguration.AppSettings.TryGetValue( name, out String valueStr ) )
+			{
+				if( Internal.BooleanUtility.TryParse( text: valueStr, out Boolean value ) )
+				{
+					return value;
+				}
+				else
+				{
+					throw new InvalidOperationException( "The <appSettings> entry \"" + name + "\" could not be parsed as a boolean value." );
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException( "The <appSettings> entry \"" + name + "\" does not exist." );
+			}
+		}
+
+		/// <summary>Attempts to parse the &lt;appSettings&gt; value with the name <paramref name="name"/> as a <see cref="Int32"/> value by using <see cref="Int32.TryParse(string, NumberStyles, IFormatProvider, out int)"/> (using <see cref="NumberStyles.Integer"/> and <see cref="CultureInfo.InvariantCulture"/>). If the value is not defined or cannot be parsed then an <see cref="InvalidOperationException"/> is thrown.</summary>
+		public static Int32 RequireInt32AppSetting( this IWebConfiguration webConfiguration, String name )
+		{
+			if( webConfiguration == null ) throw new ArgumentNullException(nameof(webConfiguration));
+
+			if( webConfiguration.AppSettings.TryGetValue( name, out String valueStr ) )
+			{
+				if( Int32.TryParse( valueStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out Int32 value ) )
+				{
+					return value;
+				}
+				else
+				{
+					throw new InvalidOperationException( "The <appSettings> entry \"" + name + "\" could not be parsed as a boolean value." );
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException( "The <appSettings> entry \"" + name + "\" does not exist." );
+			}
+		}
+	}
+}
+
+namespace AspNetDependencyInjection.Internal
+{
+	/// <summary>Contains a boolean parser method.</summary>
+	public static class BooleanUtility
+	{
+		private static readonly HashSet<String> _boolTrueValues = new HashSet<String>( StringComparer.OrdinalIgnoreCase ) { "true", "1", "yes", "on", "T", "Y", "-1" }; // I've seen browsers send `value="on"` for checkbox inputs when a `value=""` wasn't explicitly set. Rss1 also stores boolean values as "Yes" for some reason.
+
+		private static readonly HashSet<String> _booFalseValues = new HashSet<String>( StringComparer.OrdinalIgnoreCase ) { "false", "0", "no", "off", "F", "N" };
+
+		/// <summary>
+		/// <para>Attempts to parse <paramref name="text"/> as a boolean value.</para>
+		/// <para>If <paramref name="text"/> is equal to any of <c>"true", "1", "yes", "on", "T", "Y", "-1"</c> then <paramref name="value"/> is set to <c>true</c> and this method returns <c>true</c>.</para>
+		/// <para>If <paramref name="text"/> is equal to any of <c>"false", "0", "no", "off", "F", "N"</c> then <paramref name="value"/> is set to <c>false</c> and this method returns <c>true</c>.</para>
+		/// <para>Otherwise, this method returns <c>false</c> and the value of <paramref name="value"/> is undefined. This method also returns <c>false</c> when <paramref name="text"/> is null, empty, or whitespace.</para>
+		/// </summary>
+		public static Boolean TryParse( String text, out Boolean value )
+		{
+			if( String.IsNullOrWhiteSpace( text ) )
+			{
+				value = default;
+				return false;
+			}
+			else
+			{
+				if( _boolTrueValues.Contains( text ) )
+				{
+					value = true;
+					return true;
+				}
+				else if( _boolTrueValues.Contains( text ) )
+				{
+					value = false;
+					return true;
+				}
+				else
+				{
+					value = default;
+					return false;
+				}
 			}
 		}
 	}
