@@ -12,7 +12,7 @@ Currently listed on NuGet.org as:
 
 ## Background
 
-* I'm working on a large ASP.NET WebForms application written almost a decade ago that needs to be moved to ASP.NET Core - I felt the best approach to transition is to work on a page-by-page basis: first updating each page to replace WebControls and only using direct rendering from a ViewModel-object, then updating the CodeBehind to remove Control event handlers with a single `OnLoad` method and adding constructor injected dependencies - which means that each `Page` behaves almost identically to an ASP.NET Core `Controller` which makes the transition far easier.
+* I'm working on a large ASP.NET WebForms application written almost a decade ago that needs to be moved to ASP.NET Core - I felt the best approach to transition is to work on a page-by-page basis: first updating each `.aspx` page to replace any and all `WebControls` with direct rendering (using `<%=` and `<%:` with data from a ViewModel-object), and thenn updating the CodeBehind `.aspx.cs` to remove Control event handlers so the page has only a single `OnLoad` method and adding constructor injected dependencies - which means that each `Page` behaves almost identically to an ASP.NET Core `Controller` which makes the transition far easier.
 
 * This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity`, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 	* ...which itself is a derivative and fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms)
