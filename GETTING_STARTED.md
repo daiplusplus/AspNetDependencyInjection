@@ -160,15 +160,15 @@ Then your registration code should look like this:
 ```
 services
     .AddWebConfiguration()
-	.AddScopedWithFactory<MyDbContext,MyDbContextFactory>();
+    .AddScopedWithFactory<MyDbContext,MyDbContextFactory>();
 ```
 
 Or if you don't wish to implement `IServiceFactory<TService`, the equivalent long-form of the above is:
 
 ```
 services
-	.AddWebConfiguration()
-	.AddSingleton<MyDbContextFactory>()
+    .AddWebConfiguration()
+    .AddSingleton<MyDbContextFactory>()
     .AddScoped<MyDbContext,MyDbContextFactory>( sp => sp.GetRequiredService<MyDbContextFactory>().CreateInstance() );
 ```
 
@@ -202,12 +202,14 @@ When performing any troubleshooting involving ASP.NET's built-in support for con
 
 * Verify that your `web.config` file specifically targets .NET Framework 4.7.2, as below:
 
+    ```
     <configuration>
         <system.web>
             <compilation targetFramework="4.7.2" />
             <httpRuntime targetFramework="4.7.2" />
         </system.web>
     </configuration>
+    ```
 
 * Verify that your `*.csproj` is targeting .NET Framework 4.7.2 or later:
 	* Project Properties > Application > Target framework > .NET Framework 4.7.2
@@ -216,9 +218,11 @@ When performing any troubleshooting involving ASP.NET's built-in support for con
 
 	* Or edit your `*.csproj` file in a text editor:
 
-	    <Project>
-		    <PropertyGroup>
-	            <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    ```
+    <Project>
+        <PropertyGroup>
+            <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    ```
 
 * Also, make sure you're not using an older version of any CodeDom, Roslyn or CompilerServices packages or assembly references.
 	* This includes these NuGet packages:
@@ -239,11 +243,13 @@ When performing any troubleshooting involving ASP.NET's built-in support for con
 
 When running your webapplication you may get a yellow-screen-of-death with a stack-trace similar to this:
 
+```
     [MissingMethodException: Constructor on type 'ASP.login_aspx' not found.]
        System.RuntimeType.CreateInstanceImpl(BindingFlags bindingAttr, Binder binder, Object[] args, CultureInfo culture, Object[] activationAttributes, StackCrawlMark& stackMark) +1431
        System.Activator.CreateInstance(Type type, BindingFlags bindingAttr, Binder binder, Object[] args, CultureInfo culture, Object[] activationAttributes) +184
        [...]
        __ASP.FastObjectFactory_app_web_a1b2c3d4.Create_ASP_Defaultaspx() +118
+```
 
 This happens when the configured `IServiceProvider` is unable to resolve constructor parameters for your Page, User Control or 
 
