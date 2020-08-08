@@ -9,14 +9,14 @@ Imports System.Web.UI
 Partial Public Class DefaultPage
 	Inherits Page
 
-	Private HttpClientFactory As IHttpClientFactory
+	Private ReadOnly httpClientFactory As IHttpClientFactory
 
 	Public Sub New(httpClientFactory As IHttpClientFactory)
-		Me.HttpClientFactory = httpClientFactory
+		Me.httpClientFactory = httpClientFactory
 	End Sub
 
 	Protected Overrides Sub OnInit(e As EventArgs)
-		If (Not IsPostBack) Then
+		If (Not Me.IsPostBack) Then
 			AddControls()
 		End If
 
@@ -25,7 +25,7 @@ Partial Public Class DefaultPage
 
 	Protected Sub Page_Load(sender As Object, e As EventArgs)
 		Dim client = HttpClientFactory.CreateClient("exampleFactory")
-		ltMessages.Text = client.BaseAddress.ToString()
+		Me.ltMessages.Text = client.BaseAddress.ToString()
 	End Sub
 
 	''' <summary>

@@ -6,7 +6,7 @@ Imports System.Web.Security
 Imports System.Web.SessionState
 
 
-Public Class SampleWebApplicationVBHttpApplication
+Public Class SampleHttpApplication
     Inherits HttpApplication
 
     Private Shared _idSeed As Int32

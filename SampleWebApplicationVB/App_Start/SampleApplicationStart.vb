@@ -32,6 +32,10 @@ Friend Module SampleApplicationStartVB
         Dim devMode As Boolean = True
         Dim apiBase As String = "https://github.com/Jehoel/AspNetDependencyInjection"
 
+        services.AddHttpClient("examplefactory", Sub(c As HttpClient)
+                                                     c.BaseAddress = New Uri(apiBase)
+                                                 End Sub)
+
         services.AddHttpClient("exampleFactory", Sub(c As HttpClient)
                                                      c.BaseAddress = New Uri(apiBase)
                                                      'c.DefaultRequestHeaders.Authorization = New System.Net.Http.Headers.AuthenticationHeaderValue("Basic", $"")
