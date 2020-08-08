@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Web;
 
 namespace AspNetDependencyInjection.Internal
@@ -31,7 +31,7 @@ namespace AspNetDependencyInjection.Internal
 			HttpContext httpContext = HttpContext.Current;
 			if( httpContext == null ) throw new InvalidOperationException( "HttpContext.Current is null." ); // This should never happen, provided only ASP.NET is using `DependencyInjectionWebObjectActivator`.
 
-			return this.di.GetServiceProviderForCurrentHttpContext( httpContext );
+			return this.di.GetServiceProviderForHttpContext( httpContext );
 		}
 
 		/// <summary>Unsets <see cref="HttpRuntime.WebObjectActivator"/> only if its value is this instance.</summary>

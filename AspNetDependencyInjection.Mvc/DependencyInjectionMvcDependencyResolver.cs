@@ -55,7 +55,7 @@ namespace AspNetDependencyInjection.Internal
 		private IServiceProvider GetServiceProvider()
 		{
 			HttpContext httpContext = HttpContext.Current;
-			return this.di.GetServiceProviderForCurrentHttpContext( httpContext );
+			return this.di.GetServiceProviderForHttpContext( httpContext );
 		}
 
 		/// <summary>Resets the ASP.NET MVC <see cref="DependencyResolver.Current"/>, but only if this <see cref="DependencyInjectionMvcDependencyResolver"/> instance is still the current resolver.</summary>

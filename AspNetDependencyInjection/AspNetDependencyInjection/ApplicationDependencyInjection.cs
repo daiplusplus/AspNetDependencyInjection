@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
@@ -90,7 +90,9 @@ namespace AspNetDependencyInjection
 
 		/// <summary>Gets the root <see cref="IServiceProvider"/> instance. Throws <see cref="ObjectDisposedException"/> if this <see cref="ApplicationDependencyInjection"/> instance is already disposed. This property is not intended to be used to resolve services directly, but is intended for use by <see cref="IDependencyInjectionClient"/> classes so they can set-up custom scopes and resolvers.</summary>
 		// NOTE: Alternate to exposing this as a property, it could be passed-in as a second parameter to the `IDependencyInjectionClient` factory methods. Hmmm.
-		internal IServiceProvider RootServiceProvider
+		// UPDATE 2020-08-07: After too many frustrations from purity-of-design vs. practicality, let's make this public, not internal:
+		//internal IServiceProvider RootServiceProvider
+		public IServiceProvider RootServiceProvider
 		{
 			get
 			{
@@ -149,26 +151,51 @@ namespace AspNetDependencyInjection
 
 #endregion
 
-		/// <summary>See the documentation for <see cref="GetServiceProviderForCurrentHttpContext(HttpContextBase)"/>. The <paramref name="httpContext"/> can have a null reference, in which case the root-service provider will be returned.</summary>
-		public IServiceProvider GetServiceProviderForCurrentHttpContext( HttpContext httpContext )
+		/// <summary>Calls <see cref="GetServiceProviderForHttpContext(HttpContext)"/> by passing-in the current value of <see cref="HttpContext.Current"/> (which uses Thread-Local Storage) - so if the current thread is not associated with an ASP.NET Request then this method will return the root DI container.</summary>
+		public IServiceProvider GetServiceProviderForThreadLocalHttpContext()
 		{
-			return this.GetServiceProviderForCurrentHttpContext( httpContext == null ? (HttpContextBase)null : new HttpContextWrapper( httpContext ) );
+			if( this.IsDisposed ) throw new ObjectDisposedException( objectName: this.GetType().FullName );
+
+			//
+
+			return this.GetServiceProviderForHttpContext( HttpContext.Current );
 		}
 
-		/// <summary>Gets the current <see cref="IServiceProvider"/> from <paramref name="httpContext"/>'s <see cref="HttpContextBase.Items"/> or <see cref="HttpContextBase.ApplicationInstance"/> as set by <see cref="HttpContextScopeHttpModule"/>. If <paramref name="httpContext"/> is <c>null</c> or if the <see cref="IServiceProvider"/> was not found, a reference to the root <see cref="IServiceProvider"/> is returned.</summary>
-		public IServiceProvider GetServiceProviderForCurrentHttpContext( HttpContextBase httpContext )
+		/// <summary>See the documentation for <see cref="GetServiceProviderForHttpContext(HttpContextBase)"/>. The <paramref name="httpContext"/> can have a null reference, in which case the root-service provider will be returned.</summary>
+		public IServiceProvider GetServiceProviderForHttpContext( HttpContext httpContext )
 		{
-			if( httpContext != null )
+			if( this.IsDisposed ) throw new ObjectDisposedException( objectName: this.GetType().FullName );
+
+			//
+
+			if( httpContext is null )
 			{
-				if( this.Configuration.UseRequestScopes && httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) ) // This will return false when `UseRequestScopes == false`.
+				return this.GetServiceProviderForHttpContext( httpContextBase: null );
+			}
+			else
+			{
+				return this.GetServiceProviderForHttpContext( httpContextBase: new HttpContextWrapper( httpContext ) );
+			}
+		}
+
+		/// <summary>Gets the current <see cref="IServiceProvider"/> from <paramref name="httpContextBase"/>'s <see cref="HttpContextBase.Items"/> or <see cref="HttpContextBase.ApplicationInstance"/> as set by <see cref="HttpContextScopeHttpModule"/>. If <paramref name="httpContextBase"/> is <c>null</c> or if the <see cref="IServiceProvider"/> was not found, a reference to the root <see cref="IServiceProvider"/> is returned.</summary>
+		public IServiceProvider GetServiceProviderForHttpContext( HttpContextBase httpContextBase )
+		{
+			if( this.IsDisposed ) throw new ObjectDisposedException( objectName: this.GetType().FullName );
+
+			//
+
+			if( httpContextBase != null )
+			{
+				if( this.Configuration.UseRequestScopes && httpContextBase.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) ) // This will return false when `UseRequestScopes == false`.
 				{
 					return requestServiceScope.ServiceProvider;
 				}
-				else if( this.Configuration.UseHttpApplicationScopes && httpContext.ApplicationInstance.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) ) // This will return false when `UseHttpApplicationScopes == true`.
+				else if( this.Configuration.UseHttpApplicationScopes && httpContextBase.ApplicationInstance.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) ) // This will return false when `UseHttpApplicationScopes == true`.
 				{
 					return httpApplicationServiceScope.ServiceProvider;
 				}
-				else if( httpContext.ApplicationInstance.TryGetRootServiceProvider( out IServiceProvider httpApplicationRootServiceProvider ) ) // This should never return false
+				else if( httpContextBase.ApplicationInstance.TryGetRootServiceProvider( out IServiceProvider httpApplicationRootServiceProvider ) ) // This should never return false
 				{
 					return httpApplicationRootServiceProvider;
 				}
