@@ -1,8 +1,4 @@
-﻿<%@ Page Title="Home Page" Language="VB" 
-	MasterPageFile="~/Site.master" AutoEventWireup="true" 
-	CodeBehind="Default.aspx.vb" 
-	Inherits="SampleWebApplicationVB.DefaultPage" %>
-
+﻿<%@ Page Title="Home Page" Language="VB" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeBehind="Default.aspx.vb" Inherits="SampleWebApplicationVB.DefaultPage" %>
 
 <asp:Content ID="HeaderContent" runat="server" ContentPlaceHolderID="HeadContent">
 </asp:Content>
@@ -12,7 +8,4 @@
 	
 	<asp:Literal runat="server" ID="ltMessages" />
 	<hr />
-
-	
-
 </asp:Content>
