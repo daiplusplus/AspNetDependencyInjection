@@ -11,7 +11,7 @@
 
 ### Step 2: Copy this `ConfigureServices` file into your project:
 
-(As NuGet does not recommend providing project files in NuGet packages anymore, so no startup or service configuration file will be added to your project when you install the package, instead copy the code below to a new file and provide values for the placeholders)
+As NuGet does not recommend providing project files in NuGet packages anymore no startup or service configuration file will be added to your project when you install the `Jehoel.AspNetDependencyInjection` package, instead copy the code below to a new file and uncomment portions as-required, and provide values for the placeholders.
 
 ```
 using System;
@@ -25,9 +25,9 @@ using AspNetDependencyInjection;
 using WebActivatorEx;
 
 [assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart  ) )]
-//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // uncomment this if you have any Post-start logic you want to run.
+//[assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )] // Uncomment this if you have any Post-start logic you want to run.
 
-[assembly: OwinStartup( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.OwinStartup ) )]
+//[assembly: OwinStartup( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.OwinStartup ) )] // Uncomment this if you're using SignalR or other features that depend on OWIN.
 
 namespace SampleWebApplication
 {
@@ -106,35 +106,40 @@ namespace SampleWebApplication
 
 ### Step 3: Customize `ConfigureServices` by adding your service registrations.
 
-This README assumes you're already familiar with `Microsoft.Extensions.DependencyInjection`.
+This README assumes you're already familiar with `Microsoft.Extensions.DependencyInjection` so no further instructions are provided for this step.
 
 ## Frequently asked questions
 
 (Actually, I have never been asked these questions, but I imagine people attempting to use this library might ask these questions)
 
-### Can I use constructor dependency-injection with my HttpModule and HttpHandler classes? (`IHttpModule`, `IHttpHandler`, etc)
+### Can I use constructor dependency-injection with my `HttpModule` and `HttpHandler` classes? (`IHttpModule`, `IHttpHandler`, etc)
 
-Yes! Provided that your HttpModule or HttpHandler is instantiated after the Dependency Injection system is set-up so that `WebObjectActivator` is set, as ASP.NET will use `WebObjectActivator` to instantiate the HttpModule and HttpHandler instances.
+**Yes!** Provided that your HttpModule or HttpHandler is instantiated after the Dependency Injection system is set-up so that `WebObjectActivator` is set, as ASP.NET will use `WebObjectActivator` to instantiate the HttpModule and HttpHandler instances.
+
+### Can I use constructor dependency-injection with `*.asmx` files?
+
+I don't know - I haven't tested `.asmx` files. However _in theory_ it should work. If your ASMX file inherits from an `abstract class` with a `protected` constructor you might have issues unless the constructor is `public` (but the class itself can still be `abstract`).
 
 ### What if you need to access the `HttpContext` (`HttpContextBase`) associated with the current request in a request-scoped service?
 
 This project adds a built-in service: `AspNetDependencyInjection.IHttpContextAccessor`. You can add this service by using `.AddDefaultHttpContextAccessor()` in your `ConfigureServices` method.
 
-The implementation of `IHttpContextAccessor` does not use `HttpContext.Current`, but uses an internal strong reference to the HttpContextWrapper created for the `IServiceScope` in the `HttpContextScopeHttpModule`.
+The implementation of `IHttpContextAccessor` does not use `HttpContext.Current`, but uses an internal strong reference to the HttpContextWrapper created for the `IServiceScope` in the `HttpContextScopeHttpModule` which means that **`IHttpContextAccessor` is thread-safe!** and can safely be used in `async` contexts regardless of the current `System.Threading.SynchronizationContext`.
 
 ### What if I need access to values in web.config like `<appSettings>`?
 
 To avoid making a static reference to `WebConfigurationManager` and to make your components testable, use `AspNetDependencyInjection.IWebConfiguration`. Add it using `services.AddWebConfiguration()`.
 
-`IWebConfiguration` provides access to:
+`IWebConfiguration` provides read-only access to:
 
-* `<appSettings>`
-* `<connectionStrings>`
-* And any other section that uses `DictionarySectionHandler`, `NameValueSectionHandler`, `SingleTagSectionHandler`, and others.
+* `<appSettings>` (as a `IReadOnlyDictionary<String,String>` in `IWebConfiguration.AppSettings`)
+* `<connectionStrings>` (as a `IReadOnlyDictionary<String,ConnectionStringSettings>` in `IWebConfiguration.ConnectionStrings`)
+* And any other section that uses `DictionarySectionHandler`, `NameValueSectionHandler`, `NameValueFileSectionHandler`, `SingleTagSectionHandler`, or any `ConfigurationSection` that is readable via `System.Collections.IDictionary` or `NameValueCollection`.
+    * These configuration sections are exposed as a `IReadOnlyDictionary<String,String>` via `IWebConfiguration.GetKeyValueSection`.
 
 ### What about Entity Framework's `DbContext`?
 
-To have a DbContext that is lifetime-limited to each HTTP request ("scoped") with a named connection-string pulled from your `web.config` file, use the code below:
+To have a DbContext that is lifetime-limited to each HTTP request ("scoped") with a named connection-string pulled from your `web.config` file, use the `AddScopedWithFactory` extension. You can use the code below:
 
 ```
 public class MyDbContextFactory : IServiceFactory<MyDbContext>
@@ -145,7 +150,7 @@ public class MyDbContextFactory : IServiceFactory<MyDbContext>
     {
         if( webConfig == null ) throw new ArgumentNullException(nameof(webConfig));
 
-        this.connectionString = webConfig.RequireConnectionString( "myDbConnectionString" ); // `RequireConnectionString` is an extension method.
+        this.connectionString = webConfig.RequireConnectionString( "myDbConnectionString" ); // Note that `RequireConnectionString` is an extension method.
     }
 
     public MyDbContext CreateInstance()
@@ -163,7 +168,7 @@ services
     .AddScopedWithFactory<MyDbContext,MyDbContextFactory>();
 ```
 
-Or if you don't wish to implement `IServiceFactory<TService`, the equivalent long-form of the above is:
+Or if you don't wish to implement `IServiceFactory<TService>`, the equivalent long-form of the above is:
 
 ```
 services
@@ -178,7 +183,7 @@ Another advantage of this approach is that if you need to use a `DbContext` insi
 
 ### How does the `PreStart` / `WebActivatorEx.PreApplicationStartMethod` method work with or interact with OWIN's Startup method?
 
-* `WebActivatorEx`'s `PreApplicationStartMethod` (the `PreStart` method in our sample above) runs before OWIN's Startup method.
+* `WebActivatorEx`'s `PreApplicationStartMethod` (the `PreStart` method in our sample above) runs **before** OWIN's Startup method.
 	* See this StackOverflow post: https://stackoverflow.com/questions/21462777/webactivatorex-vs-owinstartup
 
 ## Included services
@@ -188,19 +193,20 @@ All included services are exposed as interfaces so you can replace them with you
 ### `AspNetDependencyInjection.IHttpContextAccessor`
 
 * Provides thread-safe access to `HttpContext` (as a `HttpContextBase`).
-* This service is must be registered by your application by using `services.AddDefaultHttpContextAccessor()`.
+* This service is not added by default.
+* It is registered by your application by using `services.AddDefaultHttpContextAccessor()`.
 
 ### `AspNetDependencyInjection.IWebConfiguration`
 
 * Provides access to `WebConfigurationManager`.
-* Requires manual registration. Call `services.AddWebConfiguration()`.
-* Comes with extension methods to easily get connection-strings directly by name or indirectly via a named `<appSettings>` entry.
+* This service is not added by default.
+* It is registered by your application by using `services.AddWebConfiguration()`.
 
 ## Troubleshooting
 
-When performing any troubleshooting involving ASP.NET's built-in support for constructor dependency injection in `*.aspx`, `*.ascx`, and `*.master` files, it is important to verify that the project is *fully* targeting .NET Framework 4.7.2:
+When performing any troubleshooting involving ASP.NET's built-in support for constructor dependency injection in `*.aspx`, `*.ascx`, and `*.master` files, it is important to verify that the project is *fully* targeting .NET Framework 4.7.2 or later:
 
-* Verify that your `web.config` file specifically targets .NET Framework 4.7.2, as below:
+* Verify that your `web.config` file specifically targets .NET Framework 4.7.2 or later, as below:
 
     ```
     <configuration>
@@ -212,7 +218,7 @@ When performing any troubleshooting involving ASP.NET's built-in support for con
     ```
 
 * Verify that your `*.csproj` is targeting .NET Framework 4.7.2 or later:
-	* Project Properties > Application > Target framework > .NET Framework 4.7.2
+	* Project Properties > Application > Target framework > ".NET Framework 4.7.2" (or later)
 		* If you don't see  ".NET Framework 4.7.2" listed, ensure you have the [NET Framework 4.7.2 SDK installed](https://dotnet.microsoft.com/download/visual-studio-sdks).
 		* Also verify you're using a version of Visual Studio that supports .NET Framework 4.7.2, such as Visual Studio 2017 or Visual Studio 2019.
 
@@ -251,11 +257,41 @@ When running your webapplication you may get a yellow-screen-of-death with a sta
        __ASP.FastObjectFactory_app_web_a1b2c3d4.Create_ASP_Defaultaspx() +118
 ```
 
-This happens when the configured `IServiceProvider` is unable to resolve constructor parameters for your Page, User Control or 
+This happens when the configured `IServiceProvider` is unable to resolve constructor parameters for your Page (`.aspx`,) User Control (`.ascx`), Master Page (`.master`), Handler (`.ashx`) or XML Web Service (`.asmx`) files' `Inherits=""` classes.
 
-First, perform the .NET Framework target version verification checks described immediately underneath the "Troubleshooting" header above.
+* First, perform the .NET Framework target version verification checks described immediately underneath the "Troubleshooting" header above.
 
-This can happen 
+* This can also happen happen with User Controls (`.ascx`) which `Inherits=""` from an `abstract class` (deriving from `UserControl`) with only a `protected` constructor. 
+  * Changing the constructor to `public` and removing the `abstract` class modifier will get it working again.
+  * Oddly, this only affects User Controls - Pages can still inherit from abstract classes with protected constructors, however. I don't know why ASP.NET allows pages to have protected constructors but not user-controls.
+  * Also, the code-behind's parent class can still be `abstract` and can also have a `protected` constructor - this is okay because ASP.NET and `WebObjectActivator` doesn't call that constructor directly.
+
+For example, if you have this:
+
+**MyUserControl.ascx**
+```
+<%@ Control Language="C#" AutoEventWireup="false" CodeBehind="MyUserControl.ascx.cs" Inherits="MyProject.MyUserControl" %>
+<blockquote>
+<p>Life is short and love is always over in the morning.</p>
+</blockquote>
+```
+
+**MyUserControl.ascx.cs**
+```
+using System.Web.UI;
+
+namespace MyProject
+{
+    public abstract class MyUserControl : UserControl // <-- Change this to `public class MyUserControl`
+    {
+        protected MyUserControl( MyDbContext db ) // <-- Change this to `public`.
+	{
+	    // ...
+	}
+    }
+}
+```
+
 
 ### `System.MissingMethodException` - "Method not found: Void MyProject.MyPage..ctor(IService1 service1, IService2 service2)"
 
