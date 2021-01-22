@@ -1,7 +1,7 @@
 
 # AspNetDependencyInjection
 
-**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` to inject dependencies directly into `System.Web.UI.Page`, `UserControl`, and `MasterPage` constructors (and more!) all thanks to `WebObjectActivator`.
+**AspNetDependencyInjection** allows "Classic" ASP.NET Web Forms applications to use `Microsoft.Extensions.DependencyInjection` ("MEDI") to inject dependencies directly into `System.Web.UI.Page`, `UserControl`, and `MasterPage` constructors (and more!) all thanks to `WebObjectActivator`. (`WebObjectActivator` is a new feature in ASP.NET WebForms 4.7.2).
 
 Currently listed on NuGet.org as:
 
@@ -12,9 +12,9 @@ Currently listed on NuGet.org as:
 
 ## Background
 
-* I'm working on a large ASP.NET WebForms application written almost a decade ago that needs to be moved to ASP.NET Core - I felt the best approach to transition is to work on a page-by-page basis: first updating each `.aspx` page to replace any and all `WebControls` with direct rendering (using `<%=` and `<%:` with data from a ViewModel-object), and thenn updating the CodeBehind `.aspx.cs` to remove Control event handlers so the page has only a single `OnLoad` method and adding constructor injected dependencies - which means that each `Page` behaves almost identically to an ASP.NET Core `Controller` which makes the transition far easier.
+* I'm working on a large ASP.NET WebForms application written almost a decade ago that needs to be moved to ASP.NET Core - I felt the best approach to transition is to work on a page-by-page basis: first updating each `.aspx` page to replace any and all `WebControls` with direct rendering (using `<%=` and `<%:` with data from a ViewModel-object), and then updating the CodeBehind `.aspx.cs` to remove Control event handlers so the page has only a single `OnLoad` method and adding constructor injected dependencies - which means that each `Page` behaves almost identically to an ASP.NET Core `Controller` which makes the eventual transition to ASP.NET MVC or ASP.NET Core far easier.
 
-* This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity`, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
+* This project is derived from my earlier `Unity.WebForms` project which provided DI using `Unity` instead of MEDI, located at [https://github.com/Jehoel/Unity.WebForms](https://github.com/Jehoel/Unity.WebForms).
 	* ...which itself is a derivative and fork of S. Kyle Korndoerfer's original project at [https://bitbucket.org/KyleK/unity.webforms](https://bitbucket.org/KyleK/unity.webforms)
 		* ...which cites [DevTrends Unity.MVC3](http://nuget.org/packages/Unity.Mvc3/) and [DevTrends Unity.WCF](http://nuget.org/packages/Unity.Wcf/) as original works.
 
@@ -23,7 +23,7 @@ Currently listed on NuGet.org as:
 ## Supported ASP.NET platforms
 
 * This project now targets:
-	* ASP.NET WebForms - By supporting `System.Web.HttpRuntime.WebObjectActivator`.
+	* ASP.NET WebForms - This is possible thanks to `System.Web.HttpRuntime.WebObjectActivator`, which means you need to be running ASP.NET on the .NET Framework 4.7.2 or later (including .NET Framework 4.8).
 	* ASP.NET MVC - Using MVC's `System.Web.Mvc.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.Mvc` NuGet package.
 	* ASP.NET SignalR - By subclassing `Microsoft.AspNet.SignalR.DefaultDependencyResolver`. Has optional support for `IServiceScope`. Use the `Jehoel.AspNetDependencyInjection.SignalR` NuGet package.
 	* ASP.NET Web API - Using `System.Web.Http.Dependencies.IDependencyResolver`. Use the `Jehoel.AspNetDependencyInjection.WebApi` NuGet package.
