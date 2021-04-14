@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 
@@ -22,6 +23,8 @@ namespace AspNetDependencyInjection.Internal
 		{
 			this.di                  = di                  ?? throw new ArgumentNullException(nameof(di));
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof( rootServiceProvider ) );
+			
+			GlobalConfiguration.Configuration.DependencyResolver = this;
 		}
 
 		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
@@ -39,7 +42,15 @@ namespace AspNetDependencyInjection.Internal
 				return this.di.ObjectFactoryCache.GetRequiredRootService( serviceType, useOverrides: true );
 			}
 
-			return this.di.ObjectFactoryCache.TryGetRootService( serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
+			try
+			{
+				return this.di.ObjectFactoryCache.TryGetRootService( serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
+			}
+			catch
+			{
+				// ASP.Net WebApi: all other dependencies are optional
+				return null;
+			}
 		}
 
 		/// <summary>Calls <see cref="GetService(Type)"/> by converting <paramref name="serviceType"/> to <see cref="IEnumerable{T}"/>.</summary>
@@ -92,7 +103,15 @@ namespace AspNetDependencyInjection.Internal
 				return this.di.ObjectFactoryCache.GetRequiredService( this.GetServiceProvider, serviceType, useOverrides: true );
 			}
 
-			return this.di.ObjectFactoryCache.TryGetService( this.GetServiceProvider, serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
+			try
+			{
+				return this.di.ObjectFactoryCache.TryGetService( this.GetServiceProvider, serviceType, useOverrides: true, out Object resolved ) ? resolved : null;
+			}
+			catch
+			{
+				// ASP.Net WebApi: all other dependencies are optional
+				return null;
+			}
 		}
 
 		/// <summary>Calls <see cref="GetService(Type)"/> by converting <paramref name="serviceType"/> to <see cref="IEnumerable{T}"/>.</summary>
