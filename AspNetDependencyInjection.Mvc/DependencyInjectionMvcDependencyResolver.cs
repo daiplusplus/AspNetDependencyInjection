@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace AspNetDependencyInjection.Internal
 {
 	// It isn't necessary to subclass DefaultControllerFactory or implement IControllerFactory.
@@ -28,12 +30,12 @@ namespace AspNetDependencyInjection.Internal
 			DependencyResolver.SetResolver(this);
 		}
 
-		/// <summary>Returns <c>null</c> if the requested service does not have a registered implementation.</summary>
+		/// <summary>Returns <c><see langword="null"/></c> if the requested service does not have a registered implementation.</summary>
 		public Object GetService(Type serviceType)
 		{
 			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
 
-			// Return known services:
+			// Return known factories/activator services, as ASP.NET MVC can pass these the current HttpContext, which it can't do with `IDependencyResolver`:
 			{
 				if( serviceType == typeof(IControllerActivator) )
 				{
@@ -49,6 +51,13 @@ namespace AspNetDependencyInjection.Internal
 			if( this.di.ObjectFactoryCache.TryGetService( this.GetServiceProvider, serviceType, useOverrides: false, out Object service ) )
 			{
 				return service;
+			}
+			else if( !serviceType.IsAbstract && !serviceType.IsInterface && !serviceType.IsGenericTypeDefinition )
+			{
+				// Otherwise, try to Activate it:
+				IServiceProvider sp = this.GetServiceProvider();
+
+				return ActivatorUtilities.CreateInstance( sp, serviceType );
 			}
 			else
 			{

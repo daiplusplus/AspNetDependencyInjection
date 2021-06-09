@@ -110,8 +110,8 @@ namespace AspNetDependencyInjection
 		/// <summary>Attempts to get the service object of the specified type from the current <paramref name="getServiceProvider"/> result. This method returns <c>false</c> if resolution fails (and the value of <paramref name="service"/> is undefined).</summary>
 		public Boolean TryGetService( Func<IServiceProvider> getServiceProvider, Type serviceType, Boolean useOverrides, out Object service )
 		{
-			if( getServiceProvider == null ) throw new ArgumentNullException( nameof(getServiceProvider) );
-			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
+			if( getServiceProvider is null ) throw new ArgumentNullException( nameof(getServiceProvider) );
+			if( serviceType        is null ) throw new ArgumentNullException( nameof(serviceType) );
 
 			//
 
@@ -132,8 +132,8 @@ namespace AspNetDependencyInjection
 		/// <summary>Attempts to get the service object of the specified type from the current <paramref name="serviceProvider"/> result. This method returns <c>false</c> if resolution fails (and the value of <paramref name="service"/> is undefined).</summary>
 		public Boolean TryGetService( IServiceProvider serviceProvider, Type serviceType, out Object service )
 		{
-			if( serviceProvider == null ) throw new ArgumentNullException( nameof(serviceProvider) );
-			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
+			if( serviceProvider is null ) throw new ArgumentNullException( nameof(serviceProvider) );
+			if( serviceType     is null ) throw new ArgumentNullException( nameof(serviceType) );
 
 			//
 
@@ -147,9 +147,17 @@ namespace AspNetDependencyInjection
 			}
 			else
 			{
-				// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
-				service = serviceProvider.GetService( serviceType );
-				return service != null;
+				try
+				{
+					// Return from serviceProvider directly. Do not use `DefaultObjectFactoryFactory` because we don't want to use Activator (which doesn't work with interfaces and abstract types).
+					service = serviceProvider.GetService( serviceType );
+					return service != null;
+				}
+				catch
+				{
+					service = null;
+					return false;
+				}
 			}
 		}
 

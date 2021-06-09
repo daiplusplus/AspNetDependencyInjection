@@ -109,6 +109,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 					_ = services.AddScoped   <ITestScoped,TestScoped>();
 					_ = services.AddSingleton<ITestSingleton,TestSingleton>();
 					_ = services.AddSingleton<TestAbstractClass,TestAbstractImpl>();
+					_ = services.AddSingleton( serviceType: typeof(ITestGeneric<>), implementationType: typeof(TestestGeneric<>) );
 				} )
 				.AddMvcDependencyResolver()
 				.Build();
@@ -123,6 +124,8 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		}
 
 		#region DefaultServiceLocatorBehaviorTests
+
+		#if NO // Disabled because *our* IDependencyResolver should not return null in these situations:
 
 		[TestMethod]
 		public void DependencyResolver_GetService_should_return_null_for_registered_abstract_types()
@@ -145,9 +148,23 @@ namespace AspNetDependencyInjection.Tests.Mvc
 			}
 		}
 
+		#endif
+
 		[TestMethod]
 		public void DependencyResolver_GetService_should_return_null_for_open_generic_types()
 		{
+			// If `` doesn't check for open generic types then this error happens:
+			/* Test method AspNetDependencyInjection.Tests.Mvc.MvcDependencyResolverTests.DependencyResolver_GetService_should_return_null_for_open_generic_types threw exception: 
+			System.ArgumentException:
+				Cannot create an instance of AspNetDependencyInjection.Tests.Mvc.TestestGeneric`1[T] because Type.ContainsGenericParameters is true.
+
+			RuntimeType.CreateInstanceCheckThis()
+			RuntimeType.CreateInstanceSlow(Boolean publicOnly, Boolean skipCheckThis, Boolean fillCache, StackCrawlMark& stackMark)
+			RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean skipCheckThis, Boolean fillCache, StackCrawlMark& stackMark)
+			Activator.CreateInstance(Type type, Boolean nonPublic)
+			Activator.CreateInstance(Type type)
+			*/
+
 			using( ApplicationDependencyInjection di = CreateMvcDIWithTestServiceRegistrations( out IDependencyResolver resolver ) )
 			{
 				Object service = resolver.GetService( typeof(ITestGeneric<>) );
@@ -176,6 +193,9 @@ namespace AspNetDependencyInjection.Tests.Mvc
 			{
 				Object object1 = resolver.GetService<Object>();
 				Object object2 = resolver.GetService<Object>();
+
+				_ = object1.ShouldNotBeNull();
+				_ = object2.ShouldNotBeNull();
 				
 				Object.ReferenceEquals( object1, object2 ).ShouldBeFalse();
 			}
