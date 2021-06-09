@@ -18,7 +18,7 @@ namespace AspNetDependencyInjection.Internal
 			HttpRuntime.WebObjectActivator = this;
 		}
 
-		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method should ONLY be called by ASP.NET's infrastructure via <see cref="HttpRuntime.WebObjectActivator"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
+		/// <summary>Gets the service object of the specified type from the current <see cref="HttpContext"/>. This method should ONLY be called by ASP.NET's infrastructure via <see cref="HttpRuntime.WebObjectActivator"/>. This method never returns a <c><see langword="null"/></c> object reference and will throw an exception if resolution fails.</summary>
 		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
 		public Object GetService( Type serviceType )
 		{
@@ -37,7 +37,7 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Unsets <see cref="HttpRuntime.WebObjectActivator"/> only if its value is this instance.</summary>
 		public void Dispose()
 		{
-			if( HttpRuntime.WebObjectActivator == this )
+			if( Object.ReferenceEquals( HttpRuntime.WebObjectActivator, this ) )
 			{
 				HttpRuntime.WebObjectActivator = null;
 			}

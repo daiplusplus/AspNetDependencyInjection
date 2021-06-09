@@ -16,11 +16,14 @@ namespace AspNetDependencyInjection.Internal
 
 		private readonly IDependencyResolver originalIdr;
 
+		private readonly DependencyInjectionMvcControllerActivator controllerActivator;
+
 		internal DependencyInjectionMvcDependencyResolver( ApplicationDependencyInjection di )
 		{
 			this.di = di ?? throw new ArgumentNullException(nameof(di));
 
 			this.originalIdr = DependencyResolver.Current; // Will never be null.
+			this.controllerActivator = new DependencyInjectionMvcControllerActivator( di );
 
 			DependencyResolver.SetResolver(this);
 		}
@@ -29,6 +32,14 @@ namespace AspNetDependencyInjection.Internal
 		public Object GetService(Type serviceType)
 		{
 			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+
+			// Return known services:
+			{
+				if( serviceType == typeof(IControllerActivator) )
+				{
+					return this.controllerActivator;
+				}
+			}
 
 			// System.Web.Mvc's default DependencyResolver just wraps Activator, with one key difference:
 			// If the requested type is an interface or is abstract, then it simply returns null.
@@ -47,7 +58,7 @@ namespace AspNetDependencyInjection.Internal
 
 		/// <summary>
 		/// Converts <paramref name="serviceType"/> into an <see cref="IEnumerable{T}"/> and passes it into <see cref="GetService(Type)"/>. For example:<br />
-		/// <code>GetServices(typeof(String))</code> is equivalent to <code>GetService(typeof(IEnumerable&lt;String&gt;))</code>
+		/// <c>GetServices(typeof(String))</c> is equivalent to <c>GetService(typeof(IEnumerable&lt;String&gt;))</c>
 		/// </summary>
 		public IEnumerable<Object> GetServices(Type serviceType)
 		{

@@ -1,0 +1,52 @@
+﻿* I'm unsure how MVC's IDependencyResolver is meant to work, so look at the canon test cases
+
+
+	System.Web.Http.Dependencies.IDependencyScope
+		GetService(Type) : return null if not found
+		GetServices(Type) : return empty enumerable if not found
+
+* Explain these types:
+
+	* IResolver<T>
+		* SingleServiceResolver<TService>
+	* IControllerActivator
+		* Default implementation: `DefaultControllerActivator`
+			* Uses IDependencyResolver first, and falls-back to `Activator.CreateInstance(controllerType)`
+	* IControllerFactory
+		* Default implementation: `DefaultControllerFactory`
+			* Uses IControllerActivator
+	* ControllerBuilder
+		* Uses `IControllerFactory`
+			
+
+* Where is MVC's IDependencyResolver used? if we don't need to implement it...
+	
+	* BuildManagerCompiledView
+		* Used to create DefaultViewPageActivator
+	* BuildManagerViewEngine
+		* Used to create DefaultViewPageActivator
+	* Controller.Resolver
+	* DefaultControllerFactory
+		* Used to create DefaultControllerActivator
+	* FilterProviderCollection
+	* ModelBinderProviderCollection
+	* ModelValidatorProviderCollection
+	* MultiServiceResolver
+		* where is this used?
+	* SingleServiceResolver
+		* where is this used?
+	* ValueProviderFactoryCollection
+	* ViewEngineCollection
+
+
+	Known services that IDependencyResolver is used for:
+
+		* IAsyncActionInvokerFactory (how doees this get resolved when it's an interface? - ah, it looks like all the call-sites have their own hardcoded fallback.
+		* IActionInvokerFactory
+		* ITempDataProviderFactory
+		* SessionStateTempDataProvider
+		* IActionInvoker
+		* 
+
+actually, maybe implementing IDependencyResolver is fine because the tests are only there for the *Default* implementation?
+	
