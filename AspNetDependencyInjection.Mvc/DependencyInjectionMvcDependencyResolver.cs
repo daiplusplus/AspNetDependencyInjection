@@ -21,6 +21,8 @@ namespace AspNetDependencyInjection.Internal
 			this.di = di ?? throw new ArgumentNullException(nameof(di));
 
 			this.originalIdr = DependencyResolver.Current; // Will never be null.
+
+			DependencyResolver.SetResolver(this);
 		}
 
 		/// <summary>Returns <c>null</c> if the requested service does not have a registered implementation.</summary>
