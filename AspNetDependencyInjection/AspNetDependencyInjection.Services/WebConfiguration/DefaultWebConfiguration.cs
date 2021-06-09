@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -11,7 +11,8 @@ namespace AspNetDependencyInjection.Services
 	/// <remarks>This class is designed to assist applications with shifting towards appSettings.json-type config used in ASP.NET Core - the idea being to use Dictionary-style configuration in WebForms first, then it's one less thing to fix when everything is broken immediately after migrating to ASP.NET Core.</remarks>
 	public class DefaultWebConfiguration : IWebConfiguration
 	{
-		private static Dictionary<String,String> ToDictionary( NameValueCollection nvc )
+		/// <summary>Converts <paramref name="nvc"/> into a <see cref="Dictionary{TKey, TValue}"/> (of String Keys and String values). If <see cref="NameValueCollection"/> returns multiple values for any name/key, then only the first value returned will be added to the returned dictionary dictionary.</summary>
+		protected static Dictionary<String,String> ToDictionary( NameValueCollection nvc )
 		{
 			Dictionary<String,String> dict = new Dictionary<String,String>( capacity: nvc.Count, comparer: StringComparer.OrdinalIgnoreCase );
 
@@ -24,15 +25,29 @@ namespace AspNetDependencyInjection.Services
 			return dict;
 		}
 
-		/// <summary>Constructs a new instance of <see cref="DefaultWebConfiguration"/> that populates itself using <see cref="WebConfigurationManager"/>'s static properties.</summary>
+		/// <summary>Constructs a new instance of <see cref="DefaultWebConfiguration"/> that sets the <see cref="AppSettings"/> and <see cref="ConnectionStrings"/> collection properties to immutable snapshot copies of <see cref="WebConfigurationManager"/>'s respective static collection properties.</summary>
 		public DefaultWebConfiguration()
 		{
-			this.AppSettings = ToDictionary( WebConfigurationManager.AppSettings );
+			this.AppSettings = ToDictionary( this.GetAppSettings() );
 
-			this.ConnectionStrings = WebConfigurationManager.ConnectionStrings
+			this.ConnectionStrings = this.GetConnectionStrings()
 				.OfType<ConnectionStringSettings>()
 				.ToDictionary( cs => cs.Name, comparer: StringComparer.OrdinalIgnoreCase );
 		}
+
+		/// <summary>This method is called from <see cref="DefaultWebConfiguration"/>'s constructor (so implementations must ensure that it does not use any non-initialized fields or other static state). This implementation returns <see cref="WebConfigurationManager.AppSettings"/>.</summary>
+		protected virtual NameValueCollection GetAppSettings()
+		{
+			return WebConfigurationManager.AppSettings;
+		}
+
+		/// <summary>This method is called from <see cref="DefaultWebConfiguration"/>'s constructor (so implementations must ensure that it does not use any non-initialized fields or other static state). This implementation returns <see cref="WebConfigurationManager.ConnectionStrings"/>.</summary>
+		protected virtual ConnectionStringSettingsCollection GetConnectionStrings()
+		{
+			return WebConfigurationManager.ConnectionStrings;
+		}
+
+		//
 
 		/// <summary>Provides read-only access to <see cref="System.Web.Configuration.WebConfigurationManager.AppSettings"/>. The dictionary uses a case-insensitive key comparer.</summary>
 		public IReadOnlyDictionary<String, String> AppSettings { get; }
