@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Visual Studio Version 15
 VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{8D3132E8-858A-49E2-96A7-1F74FCEE2EF2}"
@@ -26,6 +26,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.SignalR", "AspNetDependencyInjection.SignalR\AspNetDependencyInjection.SignalR.csproj", "{7CB50365-9558-4CD9-98D1-7E33BDAAE15B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.Wcf", "AspNetDependencyInjection.Wcf\AspNetDependencyInjection.Wcf.csproj", "{F1B12590-1707-4CB3-BA70-F6AE906E475D}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SampleWebApplicationVB", "SampleWebApplicationVB\SampleWebApplicationVB.vbproj", "{18DF39D7-9C17-44F0-B7BA-621F06908778}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1B12590-1707-4CB3-BA70-F6AE906E475D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18DF39D7-9C17-44F0-B7BA-621F06908778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18DF39D7-9C17-44F0-B7BA-621F06908778}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18DF39D7-9C17-44F0-B7BA-621F06908778}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18DF39D7-9C17-44F0-B7BA-621F06908778}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
