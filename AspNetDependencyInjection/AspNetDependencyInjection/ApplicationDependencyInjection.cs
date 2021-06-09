@@ -161,7 +161,8 @@ namespace AspNetDependencyInjection
 			return this.GetServiceProviderForHttpContext( HttpContext.Current );
 		}
 
-		/// <summary>See the documentation for <see cref="GetServiceProviderForHttpContext(HttpContextBase)"/>. The <paramref name="httpContext"/> can have a null reference, in which case the root-service provider will be returned.</summary>
+		/// <summary>See the documentation for <see cref="GetServiceProviderForHttpContext(HttpContextBase)"/>. The <paramref name="httpContext"/> can have a <see langword="null"/> reference, in which case the root scope service provider (<see cref="RootServiceProvider"/>) will be returned.</summary>
+		/// <param name="httpContext">When <see langword="null"/> then the root scope service provider (<see cref="RootServiceProvider"/>) will be returned.</param>
 		public IServiceProvider GetServiceProviderForHttpContext( HttpContext httpContext )
 		{
 			if( this.IsDisposed ) throw new ObjectDisposedException( objectName: this.GetType().FullName );
@@ -209,5 +210,11 @@ namespace AspNetDependencyInjection
 				return this.rootServiceProvider;
 			}
 		}
+
+		#region Testing features
+
+		internal IReadOnlyList<IDependencyInjectionClient> Clients => this.clients;
+
+		#endregion
 	}
 }

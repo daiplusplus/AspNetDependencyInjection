@@ -45,7 +45,10 @@ namespace AspNetDependencyInjection.Internal
 			}
 		}
 
-		/// <summary>Converts <paramref name="serviceType"/> into an <see cref="IEnumerable{T}"/> and passes it into <see cref="GetService(Type)"/>.</summary>
+		/// <summary>
+		/// Converts <paramref name="serviceType"/> into an <see cref="IEnumerable{T}"/> and passes it into <see cref="GetService(Type)"/>. For example:<br />
+		/// <code>GetServices(typeof(String))</code> is equivalent to <code>GetService(typeof(IEnumerable&lt;String&gt;))</code>
+		/// </summary>
 		public IEnumerable<Object> GetServices(Type serviceType)
 		{
 			// This implementation from `Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions`:
