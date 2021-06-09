@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	  <DocumentationFile>bin\Debug\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	  <DocumentationFile>bin\Release\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\AspNetDependencyInjection.SignalR.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -75,6 +81,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Unity.WebForms.StrongNameKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
@@ -86,8 +93,8 @@
     <Content Include="Notes on Dependency Injection in SignalR.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<PropertyGroup>
-		<PostBuildEvent>
+  <PropertyGroup>
+    <PostBuildEvent>
 			if "$(ConfigurationName)" == "Release" (
 
 			mkdir $(SolutionDir)nuget\AspNetDependencyInjection.SignalR\lib\net472
@@ -98,5 +105,5 @@
 
 			)
 		</PostBuildEvent>
-	</PropertyGroup>
+  </PropertyGroup>
 </Project>

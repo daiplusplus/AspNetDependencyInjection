@@ -1,7 +1,6 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{8D3132E8-858A-49E2-96A7-1F74FCEE2EF2}"
 	ProjectSection(SolutionItems) = preProject
@@ -28,6 +27,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetDependencyInjection.Wcf", "AspNetDependencyInjection.Wcf\AspNetDependencyInjection.Wcf.csproj", "{F1B12590-1707-4CB3-BA70-F6AE906E475D}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SampleWebApplicationVB", "SampleWebApplicationVB\SampleWebApplicationVB.vbproj", "{18DF39D7-9C17-44F0-B7BA-621F06908778}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AEC64CF1-0DAB-4F30-8506-EC9290A199D0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

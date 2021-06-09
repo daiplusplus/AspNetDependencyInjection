@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	  <DocumentationFile>bin\Debug\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	  <DocumentationFile>bin\Release\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -59,6 +65,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Unity.WebForms.StrongNameKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
@@ -67,8 +74,8 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<PropertyGroup>
-		<PostBuildEvent>
+  <PropertyGroup>
+    <PostBuildEvent>
 			if "$(ConfigurationName)" == "Release" (
 
 			mkdir $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472
@@ -79,5 +86,5 @@
 
 			)
 		</PostBuildEvent>
-	</PropertyGroup>
+  </PropertyGroup>
 </Project>
