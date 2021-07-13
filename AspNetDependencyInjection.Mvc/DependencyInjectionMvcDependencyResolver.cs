@@ -51,7 +51,7 @@ namespace AspNetDependencyInjection.Internal
 			// This implementation from `Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions`:
 			Type closedGenericType = typeof(IEnumerable<>).MakeGenericType( serviceType );
 
-			return (IEnumerable<Object>)this.GetService( serviceType );
+			return (IEnumerable<Object>)this.GetService( closedGenericType ) ?? Enumerable.Empty<Object>();
 		}
 
 		private IServiceProvider GetServiceProvider()
