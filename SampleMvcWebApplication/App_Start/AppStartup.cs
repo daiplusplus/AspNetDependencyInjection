@@ -47,7 +47,7 @@ namespace SampleMvcWebApplication
 		private static void ConfigureServices( IServiceCollection services )
 		{
 			// TODO: Add any dependencies needed here
-			services
+			_ = services
 				// Useful services built-in to AspNetDependencyInjection:
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
@@ -94,6 +94,8 @@ namespace SampleMvcWebApplication
 		internal static void ApplicationShutdown()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(ApplicationShutdown) + "() called." );
+
+			_di.Dispose();
 		}
 	}
 }

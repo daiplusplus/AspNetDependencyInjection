@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
+
 using Microsoft.AspNet.SignalR;
 
 namespace SampleMvcWebApplication.Controllers
@@ -14,21 +12,25 @@ namespace SampleMvcWebApplication.Controllers
 
 		public ActionResult Index()
 		{
-			return View();
+			String str = this.Resolver.GetService<String>();
+
+			IUserIdProvider userIdProvider = this.Resolver.GetService<IUserIdProvider>();
+
+			return this.View();
 		}
 
 		public ActionResult About()
 		{
-			ViewBag.Message = "Your application description page.";
+			this.ViewBag.Message = "Your application description page.";
 
-			return View();
+			return this.View();
 		}
 
 		public ActionResult Contact()
 		{
-			ViewBag.Message = "Your contact page.";
+			this.ViewBag.Message = "Your contact page.";
 
-			return View();
+			return this.View();
 		}
 
 		[HttpPost]

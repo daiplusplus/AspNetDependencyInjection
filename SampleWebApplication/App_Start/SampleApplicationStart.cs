@@ -1,5 +1,7 @@
 
 using AspNetDependencyInjection;
+using AspNetDependencyInjection.Configuration;
+using AspNetDependencyInjection.Services;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,15 +18,14 @@ namespace SampleWebApplication
 	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
 	internal static class SampleApplicationStart
 	{
-		private static ApplicationDependencyInjection _di;
+		private static ApplicationDependencyInjection _di; // This is disposed in `ApplicationShutdown()`.
 
 		/// <summary>Invoked when the ASP.NET application starts up, before Global's Application_Start method runs. Dependency-injection should be configured here.</summary>
 		internal static void PreStart()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(PreStart) + "() called." );
 
-			// If you are using ASP.NET Web Forms without any ASP.NET MVC functionality, remove the call to `.AddMvcDependencyResolver()`.
-			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms, use `.AddMvcDependencyResolver()`:
+			// If you are using ASP.NET MVC, regardless of whether you're using ASP.NET Web Forms or the ASPX View Engine, use `.AddMvcDependencyResolver()` (you will need to reference the `AspNetDependencyInjection.Mvc` package/assembly first).
 
 			_di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( ConfigureServices )
@@ -34,7 +35,7 @@ namespace SampleWebApplication
 		private static void ConfigureServices( IServiceCollection services )
 		{
 			// TODO: Add any dependencies needed here
-			services
+			_ = services
 				.AddDefaultHttpContextAccessor()
 				.AddScoped<Service1>()
 				.AddTransient<Service2>()
@@ -52,6 +53,8 @@ namespace SampleWebApplication
 		internal static void ApplicationShutdown()
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(ApplicationShutdown) + "() called." );
+
+			_di.Dispose();
 		}
 	}
 }
