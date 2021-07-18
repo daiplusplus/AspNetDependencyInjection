@@ -22,57 +22,32 @@ namespace AspNetDependencyInjection.Tests.WebApi
 	[TestClass]
 	public class DefaultHttpControllerActivatorTest : BaseWebApiWebStackTests
 	{
-		private class BeginScopeNull_DependencyResolver : IDependencyResolver
-		{
-			private readonly IDependencyResolver inner;
-
-			public BeginScopeNull_DependencyResolver( IDependencyResolver inner )
-			{
-				this.inner = inner;
-			}
-
-			public IDependencyScope BeginScope()
-			{
-				// This is the custom logic set in the original `Create_ThrowsForNullDependencyScope`.
-				return null;
-			}
-
-			public Object GetService( Type serviceType ) => this.inner.GetService( serviceType );
-
-			public IEnumerable<Object> GetServices( Type serviceType ) => this.inner.GetServices( serviceType );
-
-			public void Dispose()
-			{
-				this.inner.Dispose();
-			}
-		}
-
 		/// <summary>
 		/// <c>System.Web.Http.Dispatcher.DefaultHttpControllerActivatorTest</c><br />
 		/// <c>AspNetWebStack\test\System.Web.Http.Test\Dispatcher\DefaultHttpControllerActivatorTest.cs</c>
 		/// </summary>
 		[TestMethod]
-        public void Create_ThrowsForNullDependencyScope()
-        {
+		public void Create_ThrowsForNullDependencyScope()
+		{
 			this.WrapTest( services => services.AddTransient<IActionValueBinder,TestActionValueBinder>(), this.Create_ThrowsForNullDependencyScope_Impl );
 		}
 
-        private void Create_ThrowsForNullDependencyScope_Impl( IDependencyResolver resolverOrig )
-        {
-			IDependencyResolver resolver2 = new BeginScopeNull_DependencyResolver( inner: resolverOrig );
+		private void Create_ThrowsForNullDependencyScope_Impl( IDependencyResolver resolverOrig )
+		{
+			IDependencyResolver resolver2 = new DependencyResolverWrapper( inner: resolverOrig, allowBeginScope: false );
 
-            // Arrange
-            HttpConfiguration config = new HttpConfiguration();
-            config.DependencyResolver = resolver2;
+			// Arrange
+			HttpConfiguration config = new HttpConfiguration();
+			config.DependencyResolver = resolver2;
 
 			HttpRequestMessage request = new HttpRequestMessage();
-            request.SetConfiguration(config);
+			request.SetConfiguration(config);
 
-            HttpControllerDescriptor descriptorSimpleController = new HttpControllerDescriptor(config, "Simple", typeof(SimpleController));
+			HttpControllerDescriptor descriptorSimpleController = new HttpControllerDescriptor(config, "Simple", typeof(SimpleController));
 
 			DefaultHttpControllerActivator activator = new DefaultHttpControllerActivator();
 
-            // Act & Assert
+			// Act & Assert
 			try
 			{
 				IHttpController controller = activator.Create( request, descriptorSimpleController, typeof(SimpleController) );
@@ -83,8 +58,11 @@ namespace AspNetDependencyInjection.Tests.WebApi
 			{
 				ioEx.Message.ShouldBe( "An error occurred when trying to create a controller of type 'SimpleController'. Make sure that the controller has a parameterless public constructor." );
 
+				// 'BeginScopeNull_DependencyResolver'
+				// 'ObjectProxy(_\\d+)?'
+
 				ioEx.InnerException.Message.ShouldBe(
-					"A dependency resolver of type 'ObjectProxy(_\\d+)?' returned an invalid value of null from its " +
+					"A dependency resolver of type '" + nameof(DependencyResolverWrapper) + "' returned an invalid value of null from its " +
 					"BeginScope method. If the container does not have a concept of scope, consider returning a scope " +
 					"that resolves in the root of the container instead."
 				);
