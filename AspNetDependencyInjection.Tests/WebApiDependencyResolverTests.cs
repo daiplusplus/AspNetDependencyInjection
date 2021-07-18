@@ -32,7 +32,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		}
 
 		[TestMethod]
-		public void DependencyResolver_GetService_should_return_null_when_unresolved()
+		public void WebApi_DependencyResolver_GetService_should_return_null_when_unresolved()
 		{
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
@@ -65,7 +65,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		}
 
 		[TestMethod]
-		public void DependencyResolver_GetServices_should_return_empty_enumerable_when_unresolved()
+		public void WebApi_DependencyResolver_GetServices_should_return_empty_enumerable_when_unresolved()
 		{
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
