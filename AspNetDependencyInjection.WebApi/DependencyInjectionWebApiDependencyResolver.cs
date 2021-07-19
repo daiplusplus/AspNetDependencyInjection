@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 
@@ -16,12 +17,19 @@ namespace AspNetDependencyInjection.Internal
 	public sealed class DependencyInjectionWebApiDependencyResolver : IDependencyResolver, IDependencyInjectionClient // Surprisingly, IDependencyResolver does not implement IServiceProvider, weird.
 	{
 		private readonly ApplicationDependencyInjection di;
-		private readonly IServiceProvider rootServiceProvider;
+		private readonly IServiceProvider               rootServiceProvider;
+		private readonly HttpConfiguration              httpConfiguration;
+		private readonly IDependencyResolver            previousResolver;
 
-		internal DependencyInjectionWebApiDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
+		internal DependencyInjectionWebApiDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider, HttpConfiguration httpConfiguration )
 		{
-			this.di                  = di                  ?? throw new ArgumentNullException(nameof(di));
+			this.di                  = di                  ?? throw new ArgumentNullException( nameof( di ) );
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof( rootServiceProvider ) );
+			this.httpConfiguration   = httpConfiguration   ?? throw new ArgumentNullException( nameof( httpConfiguration ) );
+
+			this.previousResolver = httpConfiguration.DependencyResolver;
+
+			httpConfiguration.DependencyResolver = this;
 		}
 
 		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
@@ -48,10 +56,10 @@ namespace AspNetDependencyInjection.Internal
 			return serviceType.ToIEnumerableOf( this.GetService );
 		}
 
-		/// <summary>NOOP.</summary>
+		/// <summary>Restores the original <see cref="HttpConfiguration.DependencyResolver"/>.</summary>
 		public void Dispose()
 		{
-			// NOOP
+			this.httpConfiguration.DependencyResolver = this.previousResolver;
 		}
 
 		// Hmm, does Web API not have nested-scopes? Why is it only the root `IDependencyResolver` has `BeginScope()` instead of `IDependencyScope`?
