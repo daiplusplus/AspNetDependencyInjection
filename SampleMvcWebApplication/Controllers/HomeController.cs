@@ -35,7 +35,12 @@ namespace SampleMvcWebApplication.Controllers
 
 		public ActionResult Index()
 		{
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+
+			// Here's an example of getting a service without injecting it. It will still be scoped to the request (and so have the same lifetime as `sc1` and `sc2` above.
 			IUserIdProvider userIdProvider = this.Resolver.GetService<IUserIdProvider>();
+
+#pragma warning restore IDE0059
 
 			return this.View();
 		}

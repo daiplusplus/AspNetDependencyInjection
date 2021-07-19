@@ -13,7 +13,7 @@
 		<version>$version$</version>
 		
 		<!-- Authors are human-names: -->
-		<authors>S. Kyle Korndoerfer and Dai Rees</authors>
+		<authors>Dai Rees, S. Kyle Korndoerfer, Contributors</authors>
 		
 		<!-- Owners are NuGet.org usernames: -->
 		<owners>KyKoSoft, Jehoel</owners>
@@ -26,7 +26,7 @@
 		<summary>Dependency Injection in ASP.NET WebForms using Microsoft.Extensions.DependencyInjection and WebObjectActivator.</summary>
 		<releaseNotes>Targets .NET 4.7.2</releaseNotes>
 		<copyright>Copyright 2013 - 2015 S. Kyle Korndoerfer, 2019 Dai Rees</copyright>
-		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor Microsoft.Extensions.DependencyInjection medi</tags>
+		<tags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor Microsoft.Extensions.DependencyInjection medi Microsoft.Extensions.Logging</tags>
 		
 		<dependencies>
 			<group targetFramework="net472">
