@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
+
 using Microsoft.AspNet.SignalR;
+
+using SampleMvcWebApplication.SampleServices;
 
 namespace SampleMvcWebApplication.Controllers
 {
@@ -12,23 +12,51 @@ namespace SampleMvcWebApplication.Controllers
 	{
 		public const String Name = "Home";
 
+		private readonly ISampleSingletonService  sgl;
+		private readonly ISampleScopedService1    sc1;
+		private readonly ISampleScopedService2    sc2;
+		private readonly ISampleTransientService1 st1;
+		private readonly ISampleTransientService2 st2;
+
+		public HomeController(
+			ISampleSingletonService  sgl,
+			ISampleScopedService1    sc1,
+			ISampleScopedService2    sc2,
+			ISampleTransientService1 st1,
+			ISampleTransientService2 st2
+		)
+		{
+			this.sgl = sgl ?? throw new ArgumentNullException( nameof( sgl ) );
+			this.sc1 = sc1 ?? throw new ArgumentNullException( nameof( sc1 ) );
+			this.sc2 = sc2 ?? throw new ArgumentNullException( nameof( sc2 ) );
+			this.st1 = st1 ?? throw new ArgumentNullException( nameof( st1 ) );
+			this.st2 = st2 ?? throw new ArgumentNullException( nameof( st2 ) );
+		}
+
 		public ActionResult Index()
 		{
-			return View();
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+
+			// Here's an example of getting a service without injecting it. It will still be scoped to the request (and so have the same lifetime as `sc1` and `sc2` above.
+			IUserIdProvider userIdProvider = this.Resolver.GetService<IUserIdProvider>();
+
+#pragma warning restore IDE0059
+
+			return this.View();
 		}
 
 		public ActionResult About()
 		{
-			ViewBag.Message = "Your application description page.";
+			this.ViewBag.Message = "Your application description page.";
 
-			return View();
+			return this.View();
 		}
 
 		public ActionResult Contact()
 		{
-			ViewBag.Message = "Your contact page.";
+			this.ViewBag.Message = "Your contact page.";
 
-			return View();
+			return this.View();
 		}
 
 		[HttpPost]

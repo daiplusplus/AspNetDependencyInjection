@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 
@@ -12,22 +13,32 @@ namespace AspNetDependencyInjection.Internal
 	// It isn't necessary to subclass DefaultControllerFactory or implement IControllerFactory.
 	// Because DefaultControllerFactory uses the registered IDependencyResolver anyway.
 
+	// useful resource:
+	// https://docs.microsoft.com/en-us/aspnet/web-api/overview/advanced/dependency-injection
+
 	/// <summary>Implements ASP.NET Web PI's's <see cref="IDependencyResolver"/>.</summary>
 	public sealed class DependencyInjectionWebApiDependencyResolver : IDependencyResolver, IDependencyInjectionClient // Surprisingly, IDependencyResolver does not implement IServiceProvider, weird.
 	{
 		private readonly ApplicationDependencyInjection di;
-		private readonly IServiceProvider rootServiceProvider;
+		private readonly IServiceProvider               rootServiceProvider;
+		private readonly HttpConfiguration              httpConfiguration;
+		private readonly IDependencyResolver            previousResolver;
 
-		internal DependencyInjectionWebApiDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider )
+		internal DependencyInjectionWebApiDependencyResolver( ApplicationDependencyInjection di, IServiceProvider rootServiceProvider, HttpConfiguration httpConfiguration )
 		{
-			this.di                  = di                  ?? throw new ArgumentNullException(nameof(di));
+			this.di                  = di                  ?? throw new ArgumentNullException( nameof( di ) );
 			this.rootServiceProvider = rootServiceProvider ?? throw new ArgumentNullException( nameof( rootServiceProvider ) );
+			this.httpConfiguration   = httpConfiguration   ?? throw new ArgumentNullException( nameof( httpConfiguration ) );
+
+			this.previousResolver = httpConfiguration.DependencyResolver;
+
+			httpConfiguration.DependencyResolver = this;
 		}
 
 		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
 		public Object GetService(Type serviceType)
 		{
-			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+			if( serviceType is null ) throw new ArgumentNullException(nameof(serviceType));
 
 			// Unlike ASP.NET MVC, ASP.NET Web Api does not use HttpContext and its DI resolver is also responsible for creating child scopes.
 			// `DefaultHttpControllerActivator::GetInstanceOrActivator()` --> `System.Net.Http.HttpRequestMessageExtensions::GetDependencyScope(HttpRequestMessage)` --> `IDependencyResolver.BeginScope()`
@@ -48,10 +59,10 @@ namespace AspNetDependencyInjection.Internal
 			return serviceType.ToIEnumerableOf( this.GetService );
 		}
 
-		/// <summary>NOOP.</summary>
+		/// <summary>Restores the original <see cref="HttpConfiguration.DependencyResolver"/>.</summary>
 		public void Dispose()
 		{
-			// NOOP
+			this.httpConfiguration.DependencyResolver = this.previousResolver;
 		}
 
 		// Hmm, does Web API not have nested-scopes? Why is it only the root `IDependencyResolver` has `BeginScope()` instead of `IDependencyScope`?

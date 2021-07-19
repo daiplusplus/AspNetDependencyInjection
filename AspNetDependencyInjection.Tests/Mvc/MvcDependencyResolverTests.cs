@@ -18,7 +18,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 	public class MvcDependencyResolverTests
 	{
 		[TestMethod]
-		public void AddWebApiDependencyResolver_should_add_single_DependencyInjectionWebApiDependencyResolver()
+		public void AddMvcDependencyResolver_should_add_single_DependencyInjectionWebApiDependencyResolver()
 		{
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.AddMvcDependencyResolver()
@@ -35,7 +35,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		}
 
 		[TestMethod]
-		public void DependencyResolver_GetService_should_return_null_for_unregistered_types()
+		public void Mvc_DependencyResolver_GetService_should_return_null_for_unregistered_types()
 		{
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
@@ -68,7 +68,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		}
 
 		[TestMethod]
-		public void DependencyResolver_GetServices_should_return_empty_enumerable_when_unresolved()
+		public void Mvc_DependencyResolver_GetServices_should_return_empty_enumerable_when_unresolved()
 		{
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
@@ -151,7 +151,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		#endif
 
 		[TestMethod]
-		public void DependencyResolver_GetService_should_return_null_for_open_generic_types()
+		public void Mvc_DependencyResolver_GetService_should_return_null_for_open_generic_types()
 		{
 			// If `` doesn't check for open generic types then this error happens:
 			/* Test method AspNetDependencyInjection.Tests.Mvc.MvcDependencyResolverTests.DependencyResolver_GetService_should_return_null_for_open_generic_types threw exception: 
@@ -173,7 +173,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		}
 
 		[TestMethod]
-		public void DependencyResolver_GetService_should_resolve_SystemObject()
+		public void Mvc_DependencyResolver_GetService_should_resolve_SystemObject()
 		{
 			using( ApplicationDependencyInjection di = CreateMvcDIWithTestServiceRegistrations( out IDependencyResolver resolver ) )
 			{
@@ -187,7 +187,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 		#endregion
 
 		[TestMethod]
-		public void DependencyResolver_GetService_should_return_separate_instances()
+		public void Mvc_DependencyResolver_GetService_should_return_separate_instances()
 		{
 			using( ApplicationDependencyInjection di = CreateMvcDIWithTestServiceRegistrations( out IDependencyResolver resolver ) )
 			{

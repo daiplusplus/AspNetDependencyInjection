@@ -1,8 +1,5 @@
-﻿#define USE_SCOPED_SIGNALR_RESOLVER
+﻿using System;
 
-using System;
-
-using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 using Owin;
@@ -10,8 +7,8 @@ using Microsoft.Owin;
 using AspNetDependencyInjection;
 using WebActivatorEx;
 
-using SampleMvcWebApplication;
-using SampleMvcWebApplication.SampleServices;
+using SampleWebApiService;
+using SampleWebApiService.SampleServices;
 
 [assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
 [assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
@@ -19,7 +16,7 @@ using SampleMvcWebApplication.SampleServices;
 
 [assembly: OwinStartup( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.OwinStartup ) )]
 
-namespace SampleMvcWebApplication
+namespace SampleWebApiService
 {
 	/// <summary>Startup class for the AspNetDependencyInjection NuGet package.</summary>
 	internal static class SampleApplicationStart
@@ -36,12 +33,7 @@ namespace SampleMvcWebApplication
 
 			_di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( ConfigureServices )
-				.AddMvcDependencyResolver()
-#if USE_SCOPED_SIGNALR_RESOLVER
-				.AddScopedSignalRDependencyResolver()
-#else
-				.AddUnscopedSignalRDependencyResolver()
-#endif
+				.AddWebApiDependencyResolver()
 				.Build();
 		}
 
@@ -52,7 +44,6 @@ namespace SampleMvcWebApplication
 				// Useful services built-in to AspNetDependencyInjection:
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
-				.AddSingleton<IUserIdProvider,SampleUserIdProvider>() // `IUserIdProvider` is a SignalR built-in service. SignalR's `PrincipalUserIdProvider` (the default implementation) is registered as a singleton. I'm unsure how well a transient or scoped registration would work.
 
 				.AddSingleton<ISampleSingletonService,DefaultSingletonService>()
 
@@ -73,25 +64,6 @@ namespace SampleMvcWebApplication
 		public static void OwinStartup( IAppBuilder appBuilder )
 		{
 			System.Diagnostics.Debug.WriteLine( nameof(SampleApplicationStart) + "." + nameof(OwinStartup) + "() called." );
-
-			HubConfiguration hubConfig = new HubConfiguration()
-			{
-				EnableDetailedErrors = true
-			};
-
-#if USE_SCOPED_SIGNALR_RESOLVER
-			IDependencyResolver dr = GlobalHost.DependencyResolver;
-			if( dr is AspNetDependencyInjection.Internal.ScopedAndiSignalRDependencyResolver dr2 )
-			{
-				dr2.ConfigureSignalR( appBuilder, path: "/signalr", hubConfiguration: hubConfig );
-			}
-			else
-			{
-				throw new InvalidOperationException( nameof(AspNetDependencyInjection.Internal.UnscopedAndiSignalRDependencyResolver) + " is not set-up." );
-			}
-#else
-			appBuilder.MapSignalR( path: "/signalr", configuration: hubConfig );
-#endif
 		}
 
 		/// <summary>Invoked at the end of ASP.NET application start-up, after Global's Application_Start method runs. Dependency-injection re-configuration may be called here if you have services that depend on Global being initialized.</summary>
