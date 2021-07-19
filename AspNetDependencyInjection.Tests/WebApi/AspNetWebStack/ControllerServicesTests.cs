@@ -20,31 +20,52 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		[TestMethod]
 		public void Controller_Overrides_DependencyInjection()
 		{
-			this.WrapTest( services => services.AddScoped<IActionValueBinder,TestActionValueBinder>(), this.Controller_Overrides_DependencyInjection_Impl );
+			TestActionValueBinder newDIService = new TestActionValueBinder();
+
+			this.WrapTest(
+				services =>
+				{
+					_ = services.AddSingleton<IActionValueBinder>( implementationInstance: newDIService );
+//					_ = services.AddScoped<IActionValueBinder,TestActionValueBinder>();
+				},
+				this.Controller_Overrides_DependencyInjection_Impl,
+				newDIService
+			);
 		}
 
-		private void Controller_Overrides_DependencyInjection_Impl( IDependencyResolver resolver )
+		private void Controller_Overrides_DependencyInjection_Impl( IDependencyResolver resolver, TestActionValueBinder newDIService )
 		{
-			// Setting on Controller config overrides the DI container. 
-			HttpConfiguration config = new HttpConfiguration();
-
-			IActionValueBinder newDIService = new TestActionValueBinder();
-
-			config.DependencyResolver = resolver;
+			if( resolver is null ) throw new ArgumentNullException( nameof( resolver ) );
 			
-			ControllerServices cs = new ControllerServices(config.Services);
+			// Calling `.BeginScope()` here is to simulate what happens inside `DefaultHttpControllerActivator.GetInstanceOrActivator`
+			using( IDependencyScope requestScope = resolver.BeginScope() )
+			{
+				_ = requestScope.ShouldNotBeNull();
 
-			IActionValueBinder newLocalService = new TestActionValueBinder();
-			cs.Replace(typeof(IActionValueBinder), newLocalService);
+				// Setting on Controller config overrides the DI container. 
+				HttpConfiguration config = new HttpConfiguration();
 
-			// Act            
-			IActionValueBinder localVal = (IActionValueBinder)cs.GetService(typeof(IActionValueBinder));
-			IActionValueBinder globalVal = (IActionValueBinder)config.Services.GetService(typeof(IActionValueBinder));
+//				IActionValueBinder newDIService = new TestActionValueBinder();
 
-			// Assert
-			// Local controller didn't override, should get same value as global case.            
-			Object.ReferenceEquals( newDIService, globalVal ).ShouldBeTrue(); // asking the config will give back the DI service
-			Object.ReferenceEquals( newLocalService, localVal ).ShouldBeTrue(); // but asking locally will get back the local service.
+				config.DependencyResolver = resolver;
+			
+				ControllerServices cs = new ControllerServices(config.Services);
+
+				IActionValueBinder newLocalService = new TestActionValueBinder();
+				cs.Replace(typeof(IActionValueBinder), newLocalService);
+
+				// Act            
+				IActionValueBinder localVal = (IActionValueBinder)cs.GetService(typeof(IActionValueBinder));
+				IActionValueBinder globalVal = (IActionValueBinder)config.Services.GetService(typeof(IActionValueBinder));
+
+				_ = localVal .ShouldNotBeNull().ShouldBeOfType<TestActionValueBinder>();
+				_ = globalVal.ShouldNotBeNull().ShouldBeOfType<TestActionValueBinder>();
+
+				// Assert
+				// Local controller didn't override, should get same value as global case.            
+				Object.ReferenceEquals( newDIService, globalVal ).ShouldBeTrue(); // asking the config will give back the DI service
+				Object.ReferenceEquals( newLocalService, localVal ).ShouldBeTrue(); // but asking locally will get back the local service.
+			}
 		}
 	}
 }

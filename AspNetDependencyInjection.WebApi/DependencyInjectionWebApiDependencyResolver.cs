@@ -27,7 +27,7 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>When <paramref name="serviceType"/> is for a <see cref="IHttpController"/> then the type will be resolved, otherwise an exception is thrown. Otherwise this method returns <c>null</c> if the type cannot be resolved or created.</summary>
 		public Object GetService(Type serviceType)
 		{
-			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+			if( serviceType is null ) throw new ArgumentNullException(nameof(serviceType));
 
 			// Unlike ASP.NET MVC, ASP.NET Web Api does not use HttpContext and its DI resolver is also responsible for creating child scopes.
 			// `DefaultHttpControllerActivator::GetInstanceOrActivator()` --> `System.Net.Http.HttpRequestMessageExtensions::GetDependencyScope(HttpRequestMessage)` --> `IDependencyResolver.BeginScope()`

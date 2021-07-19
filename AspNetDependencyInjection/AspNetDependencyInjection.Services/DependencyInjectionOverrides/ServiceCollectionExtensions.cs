@@ -15,14 +15,14 @@ namespace AspNetDependencyInjection
 		public static IServiceCollection AddDefaultDependencyInjectionOverrideService( this IServiceCollection services, Boolean excludeAspNetNamespacesFromDI = true, IEnumerable<String> additionalExclusions = null )
 		{
 			return services
-				.AddSingleton<IDependencyInjectionOverrideService>( sp => new DefaultDependencyInjectionOverrideService( excludeAspNetNamespacesFromDI, additionalExclusions ) );
+				.AddSingleton<IDependencyInjectionOverrideService>( sp => new DefaultDependencyInjectionOverrideService( useConfigured: true, excludeAspNetNamespacesFromDI, additionalExclusions ) );
 		}
 
 		/// <summary>Registers <see cref="DefaultDependencyInjectionOverrideService"/> as a singleton implementation of <see cref="IDependencyInjectionOverrideService"/> if no existing implementation of <see cref="IDependencyInjectionOverrideService"/> is registered.</summary>
 		public static void TryAddDefaultDependencyInjectionOverrideService( this IServiceCollection services )
 		{
 			services
-				.TryAddSingleton<IDependencyInjectionOverrideService>( sp => new DefaultDependencyInjectionOverrideService( excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
+				.TryAddSingleton<IDependencyInjectionOverrideService>( sp => new DefaultDependencyInjectionOverrideService( useConfigured: true, excludeAspNetNamespacesFromDI: true, additionalExclusions: null ) );
 		}
 	}
 }

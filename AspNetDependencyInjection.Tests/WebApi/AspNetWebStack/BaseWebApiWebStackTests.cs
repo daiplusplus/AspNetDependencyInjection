@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
@@ -19,10 +20,19 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 		protected class TestActionValueBinder : IActionValueBinder
 		{
+			private static Int32 _idSeed = 0;
+
+			public TestActionValueBinder()
+			{
+				this.InstanceId = Interlocked.Increment( ref _idSeed );
+			}
+
 			public HttpActionBinding GetBinding( HttpActionDescriptor actionDescriptor )
 			{
 				throw new NotImplementedException();
 			}
+
+			public Int32 InstanceId { get; }
 		}
 
 		protected class DependencyResolverWrapper : IDependencyResolver
