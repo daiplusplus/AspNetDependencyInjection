@@ -11,6 +11,7 @@ using AspNetDependencyInjection;
 using WebActivatorEx;
 
 using SampleMvcWebApplication;
+using SampleMvcWebApplication.SampleServices;
 
 [assembly: PreApplicationStartMethod ( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PreStart ) )]
 [assembly: PostApplicationStartMethod( typeof( SampleApplicationStart ), methodName: nameof( SampleApplicationStart.PostStart ) )]
@@ -52,6 +53,14 @@ namespace SampleMvcWebApplication
 				.AddDefaultHttpContextAccessor() // Adds `IHttpContextAccessor`
 				.AddWebConfiguration() // Adds `IWebConfiguration`
 				.AddSingleton<IUserIdProvider,SampleUserIdProvider>() // `IUserIdProvider` is a SignalR built-in service. SignalR's `PrincipalUserIdProvider` (the default implementation) is registered as a singleton. I'm unsure how well a transient or scoped registration would work.
+
+				.AddSingleton<ISampleSingletonService,DefaultSingletonService>()
+
+				.AddScoped<ISampleScopedService1,DefaultScopedService1>()
+				.AddScoped<ISampleScopedService2,DefaultScopedService2>()
+
+				.AddTransient<ISampleTransientService1,DefaultTransientService1>()
+				.AddTransient<ISampleTransientService2,DefaultTransientService2>()
 			;
 		}
 

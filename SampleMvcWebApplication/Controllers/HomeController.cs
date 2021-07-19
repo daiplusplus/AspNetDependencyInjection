@@ -4,16 +4,37 @@ using System.Web.Mvc;
 
 using Microsoft.AspNet.SignalR;
 
+using SampleMvcWebApplication.SampleServices;
+
 namespace SampleMvcWebApplication.Controllers
 {
 	public class HomeController : Controller
 	{
 		public const String Name = "Home";
 
+		private readonly ISampleSingletonService  sgl;
+		private readonly ISampleScopedService1    sc1;
+		private readonly ISampleScopedService2    sc2;
+		private readonly ISampleTransientService1 st1;
+		private readonly ISampleTransientService2 st2;
+
+		public HomeController(
+			ISampleSingletonService  sgl,
+			ISampleScopedService1    sc1,
+			ISampleScopedService2    sc2,
+			ISampleTransientService1 st1,
+			ISampleTransientService2 st2
+		)
+		{
+			this.sgl = sgl ?? throw new ArgumentNullException( nameof( sgl ) );
+			this.sc1 = sc1 ?? throw new ArgumentNullException( nameof( sc1 ) );
+			this.sc2 = sc2 ?? throw new ArgumentNullException( nameof( sc2 ) );
+			this.st1 = st1 ?? throw new ArgumentNullException( nameof( st1 ) );
+			this.st2 = st2 ?? throw new ArgumentNullException( nameof( st2 ) );
+		}
+
 		public ActionResult Index()
 		{
-			String str = this.Resolver.GetService<String>();
-
 			IUserIdProvider userIdProvider = this.Resolver.GetService<IUserIdProvider>();
 
 			return this.View();

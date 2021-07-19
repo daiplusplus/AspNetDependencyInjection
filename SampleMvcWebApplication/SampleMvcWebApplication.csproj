@@ -132,6 +132,9 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SampleServices\ScopedService.cs" />
+    <Compile Include="SampleServices\TransientService.cs" />
+    <Compile Include="SampleServices\SingletonService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
