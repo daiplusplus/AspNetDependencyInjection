@@ -13,6 +13,9 @@ namespace AspNetDependencyInjection.Internal
 	// It isn't necessary to subclass DefaultControllerFactory or implement IControllerFactory.
 	// Because DefaultControllerFactory uses the registered IDependencyResolver anyway.
 
+	// useful resource:
+	// https://docs.microsoft.com/en-us/aspnet/web-api/overview/advanced/dependency-injection
+
 	/// <summary>Implements ASP.NET Web PI's's <see cref="IDependencyResolver"/>.</summary>
 	public sealed class DependencyInjectionWebApiDependencyResolver : IDependencyResolver, IDependencyInjectionClient // Surprisingly, IDependencyResolver does not implement IServiceProvider, weird.
 	{

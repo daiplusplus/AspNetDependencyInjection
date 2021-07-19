@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Text;
 
 using SampleWebApiService.SampleServices;
 
@@ -12,6 +13,8 @@ namespace SampleWebApiService.Controllers
 {
 	public class ValuesController : ApiController
 	{
+		private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding( encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false );
+
 		private readonly ISampleSingletonService  sgl;
 		private readonly ISampleScopedService1    sc1;
 		private readonly ISampleScopedService2    sc2;
@@ -35,7 +38,7 @@ namespace SampleWebApiService.Controllers
 
 		[HttpGet]
 		[Route("")]
-		public String Get()
+		public HttpResponseMessage Get()
 		{
 			const String FMT =
 				nameof(ISampleSingletonService)  + " " + nameof(this.sgl) + ": Instance: {0}\r\n" +
@@ -44,7 +47,7 @@ namespace SampleWebApiService.Controllers
 				nameof(ISampleTransientService1) + " " + nameof(this.st1) + ": Instance: {3}\r\n" +
 				nameof(ISampleTransientService2) + " " + nameof(this.st2) + ": Instance: {4}\r\n";
 
-			return String.Format(
+			String text = String.Format(
 				provider: CultureInfo.InvariantCulture,
 				format  : FMT,
 				this.sgl.InstanceId,
@@ -53,6 +56,11 @@ namespace SampleWebApiService.Controllers
 				this.st1.InstanceId,
 				this.st2.InstanceId
 			);
+
+			return new HttpResponseMessage( HttpStatusCode.OK )
+			{
+				Content = new StringContent( content: text, encoding: _utf8NoBom, mediaType: "text/plain" )
+			};
 		}
 	}
 }
