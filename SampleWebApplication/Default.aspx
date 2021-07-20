@@ -8,9 +8,9 @@
 </asp:Content>
 
 <asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
-	<h2>Welcome to Injected ASP.NET WebForms using Unity!</h2>
+	<h2>Welcome to Injected ASP.NET WebForms using AspNetDependencyInjection!</h2>
 	<p>
-		To learn more about Unity.WebForms, visit <a href="https://bitbucket.org/KyleK/unity.webforms" target="_blank" title="Unity.WebForms Website">https://bitbucket.org/KyleK/unity.webforms</a>.
+		To learn more about AspNetDependencyInjection, visit <a href="https://github.com/Jehoel/AspNetDependencyInjection" target="_blank" title="AspNetDependencyInjection project repo">https://github.com/Jehoel/AspNetDependencyInjection</a>.
 	</p>
 	
 	<hr />

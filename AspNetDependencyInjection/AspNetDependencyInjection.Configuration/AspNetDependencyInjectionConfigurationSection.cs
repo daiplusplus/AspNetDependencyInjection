@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace AspNetDependencyInjection.Configuration
 {
-	/// <summary>Defines the AspNetDependencyInjection configuration settings node inside an application configuration file.</summary>
+	/// <summary>Defines the &lt;AspNetDependencyInjection&gt; configuration settings node inside an application configuration file.</summary>
 	public class AspNetDependencyInjectionConfigurationSection : ConfigurationSection
 	{
 		/// <summary>Key for the configuration collection root element.</summary>
