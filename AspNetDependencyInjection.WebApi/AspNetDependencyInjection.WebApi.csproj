@@ -1,88 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../Common.props" />
+
+  <PropertyGroup Label="Build">
     <ProjectGuid>{4989D982-F9EC-4BC1-8288-7F25190AB725}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AspNetDependencyInjection.WebApi</RootNamespace>
-    <AssemblyName>AspNetDependencyInjection.WebApi</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>false</Deterministic>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\AspNetDependencyInjection.WebApi.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
+
+  <PropertyGroup Label="Package Output">
+    <PackageId>Jehoel.AspNetDependencyInjection.WebApi</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build">
+  </PropertyGroup>
+
+  <ItemGroup Label="Assembly References">
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ApplicationDependencyInjectionBuilderExtensions.cs" />
-    <Compile Include="DependencyInjectionWebApiDependencyResolver.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Unity.WebForms.StrongNameKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
+    <Reference Include="System.Web" />
+
     <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
       <Project>{7e9e872b-41be-4b55-9519-d2ff3f92eb4e}</Project>
       <Name>AspNetDependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.WebApi.Core">
-      <Version>5.2.7</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-      <Version>2.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.2</Version>
-    </PackageReference>
+
+  <ItemGroup Label="NuGet Package References">
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-			if "$(ConfigurationName)" == "Release" (
 
-			mkdir $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472
-
-			copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\$(TargetFileName)
-			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.WebApi.pdb $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\AspNetDependencyInjection.WebApi.pdb
-			copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.WebApi.xml $(SolutionDir)nuget\AspNetDependencyInjection.WebApi\lib\net472\AspNetDependencyInjection.WebApi.xml
-
-			)
-		</PostBuildEvent>
-  </PropertyGroup>
 </Project>

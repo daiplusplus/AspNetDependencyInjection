@@ -1,46 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Common.props" />
+
   <PropertyGroup Label="Build">
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>7.3</LangVersion>
-    <Deterministic>true</Deterministic>
     <ProjectGuid>{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}</ProjectGuid>
-    <SignAssembly>true</SignAssembly>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-  <PropertyGroup Label="Analysis">
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <!-- AnalysisMode obviates AnalysisLevel, btw: https://docs.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props
-    <AnalysisLevel>latest</AnalysisLevel>
-    -->
-  </PropertyGroup>
-
   <PropertyGroup Label="Package Output">
-    <Version>5.0.0-beta2</Version>
-
-    <Description>Dependency Injection in "Classic" ASP.NET WebForms, ASP.NET MVC, ASP.NET Web API, and ASP.NET-hosted WCF using Microsoft.Extensions.DependencyInjection.</Description>
-    <Copyright>2013 - 2021 Contributors</Copyright>
-
-    <!-- Authors are human-names: -->
-    <Authors>Dai Rees (@Jehoel on GitHub), S. Kyle Korndoerfer (@KyKoSoft on NuGet), Contributors</Authors>
-
-    <!-- Owners are NuGet.org usernames (not GitHub usernames!): -->
-    <owners>Jehoel, KyKoSoft</owners>
-
-    <Company></Company>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Jehoel/AspNetDependencyInjection</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor Microsoft.Extensions.DependencyInjection medi Microsoft.Extensions.Logging container</PackageTags>
-    
     <PackageId>Jehoel.AspNetDependencyInjection</PackageId>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup Label="Assembly References">
