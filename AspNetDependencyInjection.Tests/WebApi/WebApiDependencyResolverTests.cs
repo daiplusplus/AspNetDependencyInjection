@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
 using System.Web.Http.Dependencies;
 
 using AspNetDependencyInjection.Internal;
@@ -17,8 +18,10 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		[TestMethod]
 		public void AddWebApiDependencyResolver_should_add_single_DependencyInjectionWebApiDependencyResolver()
 		{
+			HttpConfiguration unitTestWebApiConfiguration = new HttpConfiguration();
+
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
-				.AddWebApiDependencyResolver()
+				.AddWebApiDependencyResolver( unitTestWebApiConfiguration )
 				.Build();
 
 			using( di )
@@ -34,9 +37,11 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		[TestMethod]
 		public void WebApi_DependencyResolver_GetService_should_return_null_when_unresolved()
 		{
+			HttpConfiguration unitTestWebApiConfiguration = new HttpConfiguration();
+
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
-				.AddWebApiDependencyResolver()
+				.AddWebApiDependencyResolver( unitTestWebApiConfiguration )
 				.Build();
 
 			using( di )
@@ -67,9 +72,11 @@ namespace AspNetDependencyInjection.Tests.WebApi
 		[TestMethod]
 		public void WebApi_DependencyResolver_GetServices_should_return_empty_enumerable_when_unresolved()
 		{
+			HttpConfiguration unitTestWebApiConfiguration = new HttpConfiguration();
+
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( services => { } )
-				.AddWebApiDependencyResolver()
+				.AddWebApiDependencyResolver( unitTestWebApiConfiguration )
 				.Build();
 
 			using( di )
