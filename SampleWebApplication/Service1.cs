@@ -8,7 +8,7 @@ namespace SampleWebApplication
 		/// <returns>A greeting from the service.</returns>
 		public string SayHello()
 		{
-			return string.Format( "Hello from Service 1 [Object ID = {0}]", GetHashCode() );
+			return string.Format( "Hello from Service 1 [Object ID = {0}]", this.GetHashCode() );
 		}
 	}
 }

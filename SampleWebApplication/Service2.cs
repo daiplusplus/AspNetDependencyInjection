@@ -17,7 +17,7 @@ namespace SampleWebApplication
 		/// <param name="svc1">Injected dependency, <see cref="Service1" /></param>
 		public Service2( Service1 svc1 )
 		{
-			_service1 = svc1;
+			this._service1 = svc1;
 		}
 
 		/// <summary>
@@ -29,7 +29,7 @@ namespace SampleWebApplication
 		/// </returns>
 		public string SayHello()
 		{
-			return string.Format( "{0} (Called from Service2 [Object ID = {1}])", _service1.SayHello(), GetHashCode() );
+			return string.Format( "{0} (Called from Service2 [Object ID = {1}])", this._service1.SayHello(), this.GetHashCode() );
 		}
 	}
 }
