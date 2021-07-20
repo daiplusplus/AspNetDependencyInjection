@@ -38,7 +38,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <!--<SignAssembly>true</SignAssembly>-->
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
@@ -52,6 +52,7 @@
     <Compile Include="ConfigurationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mvc\MvcDependencyResolverTests.cs" />
+    <Compile Include="TestExtensions.cs" />
     <Compile Include="WebApi\AspNetWebStack\BaseWebApiWebStackTests.cs" />
     <Compile Include="WebApi\AspNetWebStack\ControllerServicesTests.cs" />
     <Compile Include="WebApi\AspNetWebStack\DefaultHttpControllerActivatorTest.cs" />
@@ -85,13 +86,13 @@
       <Version>5.2.7</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>1.4.0</Version>
+      <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>1.4.0</Version>
+      <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>6.0.8</Version>
+      <Version>6.0.4</Version>
     </PackageReference>
     <PackageReference Include="Shouldly">
       <Version>4.0.3</Version>

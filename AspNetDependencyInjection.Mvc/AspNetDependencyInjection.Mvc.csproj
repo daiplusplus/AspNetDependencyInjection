@@ -1,91 +1,32 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../Common.props" />
+
+  <PropertyGroup Label="Build">
     <ProjectGuid>{1B4BE5D4-F919-44E9-B570-151EEE5698DA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AspNetDependencyInjection.Mvc</RootNamespace>
-    <AssemblyName>AspNetDependencyInjection.Mvc</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>false</Deterministic>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\AspNetDependencyInjection.Mvc.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\AspNetDependencyInjection.Mvc.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+
+  <PropertyGroup Label="Package Output">
+    <PackageId>Jehoel.AspNetDependencyInjection.Mvc</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build">
+  </PropertyGroup>
+
+  <ItemGroup Label="Assembly References">
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ApplicationDependencyInjectionBuilderExtensions.cs" />
-    <Compile Include="DependencyInjectionMvcControllerActivator.cs" />
-    <Compile Include="DependencyInjectionMvcDependencyResolver.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
+
     <ProjectReference Include="..\AspNetDependencyInjection\AspNetDependencyInjection.csproj">
       <Project>{7e9e872b-41be-4b55-9519-d2ff3f92eb4e}</Project>
       <Name>AspNetDependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Unity.WebForms.StrongNameKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.Mvc">
-      <Version>5.2.7</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>2.2.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Notes.txt" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-      if "$(ConfigurationName)" == "Release" (
 
-      mkdir $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472
+  <ItemGroup Label="NuGet Package References">
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+  </ItemGroup>
 
-      copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\$(TargetFileName)
-      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.Mvc.pdb $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.pdb
-      copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.Mvc.xml $(SolutionDir)nuget\AspNetDependencyInjection.Mvc\lib\net472\AspNetDependencyInjection.Mvc.xml
-
-      )
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

@@ -5,6 +5,7 @@ using Microsoft.AspNet.SignalR.Hubs;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Factory for <see cref="IHub"/> objects. Consumed by SignalR's <see cref="DefaultHubManager"/>. This implementation uses the current request or operation scope as controlled by <see cref="ScopedAndiSignalRHubDispatcher"/>.</summary>
+	[CLSCompliant(false)] // `HubDescriptor` is not CLS-compliant.
 	public class ScopedAndiSignalRHubActivator : IHubActivator
 	{
 		private readonly ScopedAndiSignalRDependencyResolver dr;
@@ -19,6 +20,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Creates a new instance of the <see cref="IHub"/> object specified by <paramref name="descriptor"/>. The current request or operation scope is used. If no scope is currently available then an <see cref="InvalidOperationException"/> exception is thrown.</summary>
 		public IHub Create( HubDescriptor descriptor )
 		{
+			if( descriptor is null ) throw new ArgumentNullException( nameof( descriptor ) );
+
 			// SignalR's IHubActivator always creates the requested object, even if it is not registered.
 			// By default, SignalR (using its `DefaultHubActivator`) does require each Hub to be registered, but registering each Hub type is not required when using a DI engine that supports creating objects from non-registered types with constructor parameters.
 

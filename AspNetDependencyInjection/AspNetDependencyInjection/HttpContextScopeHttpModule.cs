@@ -22,8 +22,12 @@ namespace AspNetDependencyInjection.Internal
 
 		/// <summary>Initializes an <see cref="IHttpModule"/> for a new <see cref="HttpApplication"/> instance. This method is invoked for each new <see cref="HttpApplication"/> instance created - ASP.NET will create multiple <see cref="HttpApplication"/> instances in the same AppDomain.</summary>
 		/// <param name="httpApplication">An <see cref="HttpApplication"/> to associate with the root <see cref="IServiceProvider"/> which is used to create an <see cref="IServiceScope"/> for each request.</param>
+#pragma warning disable CA1725 // Parameter names should match base declaration // The original parameter name of `context` is confusing.
 		public void Init( HttpApplication httpApplication )
+#pragma warning restore CA1725
 		{
+			if( httpApplication is null ) throw new ArgumentNullException( nameof( httpApplication ) );
+
 			// Important notes:
 			//	* ASP.NET creates and manages a pool of HttpApplication instances:
 			//		* It creates multiple "special" instances which are used for the `Application_Start`, `Application_End`, and `Session_End` events. These are given a dummy HttpContext object.
@@ -46,11 +50,19 @@ namespace AspNetDependencyInjection.Internal
 
 			if( this.config.UseHttpApplicationScopes )
 			{
-				httpApplication.Disposed += this.OnHttpApplicationDisposed;
+				if( httpApplication is IScopedHttpApplication scopedHttpApplication )
+				{
+					httpApplication.Disposed += this.OnHttpApplicationDisposed;
 
-				IServiceScope httpApplicationScope = this.rootServiceProvider.CreateScope();
+					IServiceScope httpApplicationScope = this.rootServiceProvider.CreateScope();
 
-				httpApplication.SetHttpApplicationServiceScope( httpApplicationScope );
+					scopedHttpApplication.HttpApplicationServiceScope = httpApplicationScope;
+				}
+				else
+				{
+					String msg = nameof(this.config.UseHttpApplicationScopes) + " is true, but " + nameof(httpApplication) + "'s type (" + httpApplication.GetType().FullName + ") does not implement " + nameof(IScopedHttpApplication) + ".";
+					throw new InvalidOperationException( msg );
+				}
 			}
 		}
 

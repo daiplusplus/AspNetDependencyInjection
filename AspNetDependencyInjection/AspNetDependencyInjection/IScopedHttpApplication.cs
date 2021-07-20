@@ -11,6 +11,7 @@ namespace AspNetDependencyInjection
 {
 	/// <summary>In order to use <see cref="HttpApplication"/>-lifetime <see cref="IServiceScope"/> (see <see cref="ApplicationDependencyInjectionConfiguration.UseHttpApplicationScopes"/>) this interface must be implemented by your application's <c>Global.asax</c> <see cref="HttpApplication"/> class.</summary>
 	/// <remarks>This is because <see cref="HttpApplication"/> does not expose any way for external code to store per-instance state, namely the <see cref="IServiceScope"/>. Note that the <see cref="HttpApplication.Application"/> state collection (<see cref="HttpApplication.Application"/>) is actually shared by all <see cref="HttpApplication"/> instances and cannot be used to identify specific <see cref="HttpApplication"/> instances.</remarks>
+	[CLSCompliant(false)]
 	public interface IScopedHttpApplication
 	{
 		// We can't simply abuse `HttpApplication.Site` as a hack-way to get per-instance storage.

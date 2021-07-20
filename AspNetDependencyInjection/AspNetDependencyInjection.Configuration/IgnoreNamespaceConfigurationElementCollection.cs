@@ -8,7 +8,9 @@ namespace AspNetDependencyInjection.Configuration
 	///		contain the list of namspace prefixes to ignore when checking for
 	///		dependencies to inject.
 	/// </summary>
+#pragma warning disable CA1010 // Generic interface should also be implemented
 	public class IgnoreNamespaceConfigurationElementCollection : ConfigurationElementCollection
+#pragma warning restore CA1010
 	{
 		/// <summary>Constructs and initializes a new instance of <see cref="IgnoreNamespaceConfigurationElementCollection"/>.</summary>
 		public IgnoreNamespaceConfigurationElementCollection()
@@ -34,6 +36,8 @@ namespace AspNetDependencyInjection.Configuration
 		/// <summary>Gets the element key for the specified configuration element (<paramref name="element"/>).</summary>
 		protected override Object GetElementKey( ConfigurationElement element )
 		{
+			if( element is null ) throw new ArgumentNullException( nameof( element ) );
+
 			return ( (NamespaceConfigurationElement)element ).Prefix;
 		}
 
@@ -69,6 +73,8 @@ namespace AspNetDependencyInjection.Configuration
 		/// <summary>Removes the specified <paramref name="element"/> from the collection.</summary>
 		public void Remove( NamespaceConfigurationElement element )
 		{
+			if( element is null ) throw new ArgumentNullException( nameof( element ) );
+
 			if( this.BaseIndexOf( element ) >= 0 )
 			{
 				this.BaseRemove( element.Prefix );

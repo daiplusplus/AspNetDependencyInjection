@@ -6,7 +6,9 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-namespace AspNetDependencyInjection.Wcf
+using SampleWcfProject.SampleServices;
+
+namespace SampleWcfProject
 {
 	// NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IService1" in both code and config file together.
 	[ServiceContract]
@@ -33,15 +35,15 @@ namespace AspNetDependencyInjection.Wcf
 		[DataMember]
 		public bool BoolValue
 		{
-			get { return boolValue; }
-			set { boolValue = value; }
+			get { return this.boolValue; }
+			set { this.boolValue = value; }
 		}
 
 		[DataMember]
 		public string StringValue
 		{
-			get { return stringValue; }
-			set { stringValue = value; }
+			get { return this.stringValue; }
+			set { this.stringValue = value; }
 		}
 	}
 
@@ -49,9 +51,18 @@ namespace AspNetDependencyInjection.Wcf
 	// NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
 	public class Service1 : IService1
 	{
-		public string GetData( int value )
+		private readonly ISampleSingletonService  sg1;
+		private readonly ISampleTransientService2 st2;
+
+		public Service1( ISampleSingletonService sg1, ISampleTransientService2 st2 )
 		{
-			return string.Format( "You entered: {0}", value );
+			this.sg1 = sg1 ?? throw new ArgumentNullException( nameof( sg1 ) );
+			this.st2 = st2 ?? throw new ArgumentNullException( nameof( st2 ) );
+		}
+
+		public String GetData( int value )
+		{
+			return "Using Singleton service " + this.sg1.InstanceId + " and transient service " + this.st2.InstanceId;
 		}
 
 		public CompositeType GetDataUsingDataContract( CompositeType composite )
@@ -60,10 +71,12 @@ namespace AspNetDependencyInjection.Wcf
 			{
 				throw new ArgumentNullException( "composite" );
 			}
+
 			if( composite.BoolValue )
 			{
 				composite.StringValue += "Suffix";
 			}
+
 			return composite;
 		}
 	}

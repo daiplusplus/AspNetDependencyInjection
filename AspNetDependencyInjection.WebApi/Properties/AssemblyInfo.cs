@@ -1,7 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+/*
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
@@ -41,3 +43,6 @@ using System.Runtime.InteropServices;
 	"3b1f48900025d8e66a8beb6c0580416ca82a0ef3ee4794dc2c06aa0d5e23ca5e4efaef2c98cc66" +
 	"3efb5f00ef1c20b962a432e61dbbd5f672841d39de5b5ee2d157341d5d28a43c9bb7493ec838c8" +
 	"e94586a5" )]
+*/
+
+[assembly: CLSCompliant(true)]

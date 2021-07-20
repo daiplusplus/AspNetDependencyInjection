@@ -37,7 +37,7 @@ namespace AspNetDependencyInjection.Configuration
 			if( String.IsNullOrWhiteSpace( prefix ) ) throw new ArgumentException( message: "Namespace was empty or white-space after trimming.", paramName: nameof(prefix) );
 
 			if( prefix.Any( c => _invalidChars.Contains( c ) || Char.IsWhiteSpace( c ) ) ) throw new ArgumentException( message: "Value contains an invalid character or whitespace.", paramName: nameof(prefix) );
-			if( prefix.IndexOf( ".." ) > -1 ) throw new ArgumentException( message: "Value contains an empty namespace name.", paramName: nameof(prefix) );
+			if( prefix.IndexOf( "..", StringComparison.Ordinal ) > -1 ) throw new ArgumentException( message: "Value contains an empty namespace name.", paramName: nameof(prefix) );
 
 			return ( prefix, exclude, isGlob );
 		}

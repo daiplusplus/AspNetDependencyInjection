@@ -14,7 +14,7 @@ using System.Linq;
 namespace AspNetDependencyInjection
 {
 	/// <summary>Controls the lifespan of the configured <see cref="IServiceCollection"/>. This class implements <see cref="IRegisteredObject"/> to ensure the root <see cref="IServiceProvider"/> is disposed when the <see cref="HostingEnvironment"/> shuts down. Only 1 instance of this class can exist at a time in a single AppDomain.</summary>
-	public class ApplicationDependencyInjection : IDisposable, IRegisteredObject
+	public class ApplicationDependencyInjection : IDisposable, IRegisteredObject, IHasDependencyInjectionClients
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
@@ -30,12 +30,13 @@ namespace AspNetDependencyInjection
 		protected internal Boolean IsDisposed { get; private set; }
 
 		/// <summary>Constructor. Does not call any virtual methods. Calls <see cref="ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(IServiceCollection)"/> after using <c>services.TryAdd</c> to add a minimal set of required services.</summary>
+		[CLSCompliant(false)] // `IServiceCollection` is not CLSCompliant.
 		protected internal ApplicationDependencyInjection( ApplicationDependencyInjectionConfiguration configuration, IServiceCollection services )
 		{
 			// Validate:
 
-			if( configuration == null ) throw new ArgumentNullException(nameof(configuration));
-			if( services == null ) throw new ArgumentNullException(nameof(services));
+			if( configuration is null ) throw new ArgumentNullException(nameof(configuration));
+			if( services      is null ) throw new ArgumentNullException(nameof(services));
 
 			//
 
@@ -53,7 +54,7 @@ namespace AspNetDependencyInjection
 
 			// Initialize fields:
 
-			this.services            = services ?? throw new ArgumentNullException(nameof(services));
+			this.services            = services;
 			this.rootServiceProvider = services.BuildServiceProvider( validateScopes: true );
 
 			this.ObjectFactoryCache = this.rootServiceProvider.GetRequiredService<ObjectFactoryCache>();
@@ -105,12 +106,13 @@ namespace AspNetDependencyInjection
 		/// <summary>Returns an instance of <see cref="ObjectFactoryCache"/> which caches service factories.</summary>
 		public ObjectFactoryCache ObjectFactoryCache { get; }
 
-#region Lifetime
+		#region Lifetime
 
 		/// <summary>Calls <see cref="Dispose()"/>. This method is called by <see cref="HostingEnvironment"/>.</summary>
 		/// <param name="immediate">This parameter is unused.</param>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Justification = "The method calls Dispose, which is exposed to child types." )]
+#pragma warning disable CA1033 // Interface methods should be callable by child types // Justification = "The method calls Dispose, which is exposed to child types."
 		void IRegisteredObject.Stop(Boolean immediate)
+#pragma warning restore CA1033
 		{
 			this.Dispose();
 		}
@@ -213,7 +215,9 @@ namespace AspNetDependencyInjection
 
 		#region Testing features
 
-		internal IReadOnlyList<IDependencyInjectionClient> Clients => this.clients;
+#pragma warning disable CA1033 // Interface methods should be callable by child types // Justification = Subclasses will never need to reimplement `IHasDependencyInjectionClients`.
+		IReadOnlyList<IDependencyInjectionClient> IHasDependencyInjectionClients.Clients => this.clients;
+#pragma warning restore CA1033
 
 		#endregion
 	}

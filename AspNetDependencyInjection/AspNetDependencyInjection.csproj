@@ -1,122 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../Common.props" />
+
+  <PropertyGroup Label="Build">
     <ProjectGuid>{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AspNetDependencyInjection</RootNamespace>
-    <AssemblyName>AspNetDependencyInjection</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\Debug\AspNetDependencyInjection.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\Release\AspNetDependencyInjection.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
+
+  <PropertyGroup Label="Package Output">
+    <PackageId>Jehoel.AspNetDependencyInjection</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup Label="Assembly References">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Services" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjectionBuilder.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\ServiceFactory\IServiceFactory.cs" />
-    <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjectionConfiguration.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\ServiceCollectionExtensions.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionOverrides\DefaultDependencyInjectionOverrideService.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionOverrides\ServiceCollectionExtensions.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\HttpContextAccessor\ServiceCollectionExtensions.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\ServiceProviderAccessor\DefaultServiceProviderAccessor.cs" />
-    <Compile Include="AspNetDependencyInjection\ActivatorServiceProvider.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\DefaultWebConfiguration.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\IWebConfiguration.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\IWebConfigurationExtensions.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\WebConfiguration\PassthroughWebConfiguration.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\DependencyInjectionOverrides\IDependencyInjectionOverrideService.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\HttpContextAccessor\HttpContextAccessor.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\HttpContextAccessor\IHttpContextAccessor.cs" />
-    <Compile Include="AspNetDependencyInjection.Services\ServiceProviderAccessor\IServiceProviderAccessor.cs" />
-    <Compile Include="AspNetDependencyInjection.Configuration\IgnoreNamespaceConfigurationElementCollection.cs" />
-    <Compile Include="AspNetDependencyInjection.Configuration\NamespaceConfigurationElement.cs" />
-    <Compile Include="AspNetDependencyInjection.Configuration\NamespacePrefix.cs" />
-    <Compile Include="AspNetDependencyInjection.Configuration\AspNetDependencyInjectionConfigurationSection.cs" />
-    <Compile Include="AspNetDependencyInjection\Extensions.cs" />
-    <Compile Include="AspNetDependencyInjection\HttpExtensions.cs" />
-    <Compile Include="AspNetDependencyInjection\IScopedHttpApplication.cs" />
-    <Compile Include="AspNetDependencyInjection\IDependencyInjectionClient.cs" />
-    <Compile Include="AspNetDependencyInjection\ObjectFactoryCache.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AspNetDependencyInjection\DependencyInjectionWebObjectActivator.cs" />
-    <Compile Include="AspNetDependencyInjection\HttpContextScopeHttpModule.cs" />
-    <Compile Include="AspNetDependencyInjection\ApplicationDependencyInjection.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Unity.WebForms.StrongNameKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>2.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-      <Version>2.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Web.Infrastructure">
-      <Version>1.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>4.5.2</Version>
-    </PackageReference>
-    <PackageReference Include="WebActivatorEx">
-      <Version>2.2.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if "$(ConfigurationName)" == "Release" (
 
-mkdir $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472
+  <ItemGroup Label="NuGet Package References">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection"              Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Web.Infrastructure"                          Version="1.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe"                Version="5.0.0" />
+    <PackageReference Include="WebActivatorEx"                                        Version="2.2.0" />
+  </ItemGroup>
 
-copy $(ProjectDir)$(OutDir)$(TargetFileName) $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\$(TargetFileName)
-copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.pdb $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\AspNetDependencyInjection.pdb
-copy $(ProjectDir)$(OutDir)AspNetDependencyInjection.xml $(SolutionDir)nuget\AspNetDependencyInjection\lib\net472\AspNetDependencyInjection.xml
-
-)
-</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

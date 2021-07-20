@@ -87,14 +87,16 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 		protected void WrapTest<T>( Action<IServiceCollection> configure, Action<IDependencyResolver,T> testImpl, T arg )
 		{
+			HttpConfiguration nonSystemWebConfiguration = new HttpConfiguration();
+
 			ApplicationDependencyInjection di = new ApplicationDependencyInjectionBuilder()
 				.ConfigureServices( configure )
-				.AddWebApiDependencyResolver()
+				.AddWebApiDependencyResolver( nonSystemWebConfiguration )
 				.Build();
 
 			using( di )
 			{
-				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.Clients
+				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionWebApiDependencyResolver>()
 					.Single();
 

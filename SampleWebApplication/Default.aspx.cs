@@ -43,7 +43,7 @@ namespace SampleWebApplication
 		/// </summary>
 		private void AddControls()
 		{
-			InjectedControl newControl = LoadControl("InjectedControl.ascx") as InjectedControl;
+			InjectedControl newControl = this.LoadControl("InjectedControl.ascx") as InjectedControl;
 			this.DynamicInjectedControl.Controls.Add( newControl );
 		}
 

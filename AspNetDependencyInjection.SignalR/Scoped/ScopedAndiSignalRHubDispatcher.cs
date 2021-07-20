@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>The HubDispatcher manages DI scope over a Hub's lifetime. This HubDispatcher subclass must be registered ONLY with SignalR's DependencyResolver (and NOT in the consumer's DI system) and it MUST be registered as a transient. Weird bugs (without any error messages or output!) happen in SignalR when a HubDispatcher instance is reused.</summary>
+	[CLSCompliant(false)] // `HubDispatcher` is not CLS-compliant.
 	public class ScopedAndiSignalRHubDispatcher : HubDispatcher
     {
 		private static readonly AsyncLocal<IServiceScope> _asyncLocalScope = new AsyncLocal<IServiceScope>();
@@ -32,27 +30,38 @@ namespace AspNetDependencyInjection.Internal
 		// It depends on the Transport - e.g. longPolling will run `OnReceived` inside `ProcessRequest`, but with WebSockets `OnReceived` is not (but `OnConnected` is).
 
 		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is always created. If another scope is already active then an <see cref="InvalidOperationException"/> is thrown (this should never happen).</summary>
+		[CLSCompliant(false)]
 		public override async Task ProcessRequest( HostContext context )
 		{
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
 			if( _asyncLocalScope.Value != null ) throw new InvalidOperationException( "Expected empty request scope." );
+
+			//
 
 			using( IServiceScope scope = this.rootServiceProvider.CreateScope() )
 			{
 				_asyncLocalScope.Value = scope;
 
+				Boolean scopeDidChange = false;
 				try
 				{
 					await base.ProcessRequest( context ).ConfigureAwait(false);
 				}
 				finally
 				{
-					if( _asyncLocalScope.Value != scope ) throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
+					if( _asyncLocalScope.Value != scope ) scopeDidChange = true;
 					_asyncLocalScope.Value = null;
+				}
+
+				if( scopeDidChange )
+				{
+					throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
 				}
 			}
 		}
 
 		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
+		[CLSCompliant(false)] // IRequest is not CLS-compliant.
 		protected override async Task OnConnected( IRequest request, String connectionId )
         {
 			if( _asyncLocalScope.Value == null )
@@ -61,14 +70,20 @@ namespace AspNetDependencyInjection.Internal
 				{
 					_asyncLocalScope.Value = scope;
 
+					Boolean scopeDidChange = false;
 					try
 					{
 						await base.OnConnected( request, connectionId ).ConfigureAwait(false);
 					}
 					finally
 					{
-						if( _asyncLocalScope.Value != scope ) throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
+						if( _asyncLocalScope.Value != scope ) scopeDidChange = true;
 						_asyncLocalScope.Value = null;
+					}
+
+					if( scopeDidChange )
+					{
+						throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
 					}
 				}
 			}
@@ -79,7 +94,8 @@ namespace AspNetDependencyInjection.Internal
         }
 
 		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
-        protected override async Task OnReceived(IRequest request, String connectionId, String data)
+        [CLSCompliant(false)] // IRequest is not CLS-compliant.
+		protected override async Task OnReceived( IRequest request, String connectionId, String data )
         {
 			if( _asyncLocalScope.Value == null )
 			{
@@ -87,14 +103,20 @@ namespace AspNetDependencyInjection.Internal
 				{
 					_asyncLocalScope.Value = scope;
 
+					Boolean scopeDidChange = false;
 					try
 					{
 						await base.OnReceived( request, connectionId, data ).ConfigureAwait(false);
 					}
 					finally
 					{
-						if( _asyncLocalScope.Value != scope ) throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
+						if( _asyncLocalScope.Value != scope ) scopeDidChange = true;
 						_asyncLocalScope.Value = null;
+					}
+
+					if( scopeDidChange )
+					{
+						throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
 					}
 				}
 			}
@@ -105,7 +127,8 @@ namespace AspNetDependencyInjection.Internal
         }
 
 		/// <summary>Internal SignalR event. A new <see cref="IServiceScope"/> is created if not is not already active.</summary>
-        protected override async Task OnDisconnected(IRequest request, String connectionId, Boolean stopCalled)
+        [CLSCompliant(false)] // IRequest is not CLS-compliant.
+		protected override async Task OnDisconnected( IRequest request, String connectionId, Boolean stopCalled )
         {
 			if( _asyncLocalScope.Value == null )
 			{
@@ -113,14 +136,20 @@ namespace AspNetDependencyInjection.Internal
 				{
 					_asyncLocalScope.Value = scope;
 
+					Boolean scopeDidChange = false;
 					try
 					{
 						await base.OnDisconnected( request, connectionId, stopCalled ).ConfigureAwait(false);
 					}
 					finally
 					{
-						if( _asyncLocalScope.Value != scope ) throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
+						if( _asyncLocalScope.Value != scope ) scopeDidChange = true;
 						_asyncLocalScope.Value = null;
+					}
+
+					if( scopeDidChange )
+					{
+						throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
 					}
 				}
 			}
@@ -139,14 +168,20 @@ namespace AspNetDependencyInjection.Internal
 				{
 					_asyncLocalScope.Value = scope;
 
+					Boolean scopeDidChange = false;
 					try
 					{
 						await base.OnReconnected( request, connectionId ).ConfigureAwait(false);
 					}
 					finally
 					{
-						if( _asyncLocalScope.Value != scope ) throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
+						if( _asyncLocalScope.Value != scope ) scopeDidChange = true;
 						_asyncLocalScope.Value = null;
+					}
+
+					if( scopeDidChange )
+					{
+						throw new InvalidOperationException( "Request Scope has changed unexpectedly." );
 					}
 				}
 			}
@@ -157,6 +192,7 @@ namespace AspNetDependencyInjection.Internal
         }
 
 		/// <summary>Exposes the current <see cref="AsyncLocal{T}"/> <see cref="IServiceScope"/>. Consuming applications generally do not need to use this property. It is exposed to allow consuming applications to manipulate the IServiceScope if absolutely necessary.</summary>
+		[CLSCompliant(false)]
 		public static Boolean TryGetScope( out IServiceScope scope )
 		{
 			scope = _asyncLocalScope.Value;
@@ -164,10 +200,11 @@ namespace AspNetDependencyInjection.Internal
 		}
 
 		/// <summary>Exposes the current <see cref="AsyncLocal{T}"/> <see cref="IServiceScope"/>. Consuming applications generally do not need to use this property. It is exposed to allow consuming applications to manipulate the IServiceScope if absolutely necessary.</summary>
+		[CLSCompliant(false)]
 		public static IServiceScope RequireScope()
 		{
-			IServiceScope scope = scope = _asyncLocalScope.Value;
-			if( scope == null ) throw new InvalidOperationException( "AsyncLocal Request scope nor Operation scope has not been set." );
+			IServiceScope scope = _asyncLocalScope.Value;
+			if( scope is null ) throw new InvalidOperationException( "AsyncLocal Request scope nor Operation scope has not been set." );
 			return scope;
 		}
     }

@@ -10,7 +10,7 @@ using Owin;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Implements SignalR's <see cref="IDependencyResolver"/> by using <see cref="DependencyInjectionWebObjectActivator"/> and using request and operation scoped lifetimes.</summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1063:ImplementIDisposableCorrectly", Justification = "This is a false-positive, see https://stackoverflow.com/questions/8925925/code-analysis-ca1063-fires-when-deriving-from-idisposable-and-providing-implemen" )]
+	[CLSCompliant(false)] // `DefaultDependencyResolver` is not CLS-compliant.
 	public sealed class ScopedAndiSignalRDependencyResolver : DefaultDependencyResolver, IDependencyResolver, IDependencyInjectionClient
 	{
 		private readonly ApplicationDependencyInjection di;
@@ -44,15 +44,13 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Handles calling <see cref="OwinExtensions.MapSignalR{TConnection}(IAppBuilder, string, ConnectionConfiguration)"/> on behalf of the consuming application inside its OwinStartup method.</summary>
 		/// <param name="appBuilder">The <see cref="IAppBuilder"/> passed into the <see cref="Microsoft.Owin.OwinStartupAttribute"/>-specified startup method.</param>
 		/// <param name="path">The URL path that the SignalR Owin middleware will handle. The default value is <c>&quot;/signalr&quot;</c>.</param>
-		/// <param name="hubConfiguration">Can be null.</param>
+		/// <param name="hubConfiguration">Can be <see langword="null"/>.</param>
+		[CLSCompliant(false)] // `HubConfiguration` is not CLS-compliant.
 		public void ConfigureSignalR( IAppBuilder appBuilder, String path = "/signalr", HubConfiguration hubConfiguration = null )
 		{
-			if( appBuilder == null ) throw new ArgumentNullException(nameof(appBuilder));
-
+			if( appBuilder is null ) throw new ArgumentNullException(nameof(appBuilder));
 			if( String.IsNullOrWhiteSpace( path ) ) throw new ArgumentNullException(nameof(path));
-
 			if( this.hubConfiguration != null ) throw new InvalidOperationException( "SignalR has already been configured using this " + nameof(ScopedAndiSignalRDependencyResolver) + " instance." );
-
 			if( GlobalHost.DependencyResolver != this ) throw new InvalidOperationException( "SignalR's DependencyResolver has not yet been set." );
 
 			//
@@ -75,9 +73,7 @@ namespace AspNetDependencyInjection.Internal
 
 			this.hubConfiguration = hubConfiguration;
 
-			//
-
-			appBuilder.MapSignalR<ScopedAndiSignalRHubDispatcher>( path, this.hubConfiguration );
+			_ = appBuilder.MapSignalR<ScopedAndiSignalRHubDispatcher>( path, this.hubConfiguration );
 		}
 
 		/// <summary>Gets the singleton <see cref="IHubActivator"/> instance that SignalR will use to construct each <see cref="IHub"/> object instance.</summary>

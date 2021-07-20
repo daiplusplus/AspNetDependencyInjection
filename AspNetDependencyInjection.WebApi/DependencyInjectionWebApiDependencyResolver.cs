@@ -83,6 +83,7 @@ namespace AspNetDependencyInjection.Internal
 		private readonly IServiceScope scope;
 
 		/// <summary>Constructor. All parameters are required.</summary>
+		[CLSCompliant(false)]
 		public DependencyInjectionWebApiScope( ApplicationDependencyInjection di, IServiceScope scope )
 		{
 			this.di    = di    ?? throw new ArgumentNullException( nameof( di ) );

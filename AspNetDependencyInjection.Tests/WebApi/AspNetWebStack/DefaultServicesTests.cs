@@ -144,6 +144,9 @@ namespace AspNetDependencyInjection.Tests.WebApi
 			Object a = defaultServices.GetServices(typeof(IFilterProvider));
 			Object b = defaultServices.GetServices(typeof(IFilterProvider));
 
+			_ = a.ShouldNotBeNull();
+			_ = b.ShouldNotBeNull();
+
 			// Assert
 			rw.GetServicesCalls.Count.ShouldBe( 1 );
 //			mockDependencyResolver.Verify(dr => dr.GetServices(typeof(IFilterProvider)), Times.Once());
