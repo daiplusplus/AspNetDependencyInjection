@@ -3,9 +3,7 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
+/*
 [assembly: AssemblyTitle( "AspNetDependencyInjection" )]
 [assembly: AssemblyDescription( "Dependency Injection in \"Classic\" ASP.NET using Microsoft.Extensions.DependencyInjection." )]
 [assembly: AssemblyConfiguration( "" )]
@@ -41,6 +39,8 @@ using System.Runtime.InteropServices;
 // Version 2.x = Jehoel's Unity.WebForms using WebObjectActivator.
 // Version 3.x = AspNetDependencyInjection using Microsoft.Extensions.DependencyInjection.
 // Version 4.x = AspNetDependencyInjection using Microsoft.Extensions.DependencyInjection.
+
+*/
 
 [assembly: InternalsVisibleTo( assemblyName: @"AspNetDependencyInjection.Tests, PublicKey=" +
 	"0024000004800000940000000602000000240000525341310004000001000100b5644bd32f0714" +
