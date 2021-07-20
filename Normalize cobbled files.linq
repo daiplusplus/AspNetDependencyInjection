@@ -1,6 +1,4 @@
 <Query Kind="Program">
-  <NuGetReference>morelinq</NuGetReference>
-  <Namespace>MoreLinq</Namespace>
   <IncludePredicateBuilder>true</IncludePredicateBuilder>
   <UseNoncollectibleLoadContext>true</UseNoncollectibleLoadContext>
 </Query>
@@ -108,7 +106,6 @@ static String AlignXmlAttributes( String contents, String onlyThisElementName )
 	String[] lines = contents.Split( "\n" );
 	
 	Dictionary<String,Int32> maxAttribLengths = new Dictionary<String,Int32>();
-//	Dictionary<String,Int32> maxAttribStartIndexes = new Dictionary<String,Int32>();
 	
 	for( Int32 i = 0; i < lines.Length; i++ )
 	{
@@ -123,44 +120,11 @@ static String AlignXmlAttributes( String contents, String onlyThisElementName )
 				String attribs = m.Groups["attribs"].Value;
 				
 				AddAttribLengths( attribs, maxAttribLengths );
-//				AddAttribIndexes( attribs, maxAttribStartIndexes );
 			}
 		}
 	}
 	
-	//
-	
-	/*
-	Dictionary<String,( String attribName, Int32 maxLength, Int32 maxStartIndex )> attribMaxLengths;
-	{
-		List<( String attribName, Int32 maxLength, Int32 maxStartIndex )> list = maxAttribStartIndexes
-			.OrderBy( kvp => kvp.Value )
-			.Select( kvp => ( attribName: kvp.Key, maxLength: -1, maxStartIndex: kvp.Value ) )
-			.ToList();
-			
-		Int32 maxLineLength = lines.Max( l => l.Length );
-			
-		for( Int32 i = list.Count - 1; i >= 0; i-- )
-		{
-			var t = list[i];
-			if( i == list.Count - 1 )
-			{
-				t.maxLength = maxLineLength - t.maxStartIndex;
-			}
-			else
-			{
-				var next = list[i+1];
-				t.maxLength = next.maxStartIndex - t.maxStartIndex;
-			}
-			
-			list[i] = t;
-		}
-		
-		attribMaxLengths = list.ToDictionary( t => t.attribName );
-	}
-	*/
-	
-	StringBuilder sb = new StringBuilder();
+	StringBuilder reusableSB = new StringBuilder();
 	
 	for( Int32 i = 0; i < lines.Length; i++ )
 	{
@@ -178,7 +142,7 @@ static String AlignXmlAttributes( String contents, String onlyThisElementName )
 				String prefix = line.Substring( startIndex: 0, length: attribsGrp.Index ); // `prefix` includes the '<'.
 				String suffix = line.Substring( startIndex: attribsGrp.Index + attribsGrp.Length ); // `suffix` includes the '/>'
 				
-				String alignedAttribs = BuildAlignedLine( sb, attribs, maxAttribLengths );
+				String alignedAttribs = BuildAlignedLine( reusableSB, attribs, maxAttribLengths );
 				String newLine = prefix + alignedAttribs.TrimEnd() + " " + suffix.Trim();
 				lines[i] = newLine;
 			}
@@ -231,7 +195,6 @@ static void AddAttribLengths( String attribs, Dictionary<String,Int32> maxAttrib
 	}
 }
 
-//static String BuildAlignedLine( StringBuilder sb, String attribs, IReadOnlyDictionary<String,( String attribName, Int32 maxLength, Int32 maxStartIndex )> attribMaxLengths )
 static String BuildAlignedLine( StringBuilder sb, String attribs, IReadOnlyDictionary<String,Int32> attribMaxLengths )
 {
 	MatchCollection ms = _simpleAttribRegex.Matches( attribs );
@@ -240,11 +203,8 @@ static String BuildAlignedLine( StringBuilder sb, String attribs, IReadOnlyDicti
 		String attribName = m.Groups["attribName" ].Value;
 		String attribValu = m.Groups["attribValue"].Value;
 		
-		var t = attribMaxLengths[ attribName ];
-		
 		Int32 thisAttribWidth = attribName.Length + 1 + attribValu.Length + 1;
-//		Int32 padding         = t.maxLength - thisAttribWidth;
-		Int32 padding         = t - thisAttribWidth;
+		Int32 padding         = attribMaxLengths[ attribName ] - thisAttribWidth;
 		
 		sb.Append( attribName );
 		sb.Append( '=' );
@@ -252,7 +212,6 @@ static String BuildAlignedLine( StringBuilder sb, String attribs, IReadOnlyDicti
 		sb.Append( attribValu );
 		sb.Append( '"' );
 		sb.Append( "".PadRight( totalWidth: padding ) );
-//		sb.Append( ' ' );
 	}
 	
 	String newLine = sb.ToString();
