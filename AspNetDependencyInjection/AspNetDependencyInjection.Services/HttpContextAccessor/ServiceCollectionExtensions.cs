@@ -11,9 +11,10 @@ namespace AspNetDependencyInjection
 	public static partial class ServiceCollectionExtensions
 	{
 		/// <summary>Creates a scoped service implementation for <see cref="IHttpContextAccessor"/> that uses a hard reference to <see cref="HttpContextBase"/> (i.e. it does not use <see cref="HttpContext.Current"/>).</summary>
+		[CLSCompliant(false)]
 		public static IServiceCollection AddDefaultHttpContextAccessor( this IServiceCollection services )
 		{
-			if( services == null ) throw new ArgumentNullException(nameof(services));
+			if( services is null ) throw new ArgumentNullException(nameof(services));
 
 			return services
 				.AddScoped<DefaultHttpContextAccessorHelper>()
@@ -21,10 +22,11 @@ namespace AspNetDependencyInjection
 		}
 
 		/// <summary>Use this extension method if you wish to use your own logic for getting or creating a HttpContext for services without reimplementing <see cref="IHttpContextAccessor"/> directly.</summary>
+		[CLSCompliant(false)]
 		public static IServiceCollection AddCustomHttpContextAccessor( this IServiceCollection services, Func<IServiceProvider,HttpContextBase> httpContextGetter )
 		{
-			if( services == null ) throw new ArgumentNullException(nameof(services));
-			if( httpContextGetter == null ) throw new ArgumentNullException(nameof(httpContextGetter));
+			if( services          is null ) throw new ArgumentNullException(nameof(services));
+			if( httpContextGetter is null ) throw new ArgumentNullException(nameof(httpContextGetter));
 
 			return services
 				.AddScoped<IHttpContextAccessor>( sp => CreateCustomHttpContextAccessor( sp, httpContextGetter ) );
@@ -50,8 +52,10 @@ namespace AspNetDependencyInjection
 
 namespace AspNetDependencyInjection.Internal
 {
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes // This class is instantiated by DI.
 	internal class DefaultHttpContextAccessorHelper
 	{
 		public HttpContextBase HttpContext { get; set; }
 	}
+#pragma warning restore
 }

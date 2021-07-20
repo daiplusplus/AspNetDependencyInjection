@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AspNetDependencyInjection.Internal
 {
 	/// <summary>Collection of extension methods for the <see cref="HttpApplicationState" /> class.</summary>
+	[CLSCompliant(false)] // `IServiceScope` is not CLS-compliant.
 	public static class HttpContextExtensions
 	{
 		private const String _HttpApplication_RootServiceProvider = nameof(_HttpApplication_RootServiceProvider); // Root IServiceProvider in HttpApplication.
@@ -36,9 +37,19 @@ namespace AspNetDependencyInjection.Internal
 
 			//
 
-			IServiceProvider serviceProvider = httpApplication.Application[ _HttpApplication_RootServiceProvider ] as IServiceProvider;
-			if( serviceProvider is null ) throw new InvalidOperationException( "The root " + nameof(IServiceProvider) + " has not been set for this " + nameof(HttpApplication) + "." );
-			return serviceProvider;
+			Object possibleRootServiceProvider = httpApplication.Application[ _HttpApplication_RootServiceProvider ];
+			if( possibleRootServiceProvider is IServiceProvider rootServiceProvider )
+			{
+				return rootServiceProvider;
+			}
+			else if( possibleRootServiceProvider is null )
+			{
+				throw new InvalidOperationException( "The root " + nameof(IServiceProvider) + " has not been set for this " + nameof(HttpApplication) + "." );
+			}
+			else
+			{
+				throw new InvalidOperationException( "Expected " + nameof(possibleRootServiceProvider) + " to implement " + nameof(IServiceProvider) + " but encountered " + possibleRootServiceProvider.GetType().FullName + " instead." );
+			}
 		}
 
 		/// <summary>Stores a <see cref="IServiceScope"/> instance into application state. This method does not normally need to called from web-application code but is exposed if you wish to override the <see cref="IServiceProvider"/> (but not <see cref="IServiceScope"/>) for a particular <see cref="HttpApplication"/> instance.</summary>
@@ -46,7 +57,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <param name="rootServiceProvider">The <see cref="IServiceProvider"/> to store inside <paramref name="httpApplication"/>'s <see cref="HttpApplicationState"/>.</param>
 		public static void SetRootServiceProvider( this HttpApplication httpApplication, IServiceProvider rootServiceProvider )
 		{
-			if( httpApplication == null ) throw new ArgumentNullException(nameof(httpApplication));
+			if( httpApplication     is null ) throw new ArgumentNullException(nameof(httpApplication));
+			if( rootServiceProvider is null ) throw new ArgumentNullException(nameof(rootServiceProvider));
 
 			//
 
@@ -77,7 +89,7 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Attempts to get the per-HttpApplication <see cref="IServiceScope"/>. Returns <c>false</c> if the child <see cref="IServiceScope"/> does not exist (and in which case the <paramref name="serviceScope"/> parameter value is undefined). Returns <c>true</c> if it was found (and will be returned via <paramref name="serviceScope"/>).</summary>
 		public static Boolean TryGetHttpApplicationServiceScope( this HttpApplication httpApplication, out IServiceScope serviceScope )
 		{
-			if( httpApplication == null ) throw new ArgumentNullException(nameof(httpApplication));
+			if( httpApplication is null ) throw new ArgumentNullException(nameof(httpApplication));
 
 			//
 
@@ -101,7 +113,7 @@ namespace AspNetDependencyInjection.Internal
 		/// <returns>The HttpApplication's service scope.</returns>
 		public static IServiceScope GetHttpApplicationServiceScope( this HttpApplication httpApplication )
 		{
-			if( httpApplication == null ) throw new ArgumentNullException(nameof(httpApplication));
+			if( httpApplication is null ) throw new ArgumentNullException(nameof(httpApplication));
 
 			//
 
@@ -115,27 +127,16 @@ namespace AspNetDependencyInjection.Internal
 			{
 				Hashtable handlerFactories = httpApplication.GetHandlerFactories();
 				Object serviceScopeObj = handlerFactories[ _HttpApplication_ServiceScope ];
-				if( serviceScopeObj == null ) throw new InvalidOperationException( "The IServiceScope has not been set in this HttpApplication instance." );
+				if( serviceScopeObj == null ) throw new InvalidOperationException( "The " + nameof(IServiceScope) + " has not been set in this HttpApplication instance." );
 
 				return (IServiceScope)serviceScopeObj;
 			}
 		}
 
-		/// <summary>Stores the provided <paramref name="serviceScope"/> into <paramref name="httpApplication"/>. This method does not normally need to called from web-application code but is exposed if you wish to override the <see cref="IServiceScope"/> (not <see cref="IServiceProvider"/>) for a particular HttpApplication.</summary>
-		/// <param name="httpApplication">The HttpApplication instance.</param>
-		/// <param name="serviceScope">The HttpApplication's service-scope.</param>
-		public static void SetHttpApplicationServiceScope( this HttpApplication httpApplication, IServiceScope serviceScope )
-		{
-			if( httpApplication == null ) throw new ArgumentNullException(nameof(httpApplication));
-			if( serviceScope == null ) throw new ArgumentNullException(nameof(serviceScope));
-
-			//
-
-			if( httpApplication is IScopedHttpApplication scopedHttpApplication )
-			{
-				scopedHttpApplication.HttpApplicationServiceScope = serviceScope;
-			}
-		}
+		// `SetHttpApplicationServiceScope` was moved to be inline in `HttpContextScopeHttpModule.Init`.
+//		public static void SetHttpApplicationServiceScope( this HttpApplication httpApplication, IServiceScope serviceScope )
+//		{
+//		}
 
 		#endregion
 
@@ -144,6 +145,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Attempts to get the per-request <see cref="IServiceScope"/> from the provided <see cref="HttpContext"/>. Returns <c>false</c> if the child <see cref="IServiceScope"/> does not exist (and in which case the <paramref name="serviceScope"/> parameter value is undefined). Returns <c>true</c> if it was found (and will be returned via <paramref name="serviceScope"/>).</summary>
 		public static Boolean TryGetRequestServiceScope( this HttpContext context, out IServiceScope serviceScope )
 		{
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
 			serviceScope = context.Items[ _HttpContext_ServiceScope ] as IServiceScope;
 			return serviceScope != null;
 		}
@@ -153,9 +156,21 @@ namespace AspNetDependencyInjection.Internal
 		/// <returns>The request's service scope.</returns>
 		public static IServiceScope GetRequestServiceScope( this HttpContext context )
 		{
-			IServiceScope serviceScope = context.Items[ _HttpContext_ServiceScope ] as IServiceScope;
-			if( serviceScope == null ) throw new InvalidOperationException( "The request service scope has not been set for this " + nameof(HttpContext) + " object." );
-			return serviceScope;
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
+			Object possibleRequestServiceScope = context.Items[ _HttpContext_ServiceScope ];
+			if( possibleRequestServiceScope is IServiceScope requestServiceScope )
+			{
+				return requestServiceScope;
+			}
+			else if( possibleRequestServiceScope is null )
+			{
+				throw new InvalidOperationException( "The request scope " + nameof(IServiceScope) + " has not been set for this " + nameof(HttpContext) + "." );
+			}
+			else
+			{
+				throw new InvalidOperationException( "Expected " + nameof(possibleRequestServiceScope) + " to implement " + nameof(IServiceScope) + " but encountered " + possibleRequestServiceScope.GetType().FullName + " instead." );
+			}
 		}
 
 		/// <summary>Stores the provided <paramref name="serviceScope"/> into request state (<see cref="HttpContext.Items"/>). This method does not normally need to called from web-application code but is exposed if you wish to override the per-request <see cref="IServiceScope"/> for a particular request.</summary>
@@ -163,6 +178,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <param name="serviceScope">The request's service-scope.</param>
 		public static void SetRequestServiceScope( this HttpContext context, IServiceScope serviceScope )
 		{
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
 			context.Items[_HttpContext_ServiceScope] = serviceScope;
 		}
 
@@ -173,6 +190,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <summary>Attempts to get the per-request <see cref="IServiceScope"/> from the provided <see cref="HttpContextBase"/>. Returns <c>false</c> if the child <see cref="IServiceScope"/> does not exist (and in which case the <paramref name="serviceScope"/> parameter value is undefined). Returns <c>true</c> if it was found (and will be returned via <paramref name="serviceScope"/>).</summary>
 		public static Boolean TryGetRequestServiceScope( this HttpContextBase context, out IServiceScope serviceScope )
 		{
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
 			serviceScope = context.Items[ _HttpContext_ServiceScope ] as IServiceScope;
 			return serviceScope != null;
 		}
@@ -182,9 +201,21 @@ namespace AspNetDependencyInjection.Internal
 		/// <returns>The request's service scope.</returns>
 		public static IServiceScope GetRequestServiceScope( this HttpContextBase context )
 		{
-			IServiceScope serviceScope = context.Items[ _HttpContext_ServiceScope ] as IServiceScope;
-			if( serviceScope == null ) throw new InvalidOperationException( "The request service scope has not been set for this " + nameof(HttpContextBase) + " object." );
-			return serviceScope;
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
+			Object possibleRequestServiceScope = context.Items[ _HttpContext_ServiceScope ];
+			if( possibleRequestServiceScope is IServiceScope requestServiceScope )
+			{
+				return requestServiceScope;
+			}
+			else if( possibleRequestServiceScope is null )
+			{
+				throw new InvalidOperationException( "The request scope " + nameof(IServiceScope) + " has not been set for this " + nameof(HttpContextBase) + "." );
+			}
+			else
+			{
+				throw new InvalidOperationException( "Expected " + nameof(possibleRequestServiceScope) + " to implement " + nameof(IServiceScope) + " but encountered " + possibleRequestServiceScope.GetType().FullName + " instead." );
+			}
 		}
 
 		/// <summary>Stores the provided <paramref name="serviceScope"/> into request state (<see cref="HttpContextBase.Items"/>). This method does not normally need to called from web-application code but is exposed if you wish to override the per-request <see cref="IServiceScope"/> for a particular request.</summary>
@@ -192,6 +223,8 @@ namespace AspNetDependencyInjection.Internal
 		/// <param name="serviceScope">The request's service-scope.</param>
 		public static void SetRequestServiceScope( this HttpContextBase context, IServiceScope serviceScope )
 		{
+			if( context is null ) throw new ArgumentNullException( nameof( context ) );
+
 			context.Items[_HttpContext_ServiceScope] = serviceScope;
 		}
 

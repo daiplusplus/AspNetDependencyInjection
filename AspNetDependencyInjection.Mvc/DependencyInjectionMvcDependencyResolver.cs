@@ -88,7 +88,9 @@ namespace AspNetDependencyInjection.Internal
 					disp.Dispose();
 				}
 			}
+#pragma warning disable CA1031 // Do not catch general exception types // This is by-design.
 			catch
+#pragma warning restore CA1031
 			{
 			}
 

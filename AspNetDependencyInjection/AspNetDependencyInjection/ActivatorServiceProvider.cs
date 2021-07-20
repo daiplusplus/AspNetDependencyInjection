@@ -17,10 +17,11 @@ namespace AspNetDependencyInjection.Internal
 			return this.GetService( serviceType: serviceType, args: null );
 		}
 
+#pragma warning disable CA1822 // Mark members as static
 		public Object GetService( Type serviceType, params Object[] args )
+#pragma warning restore CA1822
 		{
-			return Activator.CreateInstance
-			(
+			return Activator.CreateInstance(
 				type                : serviceType,
 				bindingAttr         : BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.CreateInstance,
 				binder              : null,
@@ -31,6 +32,7 @@ namespace AspNetDependencyInjection.Internal
 		}
 	}
 
+	/// <summary>Always returns null in calls to <see cref="GetService(Type)"/>.</summary>
 	internal class NullServiceProvider : IServiceProvider
 	{
 		public static NullServiceProvider Instance { get; } = new NullServiceProvider();

@@ -11,48 +11,20 @@ namespace AspNetDependencyInjection.Services
 	/// <remarks>This class is designed to assist applications with shifting towards appSettings.json-type config used in ASP.NET Core - the idea being to use Dictionary-style configuration in WebForms first, then it's one less thing to fix when everything is broken immediately after migrating to ASP.NET Core.</remarks>
 	public class DefaultWebConfiguration : IWebConfiguration
 	{
-		/// <summary>Converts <paramref name="nvc"/> into a <see cref="Dictionary{TKey, TValue}"/> (of String Keys and String values). If <see cref="NameValueCollection"/> returns multiple values for any name/key, then only the first value returned will be added to the returned dictionary dictionary.</summary>
-		protected static Dictionary<String,String> ToDictionary( NameValueCollection nvc )
-		{
-			Dictionary<String,String> dict = new Dictionary<String,String>( capacity: nvc.Count, comparer: StringComparer.OrdinalIgnoreCase );
-
-			foreach( String key in nvc.Keys )
-			{
-				String firstValue = nvc.GetValues( key ).First();
-				dict[ key ] = firstValue;
-			}
-
-			return dict;
-		}
-
 		/// <summary>Constructs a new instance of <see cref="DefaultWebConfiguration"/> that sets the <see cref="AppSettings"/> and <see cref="ConnectionStrings"/> collection properties to immutable snapshot copies of <see cref="WebConfigurationManager"/>'s respective static collection properties.</summary>
 		public DefaultWebConfiguration()
 		{
-			this.AppSettings = ToDictionary( this.GetAppSettings() );
+			this.AppSettings = AndiExtensions.ToDictionary( WebConfigurationManager.AppSettings );
 
-			this.ConnectionStrings = this.GetConnectionStrings()
+			this.ConnectionStrings = WebConfigurationManager.ConnectionStrings
 				.OfType<ConnectionStringSettings>()
 				.ToDictionary( cs => cs.Name, comparer: StringComparer.OrdinalIgnoreCase );
 		}
 
-		/// <summary>This method is called from <see cref="DefaultWebConfiguration"/>'s constructor (so implementations must ensure that it does not use any non-initialized fields or other static state). This implementation returns <see cref="WebConfigurationManager.AppSettings"/>.</summary>
-		protected virtual NameValueCollection GetAppSettings()
-		{
-			return WebConfigurationManager.AppSettings;
-		}
-
-		/// <summary>This method is called from <see cref="DefaultWebConfiguration"/>'s constructor (so implementations must ensure that it does not use any non-initialized fields or other static state). This implementation returns <see cref="WebConfigurationManager.ConnectionStrings"/>.</summary>
-		protected virtual ConnectionStringSettingsCollection GetConnectionStrings()
-		{
-			return WebConfigurationManager.ConnectionStrings;
-		}
-
-		//
-
-		/// <summary>Provides read-only access to <see cref="System.Web.Configuration.WebConfigurationManager.AppSettings"/>. The dictionary uses a case-insensitive key comparer.</summary>
+		/// <summary>Provides read-only access to a snapshot copy of <see cref="System.Web.Configuration.WebConfigurationManager.AppSettings"/>. The dictionary uses a case-insensitive key comparer.</summary>
 		public IReadOnlyDictionary<String, String> AppSettings { get; }
 
-		/// <summary>Provides read-only access to <see cref="System.Web.Configuration.WebConfigurationManager.ConnectionStrings"/>.  The dictionary uses a case-insensitive key comparer.</summary>
+		/// <summary>Provides read-only access to a snapshot copy of <see cref="System.Web.Configuration.WebConfigurationManager.ConnectionStrings"/>.  The dictionary uses a case-insensitive key comparer.</summary>
 		public IReadOnlyDictionary<String, ConnectionStringSettings> ConnectionStrings { get; }
 
 		/// <summary>Returns an <see cref="IReadOnlyDictionary{String,String}"/> representation of a .NET configuration section provided by either <see cref="DictionarySectionHandler"/>, <see cref="NameValueSectionHandler"/>, <see cref="NameValueFileSectionHandler"/> or <see cref="SingleTagSectionHandler"/> (or any configuration section that is resolvable to <see cref="System.Collections.IDictionary"/> or <see cref="NameValueCollection"/>).  Returns <c>null</c> if the section does not exist.</summary>
@@ -89,7 +61,7 @@ namespace AspNetDependencyInjection.Services
 			}
 			else if( sectionObj is NameValueCollection nvc )
 			{
-				return ToDictionary( nvc );
+				return AndiExtensions.ToDictionary( nvc );
 			}
 			else
 			{

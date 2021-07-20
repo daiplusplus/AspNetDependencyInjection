@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -45,3 +46,4 @@ using System.Runtime.InteropServices;
 	"e94586a5" )]
 
 */
+[assembly: CLSCompliant(true)]

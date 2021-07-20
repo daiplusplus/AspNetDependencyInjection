@@ -28,12 +28,12 @@ namespace AspNetDependencyInjection.Services
 		/// <summary>The dictionary's key comparer is undefined and may not be case-insensitive.</summary>
 		public IReadOnlyDictionary<String, ConnectionStringSettings> ConnectionStrings { get; }
 
-		/// <summary>Gets a dictionary from the <c>otherSections</c> dictionary passed into this object's constructor. Returns <c>null</c> if the section doesn't exist.</summary>
-		public IReadOnlyDictionary<String,String> GetKeyValueSection( String name )
+		/// <summary>Gets a dictionary from the <c>otherSections</c> dictionary passed into this object's constructor. Returns <c><see langword="null"/></c> if the section doesn't exist.</summary>
+		public IReadOnlyDictionary<String,String> GetKeyValueSection( String sectionName )
 		{
 			if( this.otherSections == null ) return null;
 			
-			return this.otherSections.TryGetValue( name, out IReadOnlyDictionary<String,String> section ) ? section : null;
+			return this.otherSections.TryGetValue( sectionName, out IReadOnlyDictionary<String,String> section ) ? section : null;
 		}
 	}
 }

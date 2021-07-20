@@ -9,6 +9,7 @@ using AspNetDependencyInjection.Services;
 namespace AspNetDependencyInjection
 {
 	/// <summary>Extension methods for services bundled with <see cref="AspNetDependencyInjection"/>.</summary>
+	[CLSCompliant(false)] // IServiceCollection is not CLS-compliant.
 	public static partial class ServiceCollectionExtensions
 	{
 		/// <summary>Registers <see cref="DefaultDependencyInjectionOverrideService"/> as a singleton implementation of <see cref="IDependencyInjectionOverrideService"/>.</summary>
