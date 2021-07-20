@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection"              Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Web.Infrastructure"                          Version="1.0.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe"                Version="4.5.2" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe"                Version="5.0.0" />
     <PackageReference Include="WebActivatorEx"                                        Version="2.2.0" />
   </ItemGroup>
 
