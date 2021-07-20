@@ -14,7 +14,7 @@ using System.Linq;
 namespace AspNetDependencyInjection
 {
 	/// <summary>Controls the lifespan of the configured <see cref="IServiceCollection"/>. This class implements <see cref="IRegisteredObject"/> to ensure the root <see cref="IServiceProvider"/> is disposed when the <see cref="HostingEnvironment"/> shuts down. Only 1 instance of this class can exist at a time in a single AppDomain.</summary>
-	public class ApplicationDependencyInjection : IDisposable, IRegisteredObject
+	public class ApplicationDependencyInjection : IDisposable, IRegisteredObject, IHasDependencyInjectionClients
 	{
 		private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim( initialCount: 1, maxCount: 1 );
 
@@ -213,7 +213,7 @@ namespace AspNetDependencyInjection
 
 		#region Testing features
 
-		internal IReadOnlyList<IDependencyInjectionClient> Clients => this.clients;
+		IReadOnlyList<IDependencyInjectionClient> IHasDependencyInjectionClients.Clients => this.clients;
 
 		#endregion
 	}

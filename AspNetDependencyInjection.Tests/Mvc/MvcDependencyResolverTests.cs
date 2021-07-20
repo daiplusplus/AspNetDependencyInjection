@@ -26,7 +26,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 
 			using( di )
 			{
-				Int32 count = di.Clients
+				Int32 count = di.GetClients()
 					.OfType<DependencyInjectionMvcDependencyResolver>()
 					.Count();
 			
@@ -44,7 +44,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 
 			using( di )
 			{
-				DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.Clients
+				DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionMvcDependencyResolver>()
 					.Single();
 
@@ -77,7 +77,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 
 			using( di )
 			{
-				DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.Clients
+				DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionMvcDependencyResolver>()
 					.Single();
 
@@ -114,7 +114,7 @@ namespace AspNetDependencyInjection.Tests.Mvc
 				.AddMvcDependencyResolver()
 				.Build();
 
-			DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.Clients
+			DependencyInjectionMvcDependencyResolver mvcResolverInstance = di.GetClients()
 				.OfType<DependencyInjectionMvcDependencyResolver>()
 				.Single();
 

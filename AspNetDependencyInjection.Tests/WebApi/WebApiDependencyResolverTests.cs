@@ -23,7 +23,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 			using( di )
 			{
-				Int32 count = di.Clients
+				Int32 count = di.GetClients()
 					.OfType<DependencyInjectionWebApiDependencyResolver>()
 					.Count();
 			
@@ -41,7 +41,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 			using( di )
 			{
-				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.Clients
+				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionWebApiDependencyResolver>()
 					.Single();
 
@@ -74,7 +74,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 			using( di )
 			{
-				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.Clients
+				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionWebApiDependencyResolver>()
 					.Single();
 

@@ -94,7 +94,7 @@ namespace AspNetDependencyInjection.Tests.WebApi
 
 			using( di )
 			{
-				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.Clients
+				DependencyInjectionWebApiDependencyResolver webApiResolverInstance = di.GetClients()
 					.OfType<DependencyInjectionWebApiDependencyResolver>()
 					.Single();
 
