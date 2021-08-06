@@ -27,7 +27,7 @@ static UTF8Encoding utf8NoBom = new UTF8Encoding( encoderShouldEmitUTF8Identifie
 static void NormalizeFile( String filePath )
 {
 	String oldContents = File.ReadAllText( filePath );
-	String newContents = oldContents.Replace("\r\n", "\n");
+	String newContents = oldContents.Replace("\r\n", "\n").TrimStart();
 	
 	if( Path.GetExtension( filePath ) == ".config" )
 	{
