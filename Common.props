@@ -6,7 +6,13 @@
     <Deterministic>true</Deterministic>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    
+    <DebugType>embedded</DebugType>
+    <!-- <DebugType>embedded :: Embeds PDBs directly in executable binaries (dll/exe). -->
+    <!-- <DebugType>full     :: Not accepted by NuGet.org for `.snupkg`. -->
+    <!-- <DebugType>pdbonly  :: Not accepted by NuGet.org for `.snupkg`. -->
+    <!-- <DebugType>portable ::  -->
+
     <RootNamespace>AspNetDependencyInjection</RootNamespace>
   </PropertyGroup>
   
@@ -19,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Common Package Output">
-    <Version>5.0.0-beta2</Version>
+    <Version>5.0.0-beta3</Version>
 
     <Description>Dependency Injection in "Classic" ASP.NET WebForms, ASP.NET MVC, ASP.NET Web API, and ASP.NET-hosted WCF using Microsoft.Extensions.DependencyInjection.</Description>
     <PackageTags>Unity ASP.NET WebForms Dependency Injection IoC DI WebObjectActivator constructor Microsoft.Extensions.DependencyInjection medi Microsoft.Extensions.Logging container</PackageTags>
