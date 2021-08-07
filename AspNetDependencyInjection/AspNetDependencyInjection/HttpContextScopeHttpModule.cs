@@ -8,6 +8,12 @@ namespace AspNetDependencyInjection.Internal
 	/// <summary>HttpModule that establishes the <see cref="IServiceScope"/> for each <see cref="HttpApplication"/> and <see cref="HttpContext"/> instance.</summary>
 	public sealed class HttpContextScopeHttpModule : IHttpModule
 	{
+#if ISSUE9
+		internal const String DEBUG_HTTPCONTEXT_BEGINREQUEST_INVOKED       = "DEBUG_" + nameof(OnContextBeginRequest) + "_INVOKED";
+		internal const String DEBUG_HTTPCONTEXT_ENDREQUEST_INVOKED         = "DEBUG_" + nameof(OnContextEndRequest) + "_INVOKED";
+		internal const String DEBUG_HTTPAPPLICATION_ENDAPPLICATION_INVOKED = "DEBUG_" + nameof(OnHttpApplicationDisposed) + "_INVOKED";
+#endif
+
 		private readonly ImmutableApplicationDependencyInjectionConfiguration config;
 		private readonly IServiceProvider rootServiceProvider;
 
@@ -96,6 +102,10 @@ namespace AspNetDependencyInjection.Internal
 			}
 
 			httpApplication.Context.SetRequestServiceScope( requestServiceScope );
+
+#if ISSUE9
+			httpApplication.Context.Items[ DEBUG_HTTPCONTEXT_BEGINREQUEST_INVOKED ] = "OK";
+#endif
 		}
 
 		/// <summary>Ensures that the per-request IServiceScope gets disposed of properly at the end of each request cycle.</summary>
@@ -105,10 +115,21 @@ namespace AspNetDependencyInjection.Internal
 			// This happened when ApplicationInsights' package installed its <httpModules> in <system.web> instead of <system.webServer> while `<system.webServer><validation validateIntegratedModeConfiguration="true" />`.
 
 			HttpApplication httpApplication = (HttpApplication)sender;
+			HttpContext     httpContext     = httpApplication.Context;
 
-			if( httpApplication.Context.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
+			if( httpContext.TryGetRequestServiceScope( out IServiceScope requestServiceScope ) )
 			{
 				requestServiceScope.Dispose();
+
+#if ISSUE9
+				httpContext.Items[ DEBUG_HTTPCONTEXT_ENDREQUEST_INVOKED ] = "OK";
+#endif
+			}
+			else
+			{
+#if ISSUE9
+				httpContext.Items[ DEBUG_HTTPCONTEXT_ENDREQUEST_INVOKED ] = "NotFound";
+#endif
 			}
 		}
 
@@ -120,6 +141,16 @@ namespace AspNetDependencyInjection.Internal
 			if( httpApplication.TryGetHttpApplicationServiceScope( out IServiceScope httpApplicationServiceScope ) )
 			{
 				httpApplicationServiceScope.Dispose();
+
+#if ISSUE9
+				httpApplication.Application[ DEBUG_HTTPAPPLICATION_ENDAPPLICATION_INVOKED ] = "OK";
+#endif
+			}
+			else
+			{
+#if ISSUE9
+				httpApplication.Application[ DEBUG_HTTPAPPLICATION_ENDAPPLICATION_INVOKED ] = "NotFound";
+#endif
 			}
 		}
 	}

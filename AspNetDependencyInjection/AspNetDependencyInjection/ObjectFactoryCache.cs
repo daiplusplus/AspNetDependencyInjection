@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 using AspNetDependencyInjection.Internal;
 
@@ -38,8 +40,8 @@ namespace AspNetDependencyInjection
 		// IMPORTANT NOTE: This method MUST return an instantiated serviceType - or throw an exception. i.e. it cannot return null - so if the root IServiceProvider returns null then fallback to (completely different serviceProviders) - otherwise throw.
 		public Object GetRequiredService( Func<IServiceProvider> getServiceProvider, Type serviceType, Boolean useOverrides )
 		{
-			if( getServiceProvider == null ) throw new ArgumentNullException( nameof(getServiceProvider) );
-			if( serviceType == null ) throw new ArgumentNullException( nameof(serviceType) );
+			if( getServiceProvider is null ) throw new ArgumentNullException( nameof(getServiceProvider) );
+			if( serviceType        is null ) throw new ArgumentNullException( nameof(serviceType) );
 
 			//
 
@@ -50,31 +52,82 @@ namespace AspNetDependencyInjection
 			else
 			{
 				IServiceProvider serviceProvider = getServiceProvider();
-				if( serviceProvider == null ) throw new InvalidOperationException( nameof(getServiceProvider) + " returned null." );
+				if( serviceProvider is null ) throw new InvalidOperationException( nameof(getServiceProvider) + " returned null." );
 
-				return this.GetRequiredService( serviceProvider, serviceType );
+				try
+				{
+					return this.GetRequiredService( serviceProvider, serviceType );
+				}
+				catch( ObjectDisposedException dispEx ) when ( dispEx.ObjectName == nameof(IServiceProvider) )
+				{
+#if ISSUE9
+					// This to help investigate this issue: https://github.com/Jehoel/AspNetDependencyInjection/issues/9
+					// Wrap it and add more details so I can investigate this issue better...
+					// `serviceProvider` will be of-type `Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngine`, I think? Let's make sure...
+
+					List<(String name, String value)> info = new List<(String name, String value)>()
+					{
+						( "typeof(IServiceProvider serviceProvider)", serviceProvider.GetType().FullName ),
+						( nameof(serviceType), serviceType.FullName ),
+						( nameof(useOverrides), useOverrides ? "true" : "false" ),
+						( nameof(dispEx.ObjectName), dispEx.ObjectName )
+					};
+
+					if( System.Web.HttpContext.Current is System.Web.HttpContext ctx )
+					{
+						info.Add( ( "HttpContextScopeHttpModule.OnContextBeginRequest", ctx.Items[ HttpContextScopeHttpModule.DEBUG_HTTPCONTEXT_BEGINREQUEST_INVOKED ]?.ToString() ?? "null" ) );
+						info.Add( ( "HttpContextScopeHttpModule.OnContextEndRequest"  , ctx.Items[ HttpContextScopeHttpModule.DEBUG_HTTPCONTEXT_ENDREQUEST_INVOKED   ]?.ToString() ?? "null" ) );
+
+						if( ctx.ApplicationInstance is System.Web.HttpApplication hta )
+						{
+							info.Add( ( "HttpContextScopeHttpModule.OnHttpApplicationDisposed", hta.Application[ HttpContextScopeHttpModule.DEBUG_HTTPAPPLICATION_ENDAPPLICATION_INVOKED ]?.ToString() ?? "null" ) );
+							info.Add( ( "HttpContext.Current.ApplicationInstance.IsSpecial()" , hta.IsSpecial() ? "true" : "false" ) );
+						}
+						else
+						{
+							info.Add( ( "HttpContext.Current.ApplicationInstance", "null" ) );
+						}
+					}
+					else
+					{
+						info.Add( ( "HttpContext.Current", "null" ) );
+					}
+
+					String message = String.Join( separator: "\r\n", info.Select( t => t.name + " == \"" + t.value + "\"" ) );
+#else
+					String message = dispEx.Message;
+#endif
+
+					throw new ObjectDisposedException( message: message, innerException: dispEx )
+					{
+						Data =
+						{
+							{ nameof(dispEx.ObjectName), dispEx.ObjectName }
+						}
+					};
+				}
 			}
 		}
 
 		/// <summary>Gets the service object of the specified type from <paramref name="serviceProvider"/>. This method never returns a <c>null</c> object reference and will throw an exception if resolution fails.</summary>
 		public Object GetRequiredService( IServiceProvider serviceProvider, Type serviceType )
 		{
-			if( serviceProvider == null ) throw new ArgumentNullException(nameof(serviceProvider));
-			if( serviceType == null ) throw new ArgumentNullException(nameof(serviceType));
+			if( serviceProvider is null ) throw new ArgumentNullException(nameof(serviceProvider));
+			if( serviceType     is null ) throw new ArgumentNullException(nameof(serviceType));
 			
 			//
 
 
 			// Optimziation: TryGet at first to avoid having to create ObjectFactoryHelper if we really don't need it:
-			if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactory ) )
+			if( this.objectFactories.TryGetValue( serviceType, out ObjectFactory existingObjectFactoryFunc ) )
 			{
-				return existingObjectFactory( serviceProvider, arguments: null );
+				return existingObjectFactoryFunc( serviceProvider, arguments: null );
 			}
 			else
 			{
 				ObjectFactoryHelper helper = new ObjectFactoryHelper( serviceProvider );
 
-				ObjectFactory objectFactory = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
+				ObjectFactory objectFactoryFunc = this.objectFactories.GetOrAdd( key: serviceType, valueFactory: this.RequiredObjectFactoryFactory, factoryArgument: helper );
 
 				if( helper.Instance != null )
 				{
@@ -84,7 +137,7 @@ namespace AspNetDependencyInjection
 				else
 				{
 					// Otherwise, an existing ObjectFactory was returned (or a test helper instance wasn't created), so use the ObjectFactory:
-					return objectFactory( serviceProvider: serviceProvider, arguments: null );
+					return objectFactoryFunc( serviceProvider: serviceProvider, arguments: null );
 				}
 			}
 		}

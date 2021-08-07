@@ -62,16 +62,8 @@ namespace AspNetDependencyInjection.Internal
 
 			//
 
-			httpApplication.Application.Lock();
-
-			try
-			{
-				httpApplication.Application[_HttpApplication_RootServiceProvider] = rootServiceProvider;
-			}
-			finally
-			{
-				httpApplication.Application.UnLock();
-			}
+			// No need to have our own `httpApplication.Application.Lock(); try {} finally .Unlock();` because HttpApplicationState's `Set` and index-setter properties do that already.
+			httpApplication.Application[_HttpApplication_RootServiceProvider] = rootServiceProvider;
 		}
 
 		#endregion

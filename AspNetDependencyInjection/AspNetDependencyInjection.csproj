@@ -5,6 +5,7 @@
   <PropertyGroup Label="Build">
     <ProjectGuid>{7E9E872B-41BE-4B55-9519-D2FF3F92EB4E}</ProjectGuid>
     <AssemblyOriginatorKeyFile>Unity.WebForms.StrongNameKey.pfx</AssemblyOriginatorKeyFile>
+    <DefineConstants>$(DefineConstants);ISSUE9;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Output">
