@@ -143,7 +143,7 @@ namespace AspNetDependencyInjection.Internal
 			return serviceScope != null;
 		}
 
-		/// <summary>Gets the per-request <see cref="IServiceScope"/> instance out of request state. Throws <see cref="InvalidOperationException"/> if the per-requesst <see cref="IServiceScope"/> has not yet been set.</summary>
+		/// <summary>Gets the per-request <see cref="IServiceScope"/> instance out of request state. Throws <see cref="InvalidOperationException"/> if the per-request <see cref="IServiceScope"/> has not yet been set.</summary>
 		/// <param name="context">The current request context.</param>
 		/// <returns>The request's service scope.</returns>
 		public static IServiceScope GetRequestServiceScope( this HttpContext context )

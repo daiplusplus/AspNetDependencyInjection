@@ -8,10 +8,14 @@ using System.Web;
 
 namespace AspNetDependencyInjection
 {
-	/// <summary>Gets the <see cref="HttpContextBase"/> for the current request.</summary>
+	/// <summary>Implementations are always request-scoped. This service allows consumers to get the <see cref="HttpContextBase"/> for the current request.</summary>
 	public interface IHttpContextAccessor
 	{
-		/// <summary>Gets the <see cref="HttpContextBase"/> for the current request. Uses a strong reference to the <see cref="HttpContextBase"/> associated with the request instead of using <see cref="HttpContext.Current"/> (which uses thread-local-storage), so this service can be passed around to other threads so they can use the HttpContext that belongs to a different thread.</summary>
+		/// <summary>
+		/// Gets the <see cref="HttpContextBase"/> for the current request.<br />
+		/// Implementations will use a strong-reference to the <see cref="HttpContextBase"/> associated with the current HTTP request instead of using <see cref="HttpContext.Current"/> (which uses thread-local-storage), which means that <see cref="IHttpContextAccessor"/> references can be safely passed around to other threads.<br />
+		/// To get the &quot;classic&quot;<see cref="System.Web.HttpContext"/> from a <see cref="HttpContextBase"/>, use <see cref="AndiExtensions.GetHttpContext(HttpContextBase)"/>.
+		/// </summary>
 		HttpContextBase HttpContext { get; }
 	}
 }

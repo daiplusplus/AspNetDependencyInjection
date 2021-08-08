@@ -29,7 +29,7 @@ namespace AspNetDependencyInjection.Internal
 		{
 			// As WebObjectActivator will always be called from an ASP.NET Request-Thread-Pool-thread, HttpContext.Current *should* always be non-null.
 			HttpContext httpContext = HttpContext.Current;
-			if( httpContext == null ) throw new InvalidOperationException( "HttpContext.Current is null." ); // This should never happen, provided only ASP.NET is using `DependencyInjectionWebObjectActivator`.
+			if( httpContext is null ) throw new InvalidOperationException( "HttpContext.Current is null." ); // This should never happen, provided only ASP.NET is using `DependencyInjectionWebObjectActivator`.
 
 			return this.di.GetServiceProviderForHttpContext( httpContext );
 		}

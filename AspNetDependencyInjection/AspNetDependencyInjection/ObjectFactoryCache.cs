@@ -25,7 +25,7 @@ namespace AspNetDependencyInjection
 			this.serviceProviderAccessor = serviceProviderAccessor ?? throw new ArgumentNullException( nameof( serviceProviderAccessor ) );
 		}
 
-		private IServiceProvider GetRootServiceProvider()
+		private IServiceProvider GetRootServiceProvider() // This is a Func, not a Property, so we can pass it directly as `Func<IServiceProvider> getServiceProvider`
 		{
 			return this.serviceProviderAccessor.RootServiceProvider;
 		}

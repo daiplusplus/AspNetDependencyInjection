@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -51,5 +51,29 @@ namespace AspNetDependencyInjection
 
 			return dict;
 		}
+		/// <summary>Gets a &quot;classic&quot; <see cref="System.Web.HttpContext"/> from a <see cref="System.Web.HttpContextBase"/> via <c>httpContextBase.ApplicationInstance.Context</c></summary>
+		public static System.Web.HttpContext GetHttpContext( this System.Web.HttpContextBase httpContextBase )
+		{
+			if( httpContextBase is null ) throw new ArgumentNullException( nameof( httpContextBase ) );
+
+			// These conditions should never happen, but just-in-case:
+			if( httpContextBase.ApplicationInstance         is null ) throw new ArgumentException( message: "httpContextBase.ApplicationInstance is null."        , paramName: nameof( httpContextBase ) );
+			if( httpContextBase.ApplicationInstance.Context is null ) throw new ArgumentException( message: "httpContextBase.ApplicationInstance.Context is null.", paramName: nameof( httpContextBase ) );
+
+			return httpContextBase.ApplicationInstance.Context;
 	}
+
+		/// <summary>Gets a <see cref="System.Web.HttpContextBase"/> from a &quot;classic&quot; <see cref="System.Web.HttpContext"/> via <c>httpContext.Request.RequestContext.HttpContext</c></summary>
+		public static System.Web.HttpContextBase GetHttpContextBase( this System.Web.HttpContext httpContext )
+		{
+			if( httpContext is null ) throw new ArgumentNullException( nameof( httpContext ) );
+
+			// These conditions should never happen, but just-in-case:
+			if( httpContext.Request                            is null ) throw new ArgumentException( message: "httpContext.Request is null."                           , paramName: nameof( httpContext ) );
+			if( httpContext.Request.RequestContext             is null ) throw new ArgumentException( message: "httpContext.Request.RequestContext is null."            , paramName: nameof( httpContext ) );
+			if( httpContext.Request.RequestContext.HttpContext is null ) throw new ArgumentException( message: "httpContext.Request.RequestContext.HttpContext is null.", paramName: nameof( httpContext ) );
+
+			return httpContext.Request.RequestContext.HttpContext;
+		}
+}
 }

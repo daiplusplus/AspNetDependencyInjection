@@ -177,7 +177,7 @@ namespace AspNetDependencyInjection
 			}
 			else
 			{
-				return this.GetServiceProviderForHttpContext( httpContextBase: new HttpContextWrapper( httpContext ) );
+				return this.GetServiceProviderForHttpContext( httpContextBase: httpContext.GetHttpContextBase() );
 			}
 		}
 
