@@ -186,6 +186,28 @@ Another advantage of this approach is that if you need to use a `DbContext` insi
 * `WebActivatorEx`'s `PreApplicationStartMethod` (the `PreStart` method in our sample above) runs **before** OWIN's Startup method.
 	* See this StackOverflow post: https://stackoverflow.com/questions/21462777/webactivatorex-vs-owinstartup
 
+### How to deal with `ObjectDataSource` controls
+Background: `ObjectDataSource` controls invoke a `Select` method defined in the `Page` object in order to retrieve the data to bind to other controls. This select method is usually a `static` method on the containing page, which prevents using DI, but can also be an instance method, in which case it instantiates a new `Page` object and calls the method on the newly created instance. That's the scenario when DI should be possible.
+
+Unfortunately it seems that Microsoft never updated the `ObjectDataSource` control to use `HttpRuntime.WebObjectActivator`, so it's not able to instantiate DI-enabled `Page` controls. However, it is possible to override its `ObjectCreating` event to make it work the way we want.
+
+For your convenience, this component includes a custom `ObjectDataSource`-derived control called `DiObjectDataSource` that can be used as a drop-in replacement for basic `ObjectDataSource` controls. To use it, register the control namespace by adding the following element to your `web.config` file:
+```
+<configuration>
+  <system.web>
+    <pages>
+      <controls>
+        ...
+        <add tagPrefix="di" namespace="AspNetDependencyInjection.WebForms" assembly="AspNetDependencyInjection" />
+        ...
+      </controls>
+    </pages>
+  </system.web>
+</configuration>
+```
+Then replace the `<asp:ObjectDataSource>` tags in your code with `<di:DiObjectDataSource>` tags.  
+*Note:* Please make sure your `ObjectDataSource` methods are not marked `static`.
+
 ## Included services
 
 All included services are exposed as interfaces so you can replace them with your own implementation for testing purposes or for different production scenarios. They are listed below:
