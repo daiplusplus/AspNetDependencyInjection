@@ -92,7 +92,7 @@
       <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>6.0.4</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Shouldly">
       <Version>4.0.3</Version>
